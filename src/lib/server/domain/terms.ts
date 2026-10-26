@@ -39,7 +39,8 @@ export interface SaveTerm {
 	status: string;
 	/** Omit to keep the current one; a new Chinese Term without one gets pinyin. */
 	pronunciation?: string;
-	translations: TranslationInput[];
+	/** Omit to keep the current Translations (e.g. when only the Status changes). */
+	translations?: TranslationInput[];
 }
 
 export function isStatus(value: string): value is Status {
@@ -48,7 +49,7 @@ export function isStatus(value: string): value is Status {
 
 /**
  * Creates the Term for `text`, or updates the one with the same Normalised form.
- * The Translations are replaced by `translations`, in order. One that keeps an existing
+ * If given, `translations` replace the Translations, in order. One that keeps an existing
  * Translation's id and text keeps its Source; anything new or edited is from you.
  */
 export async function saveTerm(db: Kysely<Database>, input: SaveTerm): Promise<number> {
@@ -61,7 +62,7 @@ export async function saveTerm(db: Kysely<Database>, input: SaveTerm): Promise<n
 	if (normalised === '') throw new InvalidTerm('A Term needs some text.');
 	const pronunciation = input.pronunciation?.trim();
 	const translations = input.translations
-		.map((t) => ({ id: t.id, text: t.text.trim() }))
+		?.map((t) => ({ id: t.id, text: t.text.trim() }))
 		.filter((t) => t.text !== '');
 
 	return db.transaction().execute(async (trx) => {
@@ -94,6 +95,8 @@ export async function saveTerm(db: Kysely<Database>, input: SaveTerm): Promise<n
 				.returning('id')
 				.executeTakeFirstOrThrow());
 		}
+
+		if (translations === undefined) return id;
 
 		const previous = new Map(
 			(await trx.selectFrom('translation').select(['id', 'text', 'source']).where('term_id', '=', id).execute()).map(

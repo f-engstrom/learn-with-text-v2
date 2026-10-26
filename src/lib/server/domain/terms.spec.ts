@@ -101,6 +101,25 @@ describe('saveTerm', () => {
 	});
 });
 
+describe('saving only a Status', () => {
+	it('keeps the Translations and Pronunciation of an existing Term', async () => {
+		const { db, byName } = await setup();
+		await saveTerm(db, { languageId: byName.Chinese, text: '喜欢', status: 'learning1', translations: [{ text: 'to like' }] });
+		await saveTerm(db, { languageId: byName.Chinese, text: '喜欢', status: 'learning3' });
+		expect((await findTerms(db, byName.Chinese, ['喜欢']))['喜欢']).toMatchObject({
+			status: 'learning3',
+			pronunciation: 'xǐhuan',
+			translations: [{ text: 'to like' }]
+		});
+	});
+
+	it('creates a Term for an Unknown Word', async () => {
+		const { db, byName } = await setup();
+		await saveTerm(db, { languageId: byName.Russian, text: 'Кот', status: 'known' });
+		expect((await findTerms(db, byName.Russian, ['кот'])).кот).toMatchObject({ text: 'кот', status: 'known', translations: [] });
+	});
+});
+
 describe('Pronunciation', () => {
 	it('fills in pinyin for a new Chinese Term', async () => {
 		const { db, byName } = await setup();
@@ -151,6 +170,7 @@ describe('getPage with Terms', () => {
 		const page = await getPage(db, bookId, 1);
 		const words = page!.paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.tokens.filter((t) => t.isWord)));
 		expect(words.map((w) => w.key)).toEqual(['кот', 'читает', 'кот', 'спит']);
+		expect(words.map((w) => [w.index, w.sentence])).toEqual([[0, 0], [1, 0], [2, 1], [3, 1]]);
 		expect(Object.keys(page!.terms)).toEqual(['кот']);
 		expect(page!.terms.кот).toMatchObject({ id: termId, status: 'learning3' });
 		expect(texts(page!.terms.кот)).toEqual(['cat']);

@@ -20,9 +20,14 @@ export interface BookSummary {
 	languageName: string;
 }
 
-/** A Token on the reading screen. Words carry their Normalised form as `key`. */
+/**
+ * A Token on the reading screen. Words also carry their Normalised form (`key`), their order
+ * among the Page's Words (`index`) and the index of their Sentence on the Page (`sentence`).
+ */
 export interface ReadingToken extends Token {
 	key?: string;
+	index?: number;
+	sentence?: number;
 }
 
 export interface PageView {
@@ -128,12 +133,18 @@ export async function getPage(db: Kysely<Database>, bookId: number, position: nu
 
 	const language = await getLanguage(db, row.language_id);
 	if (!language) return undefined;
+	let index = 0;
+	let sentence = 0;
 	const paragraphs = parserFor(language)
 		.parse(row.text)
 		.map((p) => ({
-			sentences: p.sentences.map((s) => ({
-				tokens: s.tokens.map((t): ReadingToken => (t.isWord ? { ...t, key: normalise(t.text, language) } : t))
-			}))
+			sentences: p.sentences.map((s) => {
+				const tokens = s.tokens.map(
+					(t): ReadingToken => (t.isWord ? { ...t, key: normalise(t.text, language), index: index++, sentence } : t)
+				);
+				sentence++;
+				return { tokens };
+			})
 		}));
 	const keys = paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.tokens.flatMap((t) => (t.key ? [t.key] : []))));
 	return {

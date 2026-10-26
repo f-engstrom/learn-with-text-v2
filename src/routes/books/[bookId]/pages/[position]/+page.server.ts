@@ -30,6 +30,20 @@ export const actions: Actions = {
 			throw e;
 		}
 	},
+	/** Sets only the Status, creating the Term for an Unknown Word. */
+	setStatus: async ({ request }) => {
+		const form = await request.formData();
+		try {
+			await saveTerm(database(), {
+				languageId: Number(form.get('languageId')),
+				text: String(form.get('text') ?? ''),
+				status: String(form.get('status') ?? '')
+			});
+		} catch (e) {
+			if (e instanceof InvalidTerm) return fail(400, { message: e.message });
+			throw e;
+		}
+	},
 	deleteTerm: async ({ request }) => {
 		const form = await request.formData();
 		await deleteTerm(database(), Number(form.get('id')));
