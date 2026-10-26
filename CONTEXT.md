@@ -25,7 +25,7 @@ Where you are in a Book: its current Page and Sentence. The reading screen and t
 _Avoid_: Position, resume point, current page
 
 **Word**:
-One word-like piece of a Page as produced by its Language's splitting rules. Punctuation and spaces are not Words.
+One word-like piece of a Page as produced by its Language's splitting rules. Punctuation, spaces and numbers are not Words.
 _Avoid_: Token (except when talking about the parser)
 
 **Normalised form**:
