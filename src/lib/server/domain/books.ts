@@ -1,7 +1,8 @@
 import type { Kysely } from 'kysely';
 import type { Database } from '../db/schema';
 import { getLanguage, type Language } from './languages';
-import { parserFor, type ParsedParagraph, type Parser } from './parsing';
+import { normalise, parserFor, type Parser, type Token } from './parsing';
+import { findTerms, type TermView } from './terms';
 
 export const PAGE_WORD_TARGET = 250;
 
@@ -19,11 +20,18 @@ export interface BookSummary {
 	languageName: string;
 }
 
+/** A Token on the reading screen. Words carry their Normalised form as `key`. */
+export interface ReadingToken extends Token {
+	key?: string;
+}
+
 export interface PageView {
 	book: { id: number; title: string; pageCount: number };
 	language: Language;
 	position: number;
-	paragraphs: ParsedParagraph[];
+	paragraphs: { sentences: { tokens: ReadingToken[] }[] }[];
+	/** Terms for the Words on this Page, keyed by Normalised form. A Word with no entry is Unknown. */
+	terms: Record<string, TermView>;
 }
 
 /**
@@ -120,10 +128,19 @@ export async function getPage(db: Kysely<Database>, bookId: number, position: nu
 
 	const language = await getLanguage(db, row.language_id);
 	if (!language) return undefined;
+	const paragraphs = parserFor(language)
+		.parse(row.text)
+		.map((p) => ({
+			sentences: p.sentences.map((s) => ({
+				tokens: s.tokens.map((t): ReadingToken => (t.isWord ? { ...t, key: normalise(t.text, language) } : t))
+			}))
+		}));
+	const keys = paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.tokens.flatMap((t) => (t.key ? [t.key] : []))));
 	return {
 		book: { id: row.bookId, title: row.title, pageCount: Number(row.pageCount) },
 		language,
 		position,
-		paragraphs: parserFor(language).parse(row.text)
+		paragraphs,
+		terms: await findTerms(db, language.id, keys)
 	};
 }

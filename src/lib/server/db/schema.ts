@@ -33,9 +33,33 @@ export interface SentenceTable {
 	text: string;
 }
 
+export type StatusValue = 'learning1' | 'learning2' | 'learning3' | 'learning4' | 'known' | 'ignored';
+
+export interface TermTable {
+	id: Generated<number>;
+	language_id: number;
+	/** The Term as you first saved it, for display. */
+	text: string;
+	/** The Normalised form; unique per Language. */
+	normalised: string;
+	status: StatusValue;
+	created_at: string;
+}
+
+export interface TranslationTable {
+	id: Generated<number>;
+	term_id: number;
+	/** 1-based order within the Term's Translations. */
+	position: number;
+	text: string;
+	source: 'you' | 'wiktionary' | 'tutor';
+}
+
 export interface Database {
 	language: LanguageTable;
 	book: BookTable;
 	page: PageTable;
 	sentence: SentenceTable;
+	term: TermTable;
+	translation: TranslationTable;
 }
