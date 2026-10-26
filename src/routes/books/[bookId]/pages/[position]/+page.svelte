@@ -1,17 +1,8 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
+	import TermForm from './TermForm.svelte';
 
 	let { data, form }: PageProps = $props();
-
-	const statusLabels = {
-		learning1: '1',
-		learning2: '2',
-		learning3: '3',
-		learning4: '4',
-		known: 'Known',
-		ignored: 'Ignored'
-	} as const;
 
 	/** The Word whose Term form is open, by Normalised form, and its text as clicked. */
 	let selected = $state<{ key: string; text: string } | undefined>();
@@ -56,41 +47,8 @@
 
 	{#if selected}
 		<aside class="term-panel">
-			{#key `${selected.key}:${term?.id}:${term?.status}:${term?.translation}`}
-				<h2 lang={data.language.code} {dir}>{term?.text ?? selected.text}</h2>
-				<p><small>{term ? 'Term' : 'Unknown'}</small></p>
-
-				<form method="POST" action="?/saveTerm" use:enhance>
-					<input type="hidden" name="languageId" value={data.language.id} />
-					<input type="hidden" name="text" value={term?.text ?? selected.text} />
-
-					<fieldset class="statuses">
-						<legend>Status</legend>
-						{#each Object.entries(statusLabels) as [value, label] (value)}
-							<label class="status-option {value}">
-								<input type="radio" name="status" {value} checked={(term?.status ?? 'learning1') === value} />
-								{label}
-							</label>
-						{/each}
-					</fieldset>
-
-					<label>
-						Translation
-						<input name="translation" value={term?.translation ?? ''} autocomplete="off" />
-					</label>
-
-					{#if form?.message}
-						<p class="error" role="alert">{form.message}</p>
-					{/if}
-					<button type="submit">Save</button>
-				</form>
-
-				{#if term}
-					<form method="POST" action="?/deleteTerm" use:enhance>
-						<input type="hidden" name="id" value={term.id} />
-						<button type="submit" class="delete">Delete Term</button>
-					</form>
-				{/if}
+			{#key `${selected.key}:${JSON.stringify(term)}`}
+				<TermForm language={data.language} text={selected.text} {term} error={form?.message} />
 			{/key}
 			<button type="button" class="close" onclick={() => (selected = undefined)}>Close</button>
 		</aside>
@@ -143,45 +101,6 @@
 		padding: 1rem;
 		border: 1px solid #ccc;
 		border-radius: 0.5rem;
-	}
-	.term-panel h2 {
-		margin: 0;
-	}
-	.term-panel form {
-		display: grid;
-		gap: 0.75rem;
-	}
-	.term-panel label {
-		display: grid;
-		gap: 0.25rem;
-	}
-	.statuses {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.25rem;
-		border: none;
-		padding: 0;
-	}
-	.statuses legend {
-		padding: 0;
-		margin-bottom: 0.25rem;
-	}
-	.status-option {
-		display: flex !important;
-		align-items: center;
-		gap: 0.2rem;
-		padding: 0.15rem 0.4rem;
-		border-radius: 0.25rem;
-	}
-	.status-option.known,
-	.status-option.ignored {
-		border: 1px solid #ccc;
-	}
-	.error {
-		color: #b00020;
-	}
-	.delete {
-		justify-self: start;
 	}
 	.close {
 		justify-self: end;

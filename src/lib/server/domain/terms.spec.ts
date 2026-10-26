@@ -12,37 +12,81 @@ async function setup() {
 	return { db, byName };
 }
 
+const texts = (term: { translations: { text: string }[] } | undefined) => term?.translations.map((t) => t.text);
+
 describe('saveTerm', () => {
-	it('creates a Term with its Translation', async () => {
+	it('creates a Term with its Translations in order, from you', async () => {
 		const { db, byName } = await setup();
-		const id = await saveTerm(db, { languageId: byName.Russian, text: 'Чита́ть', status: 'learning2', translation: ' to read ' });
-		expect(await findTerms(db, byName.Russian, ['читать'])).toEqual({
-			читать: { id, text: 'чита́ть', status: 'learning2', translation: 'to read' }
+		const id = await saveTerm(db, {
+			languageId: byName.Russian,
+			text: 'Чита́ть',
+			status: 'learning2',
+			translations: [{ text: ' to read ' }, { text: '' }, { text: 'to study' }]
 		});
+		const term = (await findTerms(db, byName.Russian, ['читать'])).читать;
+		expect(term).toMatchObject({ id, text: 'чита́ть', status: 'learning2', pronunciation: '' });
+		expect(term.translations.map(({ text, source }) => ({ text, source }))).toEqual([
+			{ text: 'to read', source: 'you' },
+			{ text: 'to study', source: 'you' }
+		]);
 	});
 
 	it('updates the Term with the same Normalised form instead of adding one', async () => {
 		const { db, byName } = await setup();
-		const first = await saveTerm(db, { languageId: byName.Russian, text: 'читать', status: 'learning1', translation: 'read' });
-		const second = await saveTerm(db, { languageId: byName.Russian, text: 'ЧИТА́ТЬ', status: 'known', translation: '' });
+		const first = await saveTerm(db, { languageId: byName.Russian, text: 'читать', status: 'learning1', translations: [{ text: 'read' }] });
+		const second = await saveTerm(db, { languageId: byName.Russian, text: 'ЧИТА́ТЬ', status: 'known', translations: [] });
 		expect(second).toBe(first);
-		expect(await findTerms(db, byName.Russian, ['читать'])).toEqual({
-			читать: { id: first, text: 'читать', status: 'known', translation: '' }
-		});
+		expect((await findTerms(db, byName.Russian, ['читать'])).читать).toMatchObject({ text: 'читать', status: 'known', translations: [] });
 		expect(await db.selectFrom('term').select('id').execute()).toHaveLength(1);
+	});
+
+	it('reorders Translations and keeps the Source of unchanged ones', async () => {
+		const { db, byName } = await setup();
+		const id = await saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'learning1', translations: [{ text: 'cat' }] });
+		await db.updateTable('translation').set({ source: 'wiktionary' }).where('term_id', '=', id).execute();
+		const [wiktionary] = (await findTerms(db, byName.Russian, ['кот'])).кот.translations;
+
+		await saveTerm(db, {
+			languageId: byName.Russian,
+			text: 'кот',
+			status: 'learning1',
+			translations: [{ text: 'tomcat' }, { id: wiktionary.id, text: 'cat' }]
+		});
+		const after = (await findTerms(db, byName.Russian, ['кот'])).кот.translations;
+		expect(after.map(({ text, source }) => ({ text, source }))).toEqual([
+			{ text: 'tomcat', source: 'you' },
+			{ text: 'cat', source: 'wiktionary' }
+		]);
+	});
+
+	it('makes an edited Translation yours', async () => {
+		const { db, byName } = await setup();
+		const id = await saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'learning1', translations: [{ text: 'cat' }] });
+		await db.updateTable('translation').set({ source: 'tutor' }).where('term_id', '=', id).execute();
+		const [tutor] = (await findTerms(db, byName.Russian, ['кот'])).кот.translations;
+
+		await saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'learning1', translations: [{ id: tutor.id, text: 'male cat' }] });
+		expect((await findTerms(db, byName.Russian, ['кот'])).кот.translations[0]).toMatchObject({ text: 'male cat', source: 'you' });
+	});
+
+	it('removes Translations left out', async () => {
+		const { db, byName } = await setup();
+		await saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'learning1', translations: [{ text: 'cat' }, { text: 'tomcat' }] });
+		const [cat] = (await findTerms(db, byName.Russian, ['кот'])).кот.translations;
+		await saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'learning1', translations: [{ id: cat.id, text: 'cat' }] });
+		expect(texts((await findTerms(db, byName.Russian, ['кот'])).кот)).toEqual(['cat']);
 	});
 
 	it('keeps Terms apart per Language', async () => {
 		const { db, byName } = await setup();
-		await saveTerm(db, { languageId: byName.Bosnian, text: 'da', status: 'known', translation: '' });
+		await saveTerm(db, { languageId: byName.Bosnian, text: 'da', status: 'known', translations: [] });
 		expect(await findTerms(db, byName.Russian, ['da'])).toEqual({});
 	});
 
 	it('matches Farsi Words spelled with Arabic letters', async () => {
 		const { db, byName } = await setup();
-		await saveTerm(db, { languageId: byName.Farsi, text: 'كتاب', status: 'learning1', translation: 'book' });
-		const terms = await findTerms(db, byName.Farsi, ['کتاب']);
-		expect(terms['کتاب']?.translation).toBe('book');
+		await saveTerm(db, { languageId: byName.Farsi, text: 'كتاب', status: 'learning1', translations: [{ text: 'book' }] });
+		expect(texts((await findTerms(db, byName.Farsi, ['کتاب']))['کتاب'])).toEqual(['book']);
 	});
 
 	it.each([
@@ -51,16 +95,47 @@ describe('saveTerm', () => {
 		[{ languageId: 999 }, 'Language']
 	])('rejects %o', async (override, message) => {
 		const { db, byName } = await setup();
-		const input = { languageId: byName.Russian, text: 'кот', status: 'learning1', translation: '', ...override };
+		const input = { languageId: byName.Russian, text: 'кот', status: 'learning1', translations: [], ...override };
 		await expect(saveTerm(db, input)).rejects.toThrow(InvalidTerm);
 		await expect(saveTerm(db, input)).rejects.toThrow(message);
+	});
+});
+
+describe('Pronunciation', () => {
+	it('fills in pinyin for a new Chinese Term', async () => {
+		const { db, byName } = await setup();
+		await saveTerm(db, { languageId: byName.Chinese, text: '喜欢', status: 'learning1', translations: [] });
+		expect((await findTerms(db, byName.Chinese, ['喜欢']))['喜欢'].pronunciation).toBe('xǐhuan');
+	});
+
+	it('uses the Pronunciation you give instead', async () => {
+		const { db, byName } = await setup();
+		await saveTerm(db, { languageId: byName.Chinese, text: '长大', status: 'learning1', pronunciation: 'zhǎng dà', translations: [] });
+		expect((await findTerms(db, byName.Chinese, ['长大']))['长大'].pronunciation).toBe('zhǎng dà');
+	});
+
+	it('lets you clear it on an existing Term, and keeps it when omitted', async () => {
+		const { db, byName } = await setup();
+		const save = (pronunciation?: string) =>
+			saveTerm(db, { languageId: byName.Chinese, text: '你好', status: 'learning1', pronunciation, translations: [] });
+		await save();
+		await save(undefined);
+		expect((await findTerms(db, byName.Chinese, ['你好']))['你好'].pronunciation).toBe('nǐhǎo');
+		await save('');
+		expect((await findTerms(db, byName.Chinese, ['你好']))['你好'].pronunciation).toBe('');
+	});
+
+	it('is not filled in for other Languages', async () => {
+		const { db, byName } = await setup();
+		await saveTerm(db, { languageId: byName.Farsi, text: 'کتاب', status: 'learning1', translations: [] });
+		expect((await findTerms(db, byName.Farsi, ['کتاب']))['کتاب'].pronunciation).toBe('');
 	});
 });
 
 describe('deleteTerm', () => {
 	it('removes the Term and its Translations', async () => {
 		const { db, byName } = await setup();
-		const id = await saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'learning1', translation: 'cat' });
+		const id = await saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'learning1', translations: [{ text: 'cat' }] });
 		await deleteTerm(db, id);
 		expect(await findTerms(db, byName.Russian, ['кот'])).toEqual({});
 		expect(await db.selectFrom('translation').select('id').execute()).toEqual([]);
@@ -71,11 +146,13 @@ describe('getPage with Terms', () => {
 	it('gives every Word its Normalised form and returns the matching Terms', async () => {
 		const { db, byName } = await setup();
 		const bookId = await createBook(db, { languageId: byName.Russian, title: 'Кот', text: 'Кот чита́ет. Кот спит.' });
-		const termId = await saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'learning3', translation: 'cat' });
+		const termId = await saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'learning3', translations: [{ text: 'cat' }] });
 
 		const page = await getPage(db, bookId, 1);
 		const words = page!.paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.tokens.filter((t) => t.isWord)));
 		expect(words.map((w) => w.key)).toEqual(['кот', 'читает', 'кот', 'спит']);
-		expect(page!.terms).toEqual({ кот: { id: termId, text: 'кот', status: 'learning3', translation: 'cat' } });
+		expect(Object.keys(page!.terms)).toEqual(['кот']);
+		expect(page!.terms.кот).toMatchObject({ id: termId, status: 'learning3' });
+		expect(texts(page!.terms.кот)).toEqual(['cat']);
 	});
 });

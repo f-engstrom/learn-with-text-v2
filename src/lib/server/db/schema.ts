@@ -43,8 +43,12 @@ export interface TermTable {
 	/** The Normalised form; unique per Language. */
 	normalised: string;
 	status: StatusValue;
+	/** Optional reading aid, e.g. pinyin; '' when there is none. */
+	pronunciation: Generated<string>;
 	created_at: string;
 }
+
+export type SourceValue = 'you' | 'wiktionary' | 'tutor';
 
 export interface TranslationTable {
 	id: Generated<number>;
@@ -52,7 +56,7 @@ export interface TranslationTable {
 	/** 1-based order within the Term's Translations. */
 	position: number;
 	text: string;
-	source: 'you' | 'wiktionary' | 'tutor';
+	source: SourceValue;
 }
 
 export interface Database {

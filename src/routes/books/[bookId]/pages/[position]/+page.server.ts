@@ -13,12 +13,17 @@ export const load: PageServerLoad = async ({ params }) => {
 export const actions: Actions = {
 	saveTerm: async ({ request }) => {
 		const form = await request.formData();
+		const ids = form.getAll('translationId').map(String);
 		try {
 			await saveTerm(database(), {
 				languageId: Number(form.get('languageId')),
 				text: String(form.get('text') ?? ''),
 				status: String(form.get('status') ?? ''),
-				translation: String(form.get('translation') ?? '')
+				pronunciation: String(form.get('pronunciation') ?? ''),
+				translations: form.getAll('translationText').map((text, i) => ({
+					id: ids[i] ? Number(ids[i]) : undefined,
+					text: String(text)
+				}))
 			});
 		} catch (e) {
 			if (e instanceof InvalidTerm) return fail(400, { message: e.message });
