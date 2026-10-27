@@ -10,9 +10,8 @@
 	<title>Feeds · Reader</title>
 </svelte:head>
 
-<p><a href="/">← Books</a></p>
 <h1>Feeds</h1>
-<p>News feeds per Language. Their latest articles show up among the Suggestions, ranked like the rest.</p>
+<p class="lede">News feeds per Language. Their latest articles show up among the Suggestions, ranked like the rest.</p>
 
 {#each data.languages as language (language.id)}
 	{@const feeds = data.feeds.filter((f) => f.languageId === language.id)}
@@ -20,11 +19,13 @@
 	{#if feeds.length === 0}
 		<p class="note">No Feeds.</p>
 	{:else}
-		<ul class="feeds">
+		<ul class="feeds card">
 			{#each feeds as feed (feed.id)}
 				<li>
-					<span lang={language.code} dir="auto">{feed.name}</span>
-					<small><a href={feed.url} target="_blank" rel="noreferrer">{feed.url}</a></small>
+					<span class="name">
+						<strong lang={language.code} dir="auto">{feed.name}</strong>
+						<small><a href={feed.url} target="_blank" rel="noreferrer">{feed.url}</a></small>
+					</span>
 					<form method="POST" action="?/remove" use:enhance>
 						<input type="hidden" name="id" value={feed.id} />
 						<button aria-label="Remove {feed.name}">Remove</button>
@@ -39,7 +40,7 @@
 <form
 	method="POST"
 	action="?/add"
-	class="add"
+	class="add card"
 	use:enhance={() => {
 		adding = true;
 		return async ({ update }) => {
@@ -73,36 +74,45 @@
 <style>
 	.feeds {
 		display: grid;
-		gap: 0.35rem;
-		padding: 0;
+		margin: 0;
+		padding-block: 0.25rem;
 		list-style: none;
 	}
 	.feeds li {
 		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		gap: 0.75rem;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		padding-block: 0.6rem;
+	}
+	.feeds li + li {
+		border-top: 1px solid var(--border);
+	}
+	.name {
+		display: grid;
+		min-width: 0;
 	}
 	.feeds small {
-		color: #555;
 		overflow-wrap: anywhere;
+	}
+	.feeds small a {
+		color: inherit;
+	}
+	.feeds button {
+		color: var(--danger);
 	}
 	.add {
 		display: grid;
 		gap: 0.75rem;
 		max-width: 36rem;
 	}
-	label {
-		display: grid;
-		gap: 0.25rem;
-	}
 	.add button {
 		justify-self: start;
 	}
 	.note {
-		color: #555;
+		color: var(--muted);
 	}
 	.error {
-		color: #b00020;
+		color: var(--danger);
 	}
 </style>

@@ -8,10 +8,10 @@
 	<title>New Book · Reader</title>
 </svelte:head>
 
-<p><a href="/">← Books</a></p>
 <h1>New Book</h1>
+<p class="lede">Paste a text, fetch an article from a web address, or upload a text file.</p>
 
-<form method="POST" action="?/create" class="new-book" enctype="multipart/form-data">
+<form method="POST" action="?/create" class="new-book card" enctype="multipart/form-data">
 	{#if form?.message}
 		<p class="error" role="alert">
 			{form.message}
@@ -58,7 +58,9 @@
 	</label>
 	<small>UTF-8 text, up to 5 MB. A line containing only <code>---</code> starts a new Page.</small>
 
-	<button type="submit">Create Book</button>
+	<div class="actions">
+		<button type="submit" class="primary">Create Book</button>
+	</div>
 </form>
 
 <style>
@@ -67,20 +69,28 @@
 		gap: 0.75rem;
 		max-width: 48rem;
 	}
-	label {
-		display: grid;
-		gap: 0.25rem;
+	/* Let fields shrink below their natural width on a phone. */
+	.new-book > *,
+	.new-book label > * {
+		min-width: 0;
 	}
-	.error {
-		color: #b00020;
+	.new-book small {
+		margin-top: -0.4rem;
+	}
+	.new-book textarea {
+		font-family: var(--font-text);
+		font-size: 1.05rem;
+	}
+	.actions {
+		padding-top: 0.5rem;
 	}
 	.address {
 		display: grid;
-		grid-template-columns: 1fr auto;
+		grid-template-columns: minmax(0, 1fr) auto;
 		gap: 0.5rem;
 		align-items: end;
 	}
 	.fetched {
-		color: #2f7a3a;
+		color: var(--ok);
 	}
 </style>

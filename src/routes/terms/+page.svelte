@@ -50,10 +50,9 @@
 	<title>Terms · Reader</title>
 </svelte:head>
 
-<p><a href="/">← Books</a></p>
 <h1>Terms</h1>
 
-<form method="GET" class="filters" data-sveltekit-keepfocus data-sveltekit-replacestate>
+<form method="GET" class="filters card" data-sveltekit-keepfocus data-sveltekit-replacestate>
 	<label>
 		Language
 		<select name="language" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
@@ -103,8 +102,8 @@
 {/if}
 
 {#if data.terms.length > 0}
-	<div class="scroll">
-	<table class="terms">
+	<div class="table-wrap">
+	<table class="terms data">
 		<thead>
 			<tr>
 				<th scope="col">Term</th>
@@ -178,83 +177,68 @@
 	.filters {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.75rem;
+		gap: 0.75rem 1rem;
 		align-items: end;
+		margin-bottom: 1rem;
 	}
 	.filters label {
-		display: grid;
-		gap: 0.25rem;
+		font-size: 0.9rem;
 	}
-	.summary a {
-		margin-inline-start: 0.75rem;
+	.filters input[type='search'] {
+		min-width: 14rem;
 	}
-	.terms {
-		border-collapse: collapse;
-		width: 100%;
-		max-width: 64rem;
-	}
-	.terms th,
-	.terms td {
-		padding: 0.4rem 0.75rem 0.4rem 0;
-		border-bottom: 1px solid #e3e3e3;
-		text-align: start;
-		vertical-align: top;
+	.summary {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem;
+		color: var(--muted);
 	}
 	.term {
-		font-size: 1.1rem;
+		font-family: var(--font-text);
+		font-size: 1.15rem;
+	}
+	.terms select {
+		padding-block: 0.25rem;
 	}
 	.pronunciation,
 	.children {
 		display: block;
-		color: #555;
+		color: var(--muted);
 	}
 	.source {
-		padding: 0 0.3rem;
-		border-radius: 0.25rem;
-		background: #eee;
+		padding: 0 0.35rem;
+		border-radius: 999px;
+		background: var(--surface-2);
+		color: var(--muted);
+		font-size: 0.8rem;
 	}
 	.actions {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.35rem;
 	}
-	/* On a narrow window the table scrolls, not the page. */
-	.scroll {
-		overflow-x: auto;
-	}
 	.delete {
-		color: #b00020;
-	}
-	tr.open td {
-		border-bottom: none;
+		color: var(--danger);
 	}
 	.editor td {
-		padding: 0.5rem 1rem 1rem;
-		background: #fafafa;
+		padding: 1rem 1.25rem 1.25rem;
+		border-top: none;
+		background: var(--surface-2);
 	}
 	.editor :global(form) {
 		max-width: 28rem;
 	}
 	.status.learning1 {
-		background: #f8b7a0;
+		background: var(--status-learning1);
 	}
 	.status.learning2 {
-		background: #f9cf9d;
+		background: var(--status-learning2);
 	}
 	.status.learning3 {
-		background: #f6e3a1;
+		background: var(--status-learning3);
 	}
 	.status.learning4 {
-		background: #e3ecb3;
-	}
-	.error {
-		color: #b00020;
-	}
-	.visually-hidden {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip: rect(0 0 0 0);
+		background: var(--status-learning4);
 	}
 </style>

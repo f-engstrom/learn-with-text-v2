@@ -84,13 +84,13 @@
 	}
 	.note {
 		margin: 0;
-		color: #555;
+		color: var(--muted);
 	}
 	.part {
 		margin: 0.25rem 0 0;
 		font-size: 0.85rem;
 		font-variant: small-caps;
-		color: #555;
+		color: var(--muted);
 	}
 	ol {
 		display: grid;
@@ -110,11 +110,11 @@
 		cursor: pointer;
 	}
 	button:hover:not(:disabled) {
-		border-color: #9db8ea;
-		background: #f2f6fd;
+		border-color: var(--accent);
+		background: var(--accent-soft);
 	}
 	button:disabled {
-		color: #2f7a3a;
+		color: var(--ok);
 		cursor: default;
 	}
 </style>

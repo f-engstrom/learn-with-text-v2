@@ -166,13 +166,13 @@
 	{#if error}
 		<p class="error" role="alert">{error}</p>
 	{/if}
-	<button type="submit">Save</button>
+	<button type="submit" class="primary save">Save</button>
 </form>
 
 {#if term}
 	<form method="POST" action={actionUrl('deleteTerm', page.url.search)} use:enhance>
 		<input type="hidden" name="id" value={term.id} />
-		<button type="submit" class="delete">Delete Term</button>
+		<button type="submit" class="delete danger">Delete Term</button>
 	</form>
 {/if}
 
@@ -183,7 +183,7 @@
 	.pronunciation {
 		margin: 0;
 		font-size: 1.1rem;
-		color: #555;
+		color: var(--muted);
 	}
 	form {
 		display: grid;
@@ -215,20 +215,20 @@
 		border-radius: 0.25rem;
 	}
 	.status-option.learning1 {
-		background: #f8b7a0;
+		background: var(--status-learning1);
 	}
 	.status-option.learning2 {
-		background: #f9cf9d;
+		background: var(--status-learning2);
 	}
 	.status-option.learning3 {
-		background: #f6e3a1;
+		background: var(--status-learning3);
 	}
 	.status-option.learning4 {
-		background: #e3ecb3;
+		background: var(--status-learning4);
 	}
 	.status-option.known,
 	.status-option.ignored {
-		border: 1px solid #ccc;
+		border: 1px solid var(--border);
 	}
 	.translations ol {
 		display: grid;
@@ -247,10 +247,10 @@
 	.source {
 		padding: 0 0.3rem;
 		border-radius: 0.25rem;
-		background: #eee;
+		background: var(--surface-2);
 	}
 	.error {
-		color: #b00020;
+		color: var(--danger);
 	}
 	.follows {
 		display: flex;
@@ -259,7 +259,10 @@
 	}
 	.parent-status {
 		margin: -0.5rem 0 0;
-		color: #555;
+		color: var(--muted);
+	}
+	.save {
+		justify-self: start;
 	}
 	.delete {
 		justify-self: start;

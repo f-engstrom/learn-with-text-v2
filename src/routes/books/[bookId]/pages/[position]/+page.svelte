@@ -215,26 +215,51 @@
 	<title>{data.book.title} · Reader</title>
 </svelte:head>
 
-<p><a href="/">← Books</a></p>
-<h1 lang={data.language.code} {dir}>{data.book.title}</h1>
+{#snippet keys()}
+	<dl class="keys">
+		<dt><kbd>←</kbd> <kbd>→</kbd></dt>
+		<dd>Previous or next Word</dd>
+		<dt><kbd>↑</kbd> <kbd>↓</kbd></dt>
+		<dd>Previous or next Sentence</dd>
+		<dt><kbd>Shift</kbd> + <kbd>←</kbd> <kbd>→</kbd></dt>
+		<dd>Select a phrase (or Shift-click)</dd>
+		<dt><kbd>1</kbd>–<kbd>4</kbd></dt>
+		<dd>Learning 1–4</dd>
+		<dt><kbd>K</kbd> <kbd>I</kbd></dt>
+		<dd>Known, Ignored</dd>
+		<dt><kbd>Enter</kbd></dt>
+		<dd>Open the Term form</dd>
+		<dt><kbd>P</kbd> <kbd>⌘V</kbd></dt>
+		<dd>Paste as Translation</dd>
+		<dt><kbd>Esc</kbd></dt>
+		<dd>Close</dd>
+	</dl>
+{/snippet}
+
 {#snippet pages()}
-	<nav class="pages">
+	<nav class="pages" aria-label="Pages">
 		{#if data.position > 1}
-			<a href="/books/{data.book.id}/pages/{data.position - 1}">← Previous</a>
+			<a class="button" href="/books/{data.book.id}/pages/{data.position - 1}">← Previous</a>
+		{:else}
+			<span></span>
 		{/if}
-		<small>Page {data.position} of {data.book.pageCount}{data.read ? ' · Read' : ''}</small>
+		<span class="position">
+			Page {data.position} of {data.book.pageCount}
+			{#if data.read}<span class="tag read">Read</span>{/if}
+		</span>
 		{#if data.position < data.book.pageCount}
-			<a href="/books/{data.book.id}/pages/{data.position + 1}">Next →</a>
+			<a class="button" href="/books/{data.book.id}/pages/{data.position + 1}">Next →</a>
+		{:else}
+			<span></span>
 		{/if}
 	</nav>
 {/snippet}
+
+<header class="book">
+	<h1 lang={data.language.code} {dir}>{data.book.title}</h1>
+	<span class="tag">{data.language.name}</span>
+</header>
 {@render pages()}
-<p class="keys">
-	<small
-		><kbd>←</kbd> <kbd>→</kbd> Word · <kbd>Shift</kbd>+<kbd>←</kbd> <kbd>→</kbd> or Shift-click: phrase · <kbd>↑</kbd> <kbd>↓</kbd> Sentence · <kbd>1</kbd>–<kbd>4</kbd> Learning ·
-		<kbd>K</kbd> Known · <kbd>I</kbd> Ignored · <kbd>Enter</kbd> Term form · <kbd>P</kbd> or <kbd>⌘V</kbd> paste as Translation · <kbd>Esc</kbd> close</small
-	>
-</p>
 {#if error}
 	<p class="error" role="alert">{error}</p>
 {/if}
@@ -264,126 +289,225 @@
 				{/each}
 			</p>
 		{/each}
-		<form method="POST" action="?/markRead" class="mark-read" use:enhance>
-			<button>Mark as read</button>
-			<button name="restKnown" value="true">Mark as read, rest Known</button>
-		</form>
-		{@render pages()}
 	</article>
 
-	{#if open && selected}
-		<aside class="term-panel">
-			{#key `${selected.key}:${JSON.stringify(term)}`}
-				<TermForm bind:this={termForm} language={data.language} text={selected.text} {term} error={form?.message} />
-			{/key}
-			<WiktionaryPanel
-				language={data.language}
-				termKey={selected.key}
-				text={selected.text}
-				translations={term?.translations.map((t) => t.text) ?? []}
-				onadd={(definition) => termForm?.addTranslation(definition, 'wiktionary')}
-			/>
-			<Dictionaries dictionaries={data.dictionaries} term={selected.key} bind:chosen={dictionary} />
-			<button type="button" class="close" onclick={() => (open = false)}>Close</button>
-		</aside>
-	{/if}
+	<aside class="side">
+		{#if open && selected}
+			<div class="term-panel card">
+				<button type="button" class="close" aria-label="Close the Term form" onclick={() => (open = false)}>✕</button>
+				{#key `${selected.key}:${JSON.stringify(term)}`}
+					<TermForm bind:this={termForm} language={data.language} text={selected.text} {term} error={form?.message} />
+				{/key}
+				<WiktionaryPanel
+					language={data.language}
+					termKey={selected.key}
+					text={selected.text}
+					translations={term?.translations.map((t) => t.text) ?? []}
+					onadd={(definition) => termForm?.addTranslation(definition, 'wiktionary')}
+				/>
+				<Dictionaries dictionaries={data.dictionaries} term={selected.key} bind:chosen={dictionary} />
+			</div>
+		{:else}
+			<div class="help card">
+				<p>Click a Word, or press <kbd>→</kbd> to start.</p>
+				<details open>
+					<summary>Keys</summary>
+					{@render keys()}
+				</details>
+				<p class="legend">
+					<span class="swatch unknown"></span> Unknown
+					<span class="swatch learning1"></span> 1
+					<span class="swatch learning2"></span> 2
+					<span class="swatch learning3"></span> 3
+					<span class="swatch learning4"></span> 4
+					<span class="swatch known"></span> Known
+				</p>
+			</div>
+		{/if}
+	</aside>
 </div>
 
+<footer class="end">
+	<form method="POST" action="?/markRead" class="mark-read" use:enhance>
+		<button class="primary">Mark as read</button>
+		<button name="restKnown" value="true">Mark as read, rest Known</button>
+	</form>
+	{@render pages()}
+</footer>
+
 <style>
+	.book {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.5rem 1rem;
+		margin-bottom: 1rem;
+	}
+	.book h1 {
+		margin: 0;
+	}
+	.pages {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		gap: 1rem;
+		max-width: 44rem;
+	}
+	.pages > :first-child {
+		justify-self: start;
+	}
+	.pages > :last-child {
+		justify-self: end;
+	}
+	.position {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--muted);
+		font-size: 0.95rem;
+		font-variant-numeric: tabular-nums;
+	}
+	.tag.read {
+		background: color-mix(in srgb, var(--ok) 18%, transparent);
+		color: var(--ok);
+	}
 	.reader {
 		display: grid;
-		grid-template-columns: minmax(0, 48rem) minmax(18rem, 28rem);
-		gap: 2rem;
+		grid-template-columns: minmax(0, 44rem) minmax(20rem, 1fr);
+		gap: 3rem;
 		align-items: start;
+		margin-top: 1.5rem;
 	}
 	.page {
-		font-size: 1.25rem;
-		line-height: 1.9;
+		font-family: var(--font-text);
+		font-size: 1.3rem;
+		line-height: 1.95;
+	}
+	.page p {
+		margin: 0 0 1.1em;
 	}
 	/* Inline spans, not buttons: a button would let a line break before the punctuation after it. */
 	.word {
-		padding: 0 0.05em;
-		border-radius: 0.2em;
+		padding: 0.05em 0.08em;
+		border-radius: 0.25em;
 		cursor: pointer;
 	}
 	.word:focus {
 		outline: none;
 	}
 	.word.current {
-		outline: 2px solid #3366cc;
+		outline: 2px solid var(--accent);
+		outline-offset: 1px;
 	}
 	.word.phrase {
-		box-shadow: 0 0 0 2px #9db8ea;
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
 	}
 	/* A Multi-word Term reads as one unit. */
 	.word.multi {
-		text-decoration: underline dotted #888;
-		text-underline-offset: 0.2em;
+		text-decoration: underline dotted var(--muted);
+		text-underline-offset: 0.25em;
 	}
 	.unknown {
-		background: #d6ebff;
+		background: var(--status-unknown);
 	}
 	.learning1 {
-		background: #f8b7a0;
+		background: var(--status-learning1);
 	}
 	.learning2 {
-		background: #f9cf9d;
+		background: var(--status-learning2);
 	}
 	.learning3 {
-		background: #f6e3a1;
+		background: var(--status-learning3);
 	}
 	.learning4 {
-		background: #e3ecb3;
+		background: var(--status-learning4);
 	}
 	.word.ignored {
-		color: #777;
+		color: var(--status-ignored);
 	}
-	.pages {
-		display: flex;
-		gap: 1rem;
-		align-items: baseline;
-	}
-	.mark-read {
-		display: flex;
-		gap: 0.5rem;
-		margin-block: 1.5rem 0.5rem;
-	}
-	/* The Page text may be right to left; the controls stay left to right. */
-	.page .pages,
-	.mark-read {
-		direction: ltr;
-		font-size: 1rem;
-	}
-	.keys {
-		color: #555;
-	}
-	kbd {
-		padding: 0 0.3em;
-		border: 1px solid #ccc;
-		border-radius: 0.2em;
-		font-size: 0.85em;
-	}
-	.error {
-		color: #b00020;
-	}
-	.term-panel {
+	.side {
 		position: sticky;
 		top: 1rem;
+	}
+	.term-panel {
+		position: relative;
 		/* With a Dictionary open the panel is taller than the window, so it scrolls on its own. */
 		max-height: calc(100vh - 2rem);
 		overflow-y: auto;
 		display: grid;
-		gap: 0.75rem;
-		padding: 1rem;
-		border: 1px solid #ccc;
-		border-radius: 0.5rem;
+		gap: 1rem;
+		box-sizing: border-box;
 	}
 	.close {
-		justify-self: end;
+		position: absolute;
+		top: 0.75rem;
+		inset-inline-end: 0.75rem;
+		padding: 0.2rem 0.5rem;
 	}
-	@media (max-width: 50rem) {
+	.help p {
+		margin: 0 0 0.75rem;
+	}
+	.help summary {
+		cursor: pointer;
+		font-weight: 600;
+		margin-bottom: 0.5rem;
+	}
+	.keys {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 0.4rem 1rem;
+		margin: 0 0 1rem;
+		font-size: 0.9rem;
+	}
+	.keys dt {
+		white-space: nowrap;
+	}
+	.keys dd {
+		margin: 0;
+		color: var(--muted);
+	}
+	.legend {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.35rem 0.4rem;
+		font-size: 0.85rem;
+		color: var(--muted);
+	}
+	.swatch {
+		display: inline-block;
+		width: 0.9rem;
+		height: 0.9rem;
+		border-radius: 0.2rem;
+		margin-inline-start: 0.35rem;
+	}
+	.swatch.known {
+		border: 1px solid var(--border);
+	}
+	.end {
+		display: grid;
+		gap: 1rem;
+		max-width: 44rem;
+		margin-top: 1rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--border);
+	}
+	.mark-read {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+	@media (max-width: 60rem) {
 		.reader {
 			grid-template-columns: 1fr;
+			gap: 1.5rem;
+		}
+		.side {
+			position: static;
+		}
+		.help details:not([open]) + .legend,
+		.help {
+			font-size: 0.95rem;
 		}
 	}
 </style>

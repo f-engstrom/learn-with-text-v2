@@ -9,10 +9,10 @@
 	<title>Topics · Reader</title>
 </svelte:head>
 
-<p><a href="/">← Books</a></p>
 <h1>Topics</h1>
-<p>Subjects you like reading about, in English. Suggestions in every Language look for articles on these.</p>
+<p class="lede">Subjects you like reading about, in English. Suggestions in every Language look for articles on these.</p>
 
+<div class="card">
 {#if data.topics.length === 0}
 	<p class="note">No Topics yet: Suggestions are random articles.</p>
 {:else}
@@ -36,12 +36,14 @@
 {#if form?.message}
 	<p class="error" role="alert">{form.message}</p>
 {/if}
+</div>
 
 <style>
 	.topics {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
+		margin: 0 0 1.25rem;
 		padding: 0;
 		list-style: none;
 	}
@@ -51,21 +53,32 @@
 		gap: 0.35rem;
 		padding: 0.2rem 0.3rem 0.2rem 0.6rem;
 		border-radius: 1rem;
-		background: #eef2f8;
+		background: var(--accent-soft);
+		color: var(--accent);
+		font-weight: 500;
 	}
 	.topics button {
+		padding: 0 0.35rem;
 		border: none;
 		background: none;
-		cursor: pointer;
+		color: inherit;
 	}
 	.add {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 0.5rem;
 	}
+	.add input {
+		flex: 1 1 16rem;
+		max-width: 28rem;
+	}
+	.card > .note {
+		margin-top: 0;
+	}
 	.note {
-		color: #555;
+		color: var(--muted);
 	}
 	.error {
-		color: #b00020;
+		color: var(--danger);
 	}
 </style>

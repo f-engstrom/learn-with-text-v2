@@ -56,19 +56,19 @@
 	}
 	.tabs button {
 		padding: 0.15rem 0.5rem;
-		border: 1px solid #ccc;
+		border: 1px solid var(--border);
 		border-radius: 0.25rem;
-		background: #f6f6f6;
+		background: var(--surface-2);
 		cursor: pointer;
 	}
 	.tabs button[aria-selected='true'] {
-		border-color: #3366cc;
-		background: #e5edfb;
+		border-color: var(--accent);
+		background: var(--accent-soft);
 	}
 	iframe {
 		width: 100%;
 		height: 28rem;
-		border: 1px solid #ccc;
+		border: 1px solid var(--border);
 		border-radius: 0.25rem;
 	}
 </style>

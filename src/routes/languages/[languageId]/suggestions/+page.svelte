@@ -28,10 +28,9 @@
 	<title>Find something to read · {data.language.name} · Reader</title>
 </svelte:head>
 
-<p><a href="/">← Books</a></p>
 <h1>Find something to read in {data.language.name}</h1>
 
-<p class="topics">
+<p class="topics lede">
 	{#if data.topics.length > 0}
 		Looking for: {data.topics.map((t) => t.text).join(', ')}.
 	{:else}
@@ -47,7 +46,7 @@
 	<a href="/feeds">Edit Feeds</a>
 </p>
 
-<fieldset class="fit">
+<fieldset class="fit card">
 	<legend>Fit range: Unknown share between</legend>
 	<label><input type="number" min="0" max="100" bind:value={min} onchange={saveFitRange} /> %</label>
 	and
@@ -92,7 +91,7 @@
 						<input type="hidden" name="kind" value={suggestion.feed ? 'feed' : 'wikipedia'} />
 						<input type="hidden" name="title" value={suggestion.title} />
 						<input type="hidden" name="url" value={suggestion.url} />
-						<button disabled={picking !== undefined}>{picking === suggestion.url ? 'Importing…' : 'Read this'}</button>
+						<button class="primary" disabled={picking !== undefined}>{picking === suggestion.url ? 'Importing…' : 'Read this'}</button>
 					</form>
 				</li>
 			{/each}
@@ -107,65 +106,66 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: 0.5rem;
-		border: none;
-		padding: 0;
-		margin: 0 0 1rem;
+		margin: 0 0 1.5rem;
+		padding-block: 0.85rem;
 	}
 	.fit legend {
 		float: left;
 		margin-inline-end: 0.5rem;
 		padding: 0;
+		font-weight: 600;
+	}
+	.fit label {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-weight: normal;
 	}
 	.fit input {
-		width: 4rem;
+		width: 4.5rem;
 	}
 	.suggestions {
 		display: grid;
-		gap: 0.5rem;
+		gap: 0.6rem;
 		padding: 0;
 		list-style: none;
-		max-width: 48rem;
 	}
 	.suggestions li {
 		display: grid;
 		grid-template-columns: 1fr auto auto;
-		gap: 1rem;
+		gap: 1.25rem;
 		align-items: center;
-		padding: 0.5rem 0.75rem;
-		border: 1px solid #ddd;
-		border-inline-start: 4px solid #ddd;
-		border-radius: 0.35rem;
+		padding: 0.85rem 1.1rem;
+		border: 1px solid var(--border);
+		border-inline-start: 4px solid var(--border);
+		border-radius: var(--radius-lg);
+		background: var(--surface);
+	}
+	.title a {
+		font-weight: 500;
 	}
 	.suggestions li.fits {
-		border-inline-start-color: #3a9a4a;
+		border-inline-start-color: var(--ok);
 	}
 	.facts {
 		display: flex;
 		gap: 0.75rem;
-		color: #555;
+		color: var(--muted);
 		font-variant-numeric: tabular-nums;
 	}
 	.fits .share {
-		color: #2f7a3a;
+		color: var(--ok);
 		font-weight: 600;
 	}
 	.off {
-		color: #999;
+		color: var(--muted);
 	}
 	.tag {
 		margin-inline-start: 0.4rem;
-		padding: 0 0.35rem;
-		border-radius: 0.25rem;
-		background: #eee;
 	}
 	.tag.feed {
-		background: #e7eefb;
-	}
-	.note {
-		color: #555;
-	}
-	.error {
-		color: #b00020;
+		background: var(--accent-soft);
+		color: var(--accent);
 	}
 	@media (max-width: 40rem) {
 		.suggestions li {
