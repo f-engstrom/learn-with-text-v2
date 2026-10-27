@@ -52,10 +52,10 @@
 	.tabs {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.25rem;
+		gap: 0.5rem 0.4rem;
 	}
 	.tabs button {
-		padding: 0.15rem 0.5rem;
+		padding: 0.3rem 0.65rem;
 		border: 1px solid var(--border);
 		border-radius: 0.25rem;
 		background: var(--surface-2);

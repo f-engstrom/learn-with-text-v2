@@ -213,18 +213,19 @@
 	}
 	legend {
 		padding: 0;
-		margin-bottom: 0.25rem;
+		margin-bottom: 0.4rem;
 	}
+	/* Rows that wrap on a phone get room between lines as well as between items. */
 	.statuses {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.25rem;
+		gap: 0.5rem 0.4rem;
 	}
 	.status-option {
 		display: flex;
 		align-items: center;
-		gap: 0.2rem;
-		padding: 0.15rem 0.4rem;
+		gap: 0.3rem;
+		padding: 0.3rem 0.6rem;
 		border-radius: 0.25rem;
 	}
 	.status-option.learning1 {
@@ -290,7 +291,7 @@
 	.row-actions {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.35rem;
+		gap: 0.5rem;
 	}
 	.row-actions button {
 		white-space: nowrap;

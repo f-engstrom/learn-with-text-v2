@@ -56,6 +56,6 @@
 	.grades {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.4rem;
+		gap: 0.5rem;
 	}
 </style>
