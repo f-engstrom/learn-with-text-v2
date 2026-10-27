@@ -191,6 +191,12 @@ export async function listBooks(db: Kysely<Database>): Promise<BookSummary[]> {
 	}));
 }
 
+/** The Book that came from this web address, if you have one. */
+export async function findBookByUrl(db: Kysely<Database>, url: string): Promise<number | undefined> {
+	const row = await db.selectFrom('book').select('id').where('url', '=', url).executeTakeFirst();
+	return row?.id;
+}
+
 /** Decodes an uploaded text file, which must be UTF-8. A byte-order mark is dropped. */
 export function textFromFile(bytes: Uint8Array): string {
 	if (bytes.length > MAX_FILE_BYTES) throw new InvalidBook('The file is larger than 5 MB.');

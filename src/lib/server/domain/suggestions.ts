@@ -1,7 +1,7 @@
 import type { Kysely } from 'kysely';
 import { DEFAULT_FIT_RANGE, type FitRange, type Suggestion } from '../../suggestions';
 import type { Database } from '../db/schema';
-import { createBook, PAGE_WORD_TARGET, splitIntoPages } from './books';
+import { createBook, findBookByUrl, PAGE_WORD_TARGET, splitIntoPages } from './books';
 import type { Language } from './languages';
 import { countWords, normalise, parserFor, type Parser } from './parsing';
 import { listTopics } from './topics';
@@ -161,8 +161,8 @@ export async function importArticle(
 ): Promise<number | undefined> {
 	const article = await source.article(language.code, title);
 	if (!article) return undefined;
-	const existing = await db.selectFrom('book').select('id').where('url', '=', article.url).executeTakeFirst();
-	if (existing) return existing.id;
+	const existing = await findBookByUrl(db, article.url);
+	if (existing !== undefined) return existing;
 	return createBook(db, {
 		languageId: language.id,
 		title: article.title,

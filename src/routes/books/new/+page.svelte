@@ -11,9 +11,12 @@
 <p><a href="/">← Books</a></p>
 <h1>New Book</h1>
 
-<form method="POST" class="new-book" enctype="multipart/form-data">
+<form method="POST" action="?/create" class="new-book" enctype="multipart/form-data">
 	{#if form?.message}
-		<p class="error" role="alert">{form.message}</p>
+		<p class="error" role="alert">
+			{form.message}
+			{#if form && 'existingId' in form}<a href="/books/{form.existingId}">Open it</a>{/if}
+		</p>
 	{/if}
 
 	<label>
@@ -25,11 +28,24 @@
 		</select>
 	</label>
 
+	<div class="address">
+		<label>
+			Web address
+			<input name="url" type="url" placeholder="https://…" value={form?.values.url ?? ''} autocomplete="off" />
+		</label>
+		<button formaction="?/fetch" formnovalidate>Fetch article</button>
+	</div>
+	{#if form && 'fetched' in form}
+		<small class="fetched">Fetched. Check the title and text, edit anything you like, then create the Book.</small>
+	{:else}
+		<small>Fetches the article's text into the form, without the site's menus, ads and footers.</small>
+	{/if}
+
 	<label>
 		Title
 		<input name="title" value={form?.values.title ?? ''} />
 	</label>
-	<small>Leave it empty to use the file's name.</small>
+	<small>Leave it empty to use the article's headline or the file's name.</small>
 
 	<label>
 		Text
@@ -57,5 +73,14 @@
 	}
 	.error {
 		color: #b00020;
+	}
+	.address {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 0.5rem;
+		align-items: end;
+	}
+	.fetched {
+		color: #2f7a3a;
 	}
 </style>
