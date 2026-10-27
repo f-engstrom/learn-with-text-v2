@@ -17,7 +17,7 @@
 {:else}
 	<ul>
 		{#each data.books as book (book.id)}
-			<li><a href="/books/{book.id}/pages/1">{book.title}</a> <small>({book.languageName})</small></li>
+			<li><a href="/books/{book.id}">{book.title}</a> <small>({book.languageName})</small></li>
 		{/each}
 	</ul>
 {/if}

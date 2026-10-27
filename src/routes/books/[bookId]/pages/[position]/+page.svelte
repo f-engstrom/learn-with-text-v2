@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { deserialize } from '$app/forms';
+	import { deserialize, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { tick } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import { moveCursor } from '#lib/reading/cursor.ts';
 	import { commandFor } from '#lib/reading/keys.ts';
 	import type { ReadingToken } from '#lib/server/domain/books.ts';
@@ -29,6 +29,41 @@
 
 	const statusOf = (key: string) => pending[key] ?? data.terms[key]?.status ?? 'unknown';
 
+	let pageKey = $derived(`${data.book.id}/${data.position}`);
+	/** The Sentence (1-based) on this Page the Bookmark was last saved at; 0 when it is on another Page. */
+	let bookmarked = 0;
+
+	// Opening a Page moves the Bookmark here; on the bookmarked Page the cursor resumes at its Sentence.
+	$effect(() => {
+		pageKey;
+		untrack(enterPage);
+	});
+
+	// Moving the cursor into another Sentence moves the Bookmark with it.
+	$effect(() => {
+		if (selected) saveBookmark(selected.sentence + 1);
+	});
+
+	function enterPage() {
+		open = false;
+		error = undefined;
+		const { bookmark } = data.book;
+		bookmarked = bookmark.page === data.position ? bookmark.sentence : 0;
+		const sentence = Math.max(bookmarked, 1);
+		const first = sentence > 1 ? words.find((w) => w.sentence === sentence - 1) : undefined;
+		current = first?.index;
+		saveBookmark(sentence);
+		if (first) tick().then(() => wordElements[first.index]?.scrollIntoView({ block: 'center' }));
+	}
+
+	function saveBookmark(sentence: number) {
+		if (sentence === bookmarked) return;
+		bookmarked = sentence;
+		const body = new FormData();
+		body.set('sentence', String(sentence));
+		fetch('?/bookmark', { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
+	}
+
 	async function goTo(index: number | undefined) {
 		current = index;
 		await tick();
@@ -48,6 +83,11 @@
 		delete pending[word.key];
 	}
 
+	/** Buttons and links handle Enter themselves. */
+	function isControl(target: EventTarget | null) {
+		return target instanceof HTMLElement && target.closest('button, a, summary') !== null;
+	}
+
 	function isTyping(target: EventTarget | null) {
 		return (
 			target instanceof HTMLElement &&
@@ -60,6 +100,7 @@
 		const command = commandFor(e, data.language.rightToLeft);
 		// While typing in the Term form, only Escape (close) applies.
 		if (!command || (isTyping(e.target) && command.kind !== 'close')) return;
+		if (command.kind === 'open' && isControl(e.target)) return;
 		e.preventDefault();
 		switch (command.kind) {
 			case 'move':
@@ -93,7 +134,18 @@
 
 <p><a href="/">← Books</a></p>
 <h1 lang={data.language.code} {dir}>{data.book.title}</h1>
-<p><small>Page {data.position} of {data.book.pageCount}</small></p>
+{#snippet pages()}
+	<nav class="pages">
+		{#if data.position > 1}
+			<a href="/books/{data.book.id}/pages/{data.position - 1}">← Previous</a>
+		{/if}
+		<small>Page {data.position} of {data.book.pageCount}{data.read ? ' · Read' : ''}</small>
+		{#if data.position < data.book.pageCount}
+			<a href="/books/{data.book.id}/pages/{data.position + 1}">Next →</a>
+		{/if}
+	</nav>
+{/snippet}
+{@render pages()}
 <p class="keys">
 	<small
 		><kbd>←</kbd> <kbd>→</kbd> Word · <kbd>↑</kbd> <kbd>↓</kbd> Sentence · <kbd>1</kbd>–<kbd>4</kbd> Learning ·
@@ -126,6 +178,11 @@
 				{/each}
 			</p>
 		{/each}
+		<form method="POST" action="?/markRead" class="mark-read" use:enhance>
+			<button>Mark as read</button>
+			<button name="restKnown" value="true">Mark as read, rest Known</button>
+		</form>
+		{@render pages()}
 	</article>
 
 	{#if open && selected}
@@ -178,6 +235,22 @@
 	}
 	.word.ignored {
 		color: #777;
+	}
+	.pages {
+		display: flex;
+		gap: 1rem;
+		align-items: baseline;
+	}
+	.mark-read {
+		display: flex;
+		gap: 0.5rem;
+		margin-block: 1.5rem 0.5rem;
+	}
+	/* The Page text may be right to left; the controls stay left to right. */
+	.page .pages,
+	.mark-read {
+		direction: ltr;
+		font-size: 1rem;
 	}
 	.keys {
 		color: #555;
