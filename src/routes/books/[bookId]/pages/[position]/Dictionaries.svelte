@@ -65,8 +65,10 @@
 		border-color: var(--accent);
 		background: var(--accent-soft);
 	}
+	/* iOS Safari widens an iframe to its page's width; a 1px width with a full min-width keeps it in the panel. */
 	iframe {
-		width: 100%;
+		width: 1px;
+		min-width: 100%;
 		height: 28rem;
 		border: 1px solid var(--border);
 		border-radius: 0.25rem;

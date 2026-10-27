@@ -89,11 +89,13 @@
 	}
 </script>
 
-<h2 lang={language.code} {dir}>{term?.text ?? text}</h2>
-{#if term?.pronunciation}
-	<p class="pronunciation">{term.pronunciation}</p>
-{/if}
-<p><small>{term ? 'Term' : 'Unknown'}</small></p>
+<header class="heading">
+	<h2 lang={language.code} {dir}>{term?.text ?? text}</h2>
+	<span class="tag">{term ? 'Term' : 'Unknown'}</span>
+	{#if term?.pronunciation}
+		<p class="pronunciation">{term.pronunciation}</p>
+	{/if}
+</header>
 
 <form method="POST" action={actionUrl('saveTerm', page.url.search)} use:enhance bind:this={formElement}>
 	<input type="hidden" name="languageId" value={language.id} />
@@ -177,10 +179,19 @@
 {/if}
 
 <style>
+	.heading {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.25rem 0.6rem;
+		/* Clear of the panel's close button. */
+		padding-inline-end: 2.5rem;
+	}
 	h2 {
 		margin: 0;
 	}
 	.pronunciation {
+		flex-basis: 100%;
 		margin: 0;
 		font-size: 1.1rem;
 		color: var(--muted);
@@ -234,15 +245,21 @@
 		display: grid;
 		gap: 0.35rem;
 		margin: 0 0 0.5rem;
-		padding-inline-start: 1.5rem;
+		padding-inline-start: 1.25rem;
 	}
 	.translations li {
 		display: flex;
 		gap: 0.25rem;
 		align-items: center;
 	}
+	/* The text box takes the room the buttons leave, down to nothing on a phone. */
 	.translations li input[name='translationText'] {
-		width: 9rem;
+		flex: 1 1 8rem;
+		min-width: 0;
+	}
+	.translations li button {
+		flex: none;
+		padding-inline: 0.55rem;
 	}
 	.source {
 		padding: 0 0.3rem;
@@ -269,6 +286,10 @@
 	}
 	.row-actions {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 0.35rem;
+	}
+	.row-actions button {
+		white-space: nowrap;
 	}
 </style>

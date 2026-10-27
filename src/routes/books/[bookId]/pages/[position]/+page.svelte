@@ -458,6 +458,8 @@
 		if (shift && current !== undefined) extendTo(word.index);
 		else goTo(word.index, { collapse: true });
 		open = true;
+		// On a phone the Term panel is a sheet over the bottom of the screen; keep the Word above it.
+		tick().then(() => wordElements[word.index]?.scrollIntoView({ block: 'nearest' }));
 	}
 </script>
 
@@ -529,7 +531,7 @@
 	{/if}
 </div>
 
-<div class="reader" class:calm>
+<div class="reader" class:calm class:sheet-open={open && !!selected && !practising}>
 	<article class="page" class:calm class:practising={practising?.stage === 'run'} lang={data.language.code} {dir}>
 		{#each data.paragraphs as paragraph, p (p)}
 			<p>
@@ -953,6 +955,28 @@
 		gap: 0.5rem;
 	}
 	@media (max-width: 60rem) {
+		/* One column: the Term panel is a sheet over the bottom of the screen, not below the whole Page. */
+		.term-panel {
+			position: fixed;
+			inset-inline: 0;
+			bottom: 0;
+			z-index: 3;
+			max-height: 62vh;
+			gap: 0.75rem;
+			padding: 1rem;
+			overflow-x: hidden;
+			overscroll-behavior: contain;
+			border-end-start-radius: 0;
+			border-end-end-radius: 0;
+			box-shadow: 0 -8px 30px rgb(0 0 0 / 0.18);
+		}
+		/* Room to scroll the last lines, and the chosen Word, clear of the sheet. */
+		.reader.sheet-open {
+			padding-bottom: 62vh;
+		}
+		.reader.sheet-open .word {
+			scroll-margin: 5rem 0 64vh;
+		}
 		/* Keeps the practised Word above the practice panel docked at the bottom. */
 		.page.practising .word {
 			scroll-margin: 5rem 0 50vh;
