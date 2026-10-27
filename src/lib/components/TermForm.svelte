@@ -208,6 +208,8 @@
 		border: none;
 		padding: 0;
 		margin: 0;
+		/* Browsers give a fieldset its content's width as a minimum; let it shrink to the panel. */
+		min-width: 0;
 	}
 	legend {
 		padding: 0;
@@ -243,6 +245,7 @@
 	}
 	.translations ol {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 0.35rem;
 		margin: 0 0 0.5rem;
 		padding-inline-start: 1.25rem;

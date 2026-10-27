@@ -863,6 +863,7 @@
 		max-height: calc(100vh - 2rem);
 		overflow-y: auto;
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 1rem;
 		box-sizing: border-box;
 	}
