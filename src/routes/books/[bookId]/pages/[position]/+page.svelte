@@ -783,13 +783,15 @@
 		border-radius: 0.2em;
 		cursor: pointer;
 	}
-	.word:hover {
+	.page:not(.zen) .word:hover {
 		filter: brightness(0.96);
 	}
 	.word:focus {
 		outline: none;
 	}
+	/* Above its neighbours, so a tooltip under it isn't covered by the next line's Words. */
 	.word.current {
+		z-index: 2;
 		outline: 2px solid var(--accent);
 		outline-offset: 2px;
 	}
@@ -942,6 +944,7 @@
 		padding: 0.3rem 0.75rem;
 		border-radius: 999px;
 		font-size: 0.85rem;
+		white-space: nowrap;
 	}
 	.toggles {
 		display: flex;
