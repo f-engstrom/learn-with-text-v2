@@ -1,0 +1,8 @@
+{
+	"mcpServers": {
+		"reader": {
+			"command": "npm",
+			"args": ["run", "--silent", "mcp"]
+		}
+	}
+}

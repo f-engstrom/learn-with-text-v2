@@ -11,7 +11,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run"
+		"test": "npm run test:unit -- --run",
+		"mcp": "tsx src/lib/server/mcp/main.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^6.0.0",
@@ -30,11 +31,14 @@
 		"#lib/*": "./src/lib/*"
 	},
 	"dependencies": {
+		"@modelcontextprotocol/sdk": "~1.32.2",
 		"@mozilla/readability": "~0.6.0",
 		"better-sqlite3": "~13.0.3",
 		"kysely": "~0.29.7",
 		"linkedom": "~0.18.14",
-		"pinyin-pro": "~3.29.5"
+		"pinyin-pro": "~3.29.5",
+		"tsx": "~4.23.15",
+		"zod": "~4.6.7"
 	},
 	"allowScripts": {
 		"better-sqlite3@13.0.3": true
