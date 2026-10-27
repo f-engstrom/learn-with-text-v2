@@ -203,6 +203,7 @@ kbd {
 	border-bottom-width: 2px;
 	border-radius: 0.25rem;
 	background: var(--surface);
+	color: var(--text);
 	font: 0.8em var(--font-ui);
 }
 

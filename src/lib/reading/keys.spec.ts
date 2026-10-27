@@ -27,6 +27,11 @@ describe('commandFor', () => {
 		expect(commandFor(press('ArrowRight', '', { shiftKey: true }), true)).toEqual({ kind: 'extend', by: -1 });
 	});
 
+	it('starts practice with R, on any keyboard layout', () => {
+		expect(commandFor(press('r', 'KeyR'), false)).toEqual({ kind: 'practice' });
+		expect(commandFor(press('к', 'KeyR'), false)).toEqual({ kind: 'practice' });
+	});
+
 	it('toggles the Due marks with D, on any keyboard layout', () => {
 		expect(commandFor(press('d', 'KeyD'), false)).toEqual({ kind: 'due' });
 		expect(commandFor(press('в', 'KeyD'), false)).toEqual({ kind: 'due' });

@@ -13,6 +13,8 @@ export type Command =
 	| { kind: 'zen' }
 	/** Due marks on or off. */
 	| { kind: 'due' }
+	/** Start practising the Page's Due Words. */
+	| { kind: 'practice' }
 	| { kind: 'close' };
 
 export type KeyInput = Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'metaKey' | 'altKey' | 'shiftKey'>;
@@ -56,6 +58,7 @@ export function commandFor(e: KeyInput, rightToLeft: boolean): Command | undefin
 	if (e.code === 'KeyP') return { kind: 'paste' };
 	if (e.code === 'KeyZ') return { kind: 'zen' };
 	if (e.code === 'KeyD') return { kind: 'due' };
+	if (e.code === 'KeyR') return { kind: 'practice' };
 	const status = statusKeys[e.code];
 	return status && { kind: 'status', status };
 }

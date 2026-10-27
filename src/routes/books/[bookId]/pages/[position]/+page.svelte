@@ -13,6 +13,8 @@
 	import TermForm from '#lib/components/TermForm.svelte';
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import PracticeCard from './PracticeCard.svelte';
+	import PracticePanel, { type PracticeState } from './PracticePanel.svelte';
+	import { practiceQueue, type DueWord, type Subset } from '#lib/practice.ts';
 	import WiktionaryPanel from './WiktionaryPanel.svelte';
 
 	/** A Word, or a matched Multi-word Term, on the Page. */
@@ -67,6 +69,89 @@
 	}
 	const overdueOf = (key: string) => (showDue ? (data.terms[key]?.practice?.overdue ?? 0) : 0);
 
+	/** The 1-based paragraph each Sentence (by 0-based index) is in. */
+	let paragraphOf = $derived(data.paragraphs.flatMap((p, i) => p.sentences.map(() => i + 1)));
+	let dueWords: DueWord[] = $derived(
+		words.flatMap((w) => {
+			const practice = data.terms[w.key]?.practice;
+			return practice ? [{ index: w.index, key: w.key, sentence: w.sentence + 1, paragraph: paragraphOf[w.sentence], practice }] : [];
+		})
+	);
+	function startPractice() {
+		open = false;
+		practising = { stage: 'choose' };
+	}
+
+	function pickSubset(subset: Subset) {
+		const queue = practiceQueue(dueWords, subset, practiceContext);
+		if (queue.length === 0) return;
+		practising = { stage: 'run', subset, queue, at: 0, revealed: false, reviewed: 0 };
+		showPractised(queue[0]);
+	}
+
+	/** Puts the cursor on a practised Word and scrolls it clear of the practice panel. */
+	async function showPractised(index: number) {
+		await goTo(index, { collapse: true });
+		wordElements[index]?.scrollIntoView({ block: 'nearest' });
+	}
+
+	/** While a practice Review is saving, so a quick second key can't grade the same Word twice. */
+	let grading = false;
+
+	async function gradePractice(grade: Grade) {
+		if (practising?.stage !== 'run' || grading) return;
+		const run = practising;
+		const word = words[run.queue[run.at]];
+		const reviewed = data.terms[word.key];
+		grading = true;
+		try {
+			if (reviewed) await review(reviewed.id, grade);
+		} finally {
+			grading = false;
+		}
+		if (error) return;
+		const at = run.at + 1;
+		if (at >= run.queue.length) {
+			practising = { stage: 'done', reviewed: run.reviewed + 1 };
+			return;
+		}
+		practising = { ...run, at, revealed: false, reviewed: run.reviewed + 1 };
+		showPractised(run.queue[at]);
+	}
+
+	function stopPractice() {
+		practising = undefined;
+		goTo(current);
+	}
+
+	/** Practice keys: digits pick a subset or grade, Space reveals, Esc stops. Returns whether it handled the key. */
+	function practiceKey(e: KeyboardEvent): boolean {
+		if (!practising || e.ctrlKey || e.metaKey || e.altKey) return false;
+		if (e.key === 'Escape') {
+			stopPractice();
+			return true;
+		}
+		const digit = /^(?:Digit|Numpad)([1-9])$/.exec(e.code)?.[1];
+		if (practising.stage === 'choose' && digit) {
+			const choice = subsets.filter((s) => s.count > 0)[Number(digit) - 1];
+			if (choice) pickSubset(choice.subset);
+			return true;
+		}
+		if (practising.stage === 'run') {
+			if (e.code === 'Space' || e.code === 'Enter') {
+				practising.revealed = true;
+				return true;
+			}
+			if (digit && Number(digit) <= 3) {
+				gradePractice((['missed', 'hard', 'got'] as const)[Number(digit) - 1]);
+				return true;
+			}
+			// Reading keys stay off while practising, so a Status key can't be pressed by mistake.
+			return commandFor(e, data.language.rightToLeft) !== undefined;
+		}
+		return false;
+	}
+
 	async function review(termId: number, grade: Grade) {
 		const body = new FormData();
 		body.set('termId', String(termId));
@@ -84,7 +169,11 @@
 	let idleTimer: ReturnType<typeof setTimeout> | undefined;
 	const zenKey = 'reader.zen';
 	let calm = $derived(zen && idle && !open);
-	let gloss = $derived(zen && !open && term ? term.translations.map((t) => t.text).join('; ') : '');
+	/** Practice on the Page, while it's open. */
+	let practising = $state<PracticeState | undefined>();
+	/** While a practised Word's meaning is still hidden. */
+	let recalling = $derived(practising?.stage === 'run' && !practising.revealed);
+	let gloss = $derived(zen && !open && !recalling && term ? term.translations.map((t) => t.text).join('; ') : '');
 
 	onMount(() => {
 		try {
@@ -125,6 +214,18 @@
 	});
 	let sentenceNumbers = $derived(new Map(sentences.map((s, i) => [s, i + 1])));
 	let highlightHere = $derived(highlight?.page === data.position ? highlight : undefined);
+	/** Where "This paragraph" is: the cursor's paragraph, else the first. */
+	let practiceContext = $derived({
+		paragraph: current === undefined ? 1 : paragraphOf[words[current].sentence],
+		highlight: highlightHere
+	});
+	const subsetOrder: Subset[] = ['priority', 'paragraph', 'highlight', 'overdue'];
+	let subsets = $derived(
+		subsetOrder
+			.filter((s) => s !== 'highlight' || highlightHere)
+			.map((subset) => ({ subset, count: practiceQueue(dueWords, subset, practiceContext).length }))
+	);
+
 	const highlighted = (sentence: (typeof sentences)[number]) => {
 		const n = sentenceNumbers.get(sentence) ?? 0;
 		return highlightHere !== undefined && n >= highlightHere.first && n <= highlightHere.last;
@@ -272,6 +373,11 @@
 
 	function onkeydown(e: KeyboardEvent) {
 		if (e.defaultPrevented) return;
+		if (!isTyping(e.target) && practiceKey(e)) {
+			e.preventDefault();
+			wake();
+			return;
+		}
 		const command = commandFor(e, data.language.rightToLeft);
 		// Reading on with the keyboard keeps zen mode calm; anything else brings the screen back.
 		if (!command || !['move', 'sentence', 'extend', 'status'].includes(command.kind)) wake();
@@ -301,6 +407,9 @@
 				break;
 			case 'due':
 				toggleDue();
+				break;
+			case 'practice':
+				startPractice();
 				break;
 			case 'close':
 				open = false;
@@ -357,6 +466,8 @@
 		<dd>Zen mode</dd>
 		<dt><kbd>D</kbd></dt>
 		<dd>Due marks on or off</dd>
+		<dt><kbd>R</kbd></dt>
+		<dd>Practise the Due Words</dd>
 	</dl>
 {/snippet}
 
@@ -384,6 +495,7 @@
 		<h1 lang={data.language.code} {dir}>{data.book.title}</h1>
 		<span class="tag">{data.language.name}</span>
 		<span class="toggles">
+			<button type="button" onclick={startPractice} title="Practise the Due Words (R)">Practice</button>
 			<button type="button" aria-pressed={showDue} onclick={toggleDue} title="Due marks (D)">Due</button>
 			<button type="button" aria-pressed={zen} onclick={toggleZen} title="Zen mode (Z)">Zen</button>
 		</span>
@@ -395,7 +507,7 @@
 </div>
 
 <div class="reader" class:calm>
-	<article class="page" class:calm lang={data.language.code} {dir}>
+	<article class="page" class:calm class:practising={practising?.stage === 'run'} lang={data.language.code} {dir}>
 		{#each data.paragraphs as paragraph, p (p)}
 			<p>
 				{#each paragraph.sentences as sentence, s (s)}
@@ -416,7 +528,7 @@
 									bind:this={wordElements[word.index]}
 									onmousedown={(e) => e.shiftKey && e.preventDefault()}
 									onclick={(e) => choose(word, e.shiftKey)}
-									onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), choose(word, false))}
+									onkeydown={(e) => !practising && (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), choose(word, false))}
 									>{word.text}{#if gloss && range?.[0] === word.index}<span class="gloss" aria-hidden="true">{gloss}</span>{/if}</span
 								>{:else}{token.text}{/if}
 						{/each}
@@ -440,7 +552,18 @@
 				{/if}
 			</div>
 		{/if}
-		{#if open && selected}
+		{#if practising}
+			<PracticePanel
+				state={practising}
+				{subsets}
+				text={practising.stage === 'run' ? words[practising.queue[practising.at]]?.text : undefined}
+				term={practising.stage === 'run' ? data.terms[words[practising.queue[practising.at]]?.key] : undefined}
+				onpick={pickSubset}
+				onreveal={() => practising?.stage === 'run' && (practising.revealed = true)}
+				ongrade={gradePractice}
+				onstop={stopPractice}
+			/>
+		{:else if open && selected}
 			<div class="term-panel card">
 				<button type="button" class="close" aria-label="Close the Term form" onclick={() => (open = false)}>✕</button>
 				{#key `${selected.key}:${JSON.stringify(term)}`}
@@ -762,6 +885,10 @@
 		gap: 0.5rem;
 	}
 	@media (max-width: 60rem) {
+		/* Keeps the practised Word above the practice panel docked at the bottom. */
+		.page.practising .word {
+			scroll-margin: 5rem 0 50vh;
+		}
 		.reader {
 			grid-template-columns: 1fr;
 			gap: 1.5rem;
