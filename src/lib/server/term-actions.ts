@@ -1,5 +1,6 @@
 import { fail, type Action } from '@sveltejs/kit';
 import { database } from './database';
+import { InvalidReview, recordReview } from './domain/practice';
 import { deleteTerm, InvalidTerm, saveTerm } from './domain/terms';
 
 // The Term form's actions, shared by every page that shows it (the reading screen and the Term list).
@@ -46,4 +47,15 @@ export const setStatusAction: Action = async ({ request }) => {
 export const deleteTermAction: Action = async ({ request }) => {
 	const form = await request.formData();
 	await deleteTerm(database(), Number(form.get('id')));
+};
+
+/** Records a Review of a Term: `grade` is missed, hard or got; `source` is where it happened. */
+export const reviewAction: Action = async ({ request }) => {
+	const form = await request.formData();
+	try {
+		await recordReview(database(), Number(form.get('termId')), String(form.get('grade') ?? ''), String(form.get('source') ?? ''));
+	} catch (e) {
+		if (e instanceof InvalidReview) return fail(400, { message: e.message });
+		throw e;
+	}
 };

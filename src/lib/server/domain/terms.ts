@@ -2,6 +2,7 @@ import { sql, type Kysely, type SelectQueryBuilder, type Transaction } from 'kys
 import type { Database, SourceValue, StatusValue } from '../db/schema';
 import { getLanguage, type Language } from './languages';
 import { MAX_TERM_WORDS } from './multiword';
+import { practiceViews, type PracticeView } from './practice';
 import { parserFor, termKey } from './parsing';
 import { suggestPronunciation } from './pronunciation';
 
@@ -28,6 +29,8 @@ export interface TermView {
 	translations: TranslationView[];
 	parent?: { id: number; text: string; status: Status };
 	followsParent: boolean;
+	/** Learning 1–4 Terms only: when it is Due, and its Recall strength once reviewed. */
+	practice?: PracticeView;
 }
 
 /** A Translation as submitted from a form: `id` refers to one the Term already has. */
@@ -365,6 +368,7 @@ async function toViews(db: Kysely<Database>, rows: TermRow[]): Promise<{ normali
 		.orderBy('term_id')
 		.orderBy('position')
 		.execute();
+	const practice = await practiceViews(db, rows);
 
 	return rows.map((t) => ({
 		normalised: t.normalised,
@@ -378,6 +382,7 @@ async function toViews(db: Kysely<Database>, rows: TermRow[]): Promise<{ normali
 					? undefined
 					: { id: t.parentId, text: t.parentText, status: t.parentStatus },
 			followsParent: t.follows_parent === 1,
+			...(practice.has(t.id) ? { practice: practice.get(t.id) } : {}),
 			translations: translations
 				.filter((tr) => tr.term_id === t.id)
 				.map((tr) => ({ id: tr.id, text: tr.text, source: tr.source }))

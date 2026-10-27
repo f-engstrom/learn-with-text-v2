@@ -11,6 +11,8 @@
 	import type { PageProps } from './$types';
 	import Dictionaries from './Dictionaries.svelte';
 	import TermForm from '#lib/components/TermForm.svelte';
+	import type { Grade } from '#lib/server/domain/practice.ts';
+	import PracticeCard from './PracticeCard.svelte';
 	import WiktionaryPanel from './WiktionaryPanel.svelte';
 
 	/** A Word, or a matched Multi-word Term, on the Page. */
@@ -48,6 +50,33 @@
 	let dictionary = $state<number | undefined>();
 	let wordElements = $state<HTMLElement[]>([]);
 	let dir: 'rtl' | 'ltr' = $derived(data.language.rightToLeft ? 'rtl' : 'ltr');
+
+	/** Due marks on the Words, on unless you turn them off (D). */
+	let showDue = $state(true);
+	const dueKey = 'reader.due';
+	onMount(() => {
+		try {
+			showDue = localStorage.getItem(dueKey) !== 'off';
+		} catch {}
+	});
+	function toggleDue() {
+		showDue = !showDue;
+		try {
+			localStorage.setItem(dueKey, showDue ? 'on' : 'off');
+		} catch {}
+	}
+	const overdueOf = (key: string) => (showDue ? (data.terms[key]?.practice?.overdue ?? 0) : 0);
+
+	async function review(termId: number, grade: Grade) {
+		const body = new FormData();
+		body.set('termId', String(termId));
+		body.set('grade', grade);
+		body.set('source', 'page');
+		const response = await fetch('?/review', { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
+		const result = deserialize(await response.text());
+		error = result.type === 'failure' ? String(result.data?.message) : undefined;
+		await invalidateAll();
+	}
 
 	/** Zen mode: after a few idle seconds everything but the text fades, and the selection shows its Translations. */
 	let zen = $state(false);
@@ -270,6 +299,9 @@
 			case 'zen':
 				toggleZen();
 				break;
+			case 'due':
+				toggleDue();
+				break;
 			case 'close':
 				open = false;
 				goTo(current);
@@ -323,6 +355,8 @@
 		<dd>Close</dd>
 		<dt><kbd>Z</kbd></dt>
 		<dd>Zen mode</dd>
+		<dt><kbd>D</kbd></dt>
+		<dd>Due marks on or off</dd>
 	</dl>
 {/snippet}
 
@@ -349,7 +383,10 @@
 	<header class="book">
 		<h1 lang={data.language.code} {dir}>{data.book.title}</h1>
 		<span class="tag">{data.language.name}</span>
-		<button type="button" class="zen-toggle" aria-pressed={zen} onclick={toggleZen} title="Zen mode (Z)">Zen</button>
+		<span class="toggles">
+			<button type="button" aria-pressed={showDue} onclick={toggleDue} title="Due marks (D)">Due</button>
+			<button type="button" aria-pressed={zen} onclick={toggleZen} title="Zen mode (Z)">Zen</button>
+		</span>
 	</header>
 	{@render pages()}
 	{#if error}
@@ -375,6 +412,7 @@
 									class:current={current === word.index}
 									class:phrase={inPhrase(word.index)}
 									class:multi={(word.words ?? 1) > 1}
+									data-due={overdueOf(word.key) || undefined}
 									bind:this={wordElements[word.index]}
 									onmousedown={(e) => e.shiftKey && e.preventDefault()}
 									onclick={(e) => choose(word, e.shiftKey)}
@@ -408,6 +446,9 @@
 				{#key `${selected.key}:${JSON.stringify(term)}`}
 					<TermForm bind:this={termForm} language={data.language} text={selected.text} {term} error={form?.message} />
 				{/key}
+				{#if term?.practice}
+					<PracticeCard {term} onreview={(grade) => review(term.id, grade)} />
+				{/if}
 				<WiktionaryPanel
 					language={data.language}
 					termKey={selected.key}
@@ -547,6 +588,25 @@
 	.word {
 		position: relative;
 	}
+	/* A Due Word: a dot over its end, amber when just Due, red when long overdue. */
+	.word[data-due]::after {
+		content: '';
+		position: absolute;
+		top: -0.12em;
+		inset-inline-end: -0.12em;
+		width: 0.36em;
+		height: 0.36em;
+		border-radius: 50%;
+		background: var(--due-1);
+		box-shadow: 0 0 0 1.5px var(--bg);
+		pointer-events: none;
+	}
+	.word[data-due='2']::after {
+		background: var(--due-2);
+	}
+	.word[data-due='3']::after {
+		background: var(--due-3);
+	}
 	/* Zen mode: the selected Word's Translations, under it. */
 	.gloss {
 		position: absolute;
@@ -580,12 +640,16 @@
 	:global(header.site) {
 		transition: opacity 0.6s;
 	}
-	.zen-toggle {
+	.toggles {
+		display: flex;
+		gap: 0.4rem;
 		margin-inline-start: auto;
+	}
+	.toggles button {
 		padding-block: 0.2rem;
 		font-size: 0.85rem;
 	}
-	.zen-toggle[aria-pressed='true'] {
+	.toggles button[aria-pressed='true'] {
 		background: var(--accent-soft);
 		border-color: var(--accent);
 		color: var(--accent);

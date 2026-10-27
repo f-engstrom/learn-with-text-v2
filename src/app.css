@@ -23,6 +23,14 @@
 	--status-learning4: #e0ebb8;
 	--status-ignored: #8a8f96;
 
+	/* Due marks, from just Due to long overdue; the -text variants are for words on a surface. */
+	--due-1: #e3a21a;
+	--due-2: #e46a1c;
+	--due-3: #d0281f;
+	--due-1-text: #9a6700;
+	--due-2-text: #b4500f;
+	--due-3-text: #b3261e;
+
 	--font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 	/* Reading text: a serif with Latin and Cyrillic; Chinese and Farsi fall back to the system's fonts. */
 	--font-text: Charter, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
@@ -53,6 +61,13 @@
 		--status-learning3: #5d5420;
 		--status-learning4: #43522a;
 		--status-ignored: #8a8f96;
+
+		--due-1: #f0b73e;
+		--due-2: #f58b4c;
+		--due-3: #ff5a4f;
+		--due-1-text: #f0c060;
+		--due-2-text: #f8a070;
+		--due-3-text: #ff8a80;
 	}
 }
 

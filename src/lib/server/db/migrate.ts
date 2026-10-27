@@ -12,6 +12,7 @@ import * as m0009 from './migrations/0009-suggestions';
 import * as m0010 from './migrations/0010-feeds';
 import * as m0011 from './migrations/0011-bookmark-word';
 import * as m0012 from './migrations/0012-highlight';
+import * as m0013 from './migrations/0013-practice';
 
 // Listed statically (not read from disk) so they survive bundling by Vite and the MCP entry point.
 const migrations: Record<string, Migration> = {
@@ -26,7 +27,8 @@ const migrations: Record<string, Migration> = {
 	'0009-suggestions': m0009,
 	'0010-feeds': m0010,
 	'0011-bookmark-word': m0011,
-	'0012-highlight': m0012
+	'0012-highlight': m0012,
+	'0013-practice': m0013
 };
 
 export async function migrateToLatest(db: Kysely<any>): Promise<void> {

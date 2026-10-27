@@ -11,6 +11,8 @@ export type Command =
 	| { kind: 'paste' }
 	/** Zen mode on or off. */
 	| { kind: 'zen' }
+	/** Due marks on or off. */
+	| { kind: 'due' }
 	| { kind: 'close' };
 
 export type KeyInput = Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'metaKey' | 'altKey' | 'shiftKey'>;
@@ -53,6 +55,7 @@ export function commandFor(e: KeyInput, rightToLeft: boolean): Command | undefin
 	}
 	if (e.code === 'KeyP') return { kind: 'paste' };
 	if (e.code === 'KeyZ') return { kind: 'zen' };
+	if (e.code === 'KeyD') return { kind: 'due' };
 	const status = statusKeys[e.code];
 	return status && { kind: 'status', status };
 }

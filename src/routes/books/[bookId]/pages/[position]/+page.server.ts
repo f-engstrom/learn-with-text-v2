@@ -3,7 +3,7 @@ import { database } from '#lib/server/database.ts';
 import { getPage } from '#lib/server/domain/books.ts';
 import { listDictionaries } from '#lib/server/domain/dictionaries.ts';
 import { getHighlight, InvalidBookmark, markPageRead, setBookmark } from '#lib/server/domain/reading.ts';
-import { deleteTermAction, saveTermAction, setStatusAction } from '#lib/server/term-actions.ts';
+import { deleteTermAction, reviewAction, saveTermAction, setStatusAction } from '#lib/server/term-actions.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -20,6 +20,7 @@ export const actions: Actions = {
 	saveTerm: saveTermAction,
 	setStatus: setStatusAction,
 	deleteTerm: deleteTermAction,
+	review: reviewAction,
 	/** Moves the Bookmark to a Sentence on this Page. */
 	bookmark: async ({ request, params }) => {
 		const form = await request.formData();

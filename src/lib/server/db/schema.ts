@@ -56,6 +56,32 @@ export interface SentenceTable {
 
 export type StatusValue = 'learning1' | 'learning2' | 'learning3' | 'learning4' | 'known' | 'ignored';
 
+export type GradeValue = 'missed' | 'hard' | 'got';
+export type ReviewSourceValue = 'page' | 'list' | 'tutor';
+
+export interface ReviewTable {
+	id: Generated<number>;
+	term_id: number;
+	grade: GradeValue;
+	/** Where the Review happened: practice on a Page, the Term list, or a Tutor question. */
+	source: ReviewSourceValue;
+	reviewed_at: string;
+}
+
+/** A Term's FSRS card (ts-fsrs field names); dates are ISO strings. */
+export interface ScheduleTable {
+	term_id: number;
+	due: string;
+	stability: number;
+	difficulty: number;
+	state: number;
+	reps: number;
+	lapses: number;
+	scheduled_days: number;
+	learning_steps: number;
+	last_review: string | null;
+}
+
 export interface TermTable {
 	id: Generated<number>;
 	language_id: number;
@@ -125,6 +151,8 @@ export interface Database {
 	sentence: SentenceTable;
 	term: TermTable;
 	translation: TranslationTable;
+	review: ReviewTable;
+	schedule: ScheduleTable;
 	dictionary: DictionaryTable;
 	book_word: BookWordTable;
 	topic: TopicTable;
