@@ -4,28 +4,37 @@ import type { Kysely } from 'kysely';
 import { z } from 'zod';
 import { fits, rankSuggestions } from '../../suggestions';
 import type { Database } from '../db/schema';
-import { getPage, listBooks } from '../domain/books';
+import { createBook, findBookByUrl, getPage, InvalidBook, listBooks } from '../domain/books';
 import { listLanguages, type Language } from '../domain/languages';
 import { termKey } from '../domain/parsing';
-import { getBookmark } from '../domain/reading';
+import { getBookmark, InvalidBookmark, markPageRead, setBookmark } from '../domain/reading';
 import { findSuggestions, getFitRange, type SuggestionSources } from '../domain/suggestions';
-import { findTerms, type TermView } from '../domain/terms';
+import { findTerms, InvalidTerm, type TermView } from '../domain/terms';
+import { adjustLearning, saveGloss } from '../domain/tutoring';
+import { fetchArticle, InvalidAddress, type WebArticle } from '../domain/webpages';
 
 /**
- * The Reader's MCP server for the Tutor (ADR 0003). These tools only read; every rule lives in
- * the domain code they call, which the web app shares.
+ * The Reader's MCP server for the Tutor (ADR 0003). Every rule (what a Gloss may be saved for, how
+ * far a Tutor adjustment goes) lives in the domain code the tools call, which the web app shares.
  */
-export function createReaderServer(db: Kysely<Database>, sources: SuggestionSources): McpServer {
+export function createReaderServer(
+	db: Kysely<Database>,
+	sources: SuggestionSources,
+	readArticle: (url: string) => Promise<WebArticle> = fetchArticle
+): McpServer {
 	const server = new McpServer(
 		{ name: 'reader', version: '0.1.0' },
 		{
 			instructions:
 				'The Reader holds Books (split into Pages and Sentences), each with a Bookmark, and Terms: what the learner knows about a Word or phrase. ' +
 				'A Word with no Term is Unknown. A Term has a Status (learning1–4, known, ignored), ordered Translations each with a Source (you, wiktionary, tutor), an optional Pronunciation and Parent. ' +
-				'Start with list_books, then get_sentences to read from the Bookmark.'
+				'Start with list_books, then get_sentences to read from the Bookmark. ' +
+				'While tutoring: save_gloss for a meaning you give (only Unknown Words and Learning 1–2 Terms), adjust_learning after the learner answers about a Term, ' +
+				'set_bookmark as you move through the text, and mark_page_read at the end of a Page. Only the learner sets Known or Ignored.'
 		}
 	);
 	const readOnly = { readOnlyHint: true, openWorldHint: false } as const;
+	const writes = { readOnlyHint: false, destructiveHint: false, openWorldHint: false } as const;
 
 	server.registerTool(
 		'list_languages',
@@ -151,7 +160,130 @@ export function createReaderServer(db: Kysely<Database>, sources: SuggestionSour
 		}
 	);
 
+	server.registerTool(
+		'save_gloss',
+		{
+			title: 'Save a Gloss',
+			description:
+				'Saves a short meaning you offered for a Word or phrase as a Translation with Source Tutor. ' +
+				'Only for Unknown Words (which then get a Term at Learning 1) and Learning 1–2 Terms; refused otherwise.',
+			inputSchema: {
+				language: z.string().describe('Language name or code.'),
+				text: z.string().min(1).describe('The Word or phrase as it appears in the text.'),
+				gloss: z.string().min(1).describe('The short meaning, e.g. "during".')
+			},
+			annotations: writes
+		},
+		async ({ language: name, text, gloss }) =>
+			guard(async () => {
+				const language = await findLanguage(db, name);
+				if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
+				return json(await saveGloss(db, { languageId: language.id, text, gloss }));
+			})
+	);
+
+	server.registerTool(
+		'adjust_learning',
+		{
+			title: 'Adjust a Learning level',
+			description:
+				'A Tutor adjustment: one Learning step up after the learner answers correctly about a Term, one down after a miss. ' +
+				'Only for Learning 1–4 Terms, and never past Learning 1 or 4; Known and Ignored are the learner’s to set.',
+			inputSchema: {
+				language: z.string().describe('Language name or code.'),
+				text: z.string().min(1).describe('The Word or phrase.'),
+				direction: z.enum(['up', 'down'])
+			},
+			annotations: writes
+		},
+		async ({ language: name, text, direction }) =>
+			guard(async () => {
+				const language = await findLanguage(db, name);
+				if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
+				return json(await adjustLearning(db, { languageId: language.id, text, direction }));
+			})
+	);
+
+	server.registerTool(
+		'set_bookmark',
+		{
+			title: 'Move the Bookmark',
+			description: 'Moves a Book’s Bookmark to a Page and Sentence (both 1-based). The reading screen opens there too.',
+			inputSchema: {
+				book_id: z.number().int(),
+				page: z.number().int().min(1),
+				sentence: z.number().int().min(1).default(1)
+			},
+			annotations: { ...writes, idempotentHint: true }
+		},
+		async ({ book_id, page, sentence }) => guard(async () => json({ bookmark: await setBookmark(db, book_id, { page, sentence }) }))
+	);
+
+	server.registerTool(
+		'mark_page_read',
+		{
+			title: 'Mark a Page Read',
+			description:
+				'Marks a Page Read and moves the Bookmark to the start of the next Page. ' +
+				'rest_known also makes every remaining Unknown Word on the Page Known; use it only when the learner says so.',
+			inputSchema: {
+				book_id: z.number().int(),
+				page: z.number().int().min(1),
+				rest_known: z.boolean().default(false)
+			},
+			annotations: writes
+		},
+		async ({ book_id, page, rest_known }) =>
+			guard(async () => {
+				const next = await markPageRead(db, book_id, page, { restKnown: rest_known });
+				return json({ read: page, bookmark: await getBookmark(db, book_id), nextPage: next });
+			})
+	);
+
+	server.registerTool(
+		'import_book',
+		{
+			title: 'Import a Book',
+			description:
+				'Creates a Book from text you give (with a title) or from a web address, whose article text is extracted. ' +
+				'A web address the learner already has as a Book returns that Book instead.',
+			inputSchema: {
+				language: z.string().describe('Language name or code.'),
+				title: z.string().optional().describe('Needed for text; for a web address, the headline is used if left out.'),
+				text: z.string().optional().describe('The text. A line containing only --- starts a new Page.'),
+				url: z.string().optional().describe('A web page to read the article from.')
+			},
+			annotations: { ...writes, openWorldHint: true }
+		},
+		async ({ language: name, title, text, url }) =>
+			guard(async () => {
+				const language = await findLanguage(db, name);
+				if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
+				if ((text === undefined) === (url === undefined)) return failure('Give either text or url.');
+				if (url !== undefined) {
+					const article = await readArticle(url);
+					const existing = await findBookByUrl(db, article.url);
+					if (existing !== undefined) return json({ bookId: existing, alreadyHad: true });
+					const bookId = await createBook(db, { languageId: language.id, title: title?.trim() || article.title, text: article.text, url: article.url });
+					return json({ bookId, title: title?.trim() || article.title });
+				}
+				return json({ bookId: await createBook(db, { languageId: language.id, title: title ?? '', text: text! }) });
+			})
+	);
+
 	return server;
+}
+
+/** Turns a broken rule into an error result the Tutor can read and act on. */
+async function guard(run: () => Promise<CallToolResult>): Promise<CallToolResult> {
+	try {
+		return await run();
+	} catch (e) {
+		if (e instanceof InvalidTerm || e instanceof InvalidBookmark || e instanceof InvalidBook || e instanceof InvalidAddress) {
+			return failure(e.message);
+		}
+		throw e;
+	}
 }
 
 function wordView(text: string, term: TermView | undefined, words: number) {

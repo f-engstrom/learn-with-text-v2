@@ -3,11 +3,11 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { describe, it, expect } from 'vitest';
 import { openDatabase } from '../db/open';
 import { migrateToLatest } from '../db/migrate';
-import { createBook } from '../domain/books';
+import { createBook, getPage, listBooks } from '../domain/books';
 import { listLanguages } from '../domain/languages';
 import { setBookmark } from '../domain/reading';
 import type { SuggestionSources } from '../domain/suggestions';
-import { saveTerm } from '../domain/terms';
+import { listTerms, saveTerm } from '../domain/terms';
 import { createReaderServer } from './tools';
 
 const words = (n: number) => Array.from({ length: n }, () => 'кот').join(' ') + '.';
@@ -29,7 +29,11 @@ async function connect() {
 	await saveTerm(db, { languageId: russian.id, text: 'спит', status: 'known', parent: 'спать' });
 
 	const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-	await createReaderServer(db, sources).connect(serverSide);
+	const article = async (url: string) => {
+		if (url.includes('missing')) throw new (await import('../domain/webpages')).InvalidAddress('The site answered 404.');
+		return { url: `${url}?final`, title: 'Новости', text: 'Сегодня тепло. Кот гуляет.' };
+	};
+	await createReaderServer(db, sources, article).connect(serverSide);
 	const client = new Client({ name: 'test', version: '1' });
 	await client.connect(clientSide);
 	const call = async (name: string, args: Record<string, unknown> = {}) => {
@@ -40,11 +44,23 @@ async function connect() {
 }
 
 describe('Reader MCP server', () => {
-	it('offers only read-only tools', async () => {
+	it('marks which tools only read', async () => {
 		const { client } = await connect();
 		const { tools } = await client.listTools();
-		expect(tools.map((t) => t.name).toSorted()).toEqual(['get_bookmark', 'get_sentences', 'get_suggestions', 'list_books', 'list_languages', 'look_up_term']);
-		expect(tools.every((t) => t.annotations?.readOnlyHint)).toBe(true);
+		const readOnly = Object.fromEntries(tools.map((t) => [t.name, t.annotations?.readOnlyHint]));
+		expect(readOnly).toEqual({
+			list_languages: true,
+			list_books: true,
+			get_bookmark: true,
+			get_sentences: true,
+			look_up_term: true,
+			get_suggestions: true,
+			save_gloss: false,
+			adjust_learning: false,
+			set_bookmark: false,
+			mark_page_read: false,
+			import_book: false
+		});
 	});
 
 	it('lists Books with their Bookmark and Unknown share', async () => {
@@ -105,5 +121,49 @@ describe('Reader MCP server', () => {
 		expect(result.suggestions).toEqual([
 			{ title: 'Кот', url: 'https://ru.wikipedia.org/wiki/Кот', unknownShare: 0, pageCount: 1, fits: false }
 		]);
+	});
+
+	it('saves a Gloss that the reading screen and the Term list then show', async () => {
+		const { db, call, bookId } = await connect();
+		expect(await call('save_gloss', { language: 'ru', text: 'дня', gloss: 'of the day' })).toMatchObject({ status: 'learning1', added: true });
+		const page = await getPage(db, bookId, 1);
+		expect(page!.terms['дня']).toMatchObject({ status: 'learning1', translations: [{ text: 'of the day', source: 'tutor' }] });
+		expect((await listTerms(db, { source: 'tutor' })).terms.map((t) => t.text)).toEqual(['дня']);
+		expect(await call('save_gloss', { language: 'ru', text: 'спит', gloss: 'sleeps' })).toEqual({
+			error: '“спит” is Known; Glosses are only for Unknown Words and Learning 1–2 Terms.'
+		});
+	});
+
+	it('adjusts a Learning level one step, and refuses Known Terms', async () => {
+		const { call } = await connect();
+		expect(await call('adjust_learning', { language: 'ru', text: 'кот', direction: 'up' })).toEqual({ from: 'learning1', to: 'learning2' });
+		expect(await call('adjust_learning', { language: 'ru', text: 'спит', direction: 'down' })).toEqual({
+			error: '“спит” is Known; the Tutor only adjusts Learning 1–4.'
+		});
+	});
+
+	it('moves the Bookmark and marks Pages Read', async () => {
+		const { call, bookId } = await connect();
+		expect(await call('set_bookmark', { book_id: bookId, page: 1, sentence: 3 })).toEqual({ bookmark: { page: 1, sentence: 3 } });
+		expect(await call('set_bookmark', { book_id: bookId, page: 9 })).toEqual({ error: 'No such Page.' });
+		expect(await call('mark_page_read', { book_id: bookId, page: 1 })).toEqual({ read: 1, bookmark: { page: 2, sentence: 1 }, nextPage: 2 });
+		expect((await call('look_up_term', { language: 'ru', text: 'мышь' })).status).toBe('unknown');
+	});
+
+	it('imports a Book from text or a web address, once per address', async () => {
+		const { db, call } = await connect();
+		const fromText = await call('import_book', { language: 'Russian', title: 'Утро', text: 'Утро. Солнце.' });
+		const fromWeb = await call('import_book', { language: 'ru', url: 'https://news.example/a' });
+		expect(fromWeb).toMatchObject({ title: 'Новости' });
+		expect(await call('import_book', { language: 'ru', url: 'https://news.example/a' })).toEqual({ bookId: fromWeb.bookId, alreadyHad: true });
+		expect((await listBooks(db)).map((b) => [b.id, b.title])).toEqual(
+			expect.arrayContaining([
+				[fromText.bookId, 'Утро'],
+				[fromWeb.bookId, 'Новости']
+			])
+		);
+		expect(await call('import_book', { language: 'ru', title: 'x' })).toEqual({ error: 'Give either text or url.' });
+		expect(await call('import_book', { language: 'ru', url: 'https://news.example/missing' })).toEqual({ error: 'The site answered 404.' });
+		expect(await call('import_book', { language: 'ru', title: ' ', text: 'Кот.' })).toEqual({ error: 'Give the Book a title.' });
 	});
 });
