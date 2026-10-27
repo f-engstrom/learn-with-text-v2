@@ -50,7 +50,7 @@ The state of a Word that has no Term. Unknown is not a Status; there is no recor
 _Avoid_: Status 0, new word
 
 **Status**:
-How well you know a Term: Learning 1–4, Known, or Ignored.
+How well you say you know a Term: Learning 1–4, Known, or Ignored. Only you set it; the Tutor and the Reader may suggest a change.
 
 **Known**:
 The Status for a Term you no longer need help with. Covers both "learned" and "already knew it".
@@ -117,7 +117,42 @@ _Avoid_: AI, assistant, bot
 A short meaning the Tutor offers for a Word during a session. It is offered only for Unknown Words and Learning 1–2 Terms, and is saved as a Translation with Source Tutor.
 
 **Tutor adjustment**:
-A Tutor-made change to a Term's Learning level: up one step after you answer correctly about it, down one after a miss, never leaving Learning 1–4. Only you set Known or Ignored.
+A step in the Tutor's assessment of a Term: up one after you answer correctly about it, down one after a miss. It never changes your Status.
+
+**Tutor's assessment**:
+How well the Tutor judges you know a Term, from your answers, on the Status scale (Learning 1–4 or Known). Shown beside your Status; empty until the Tutor has asked about the Term.
+_Avoid_: Tutor status, score
+
+**Transfer**:
+How hard a Term is to carry over from Your languages, judged by the Tutor in two parts: its form (is there a look-alike?) and its concept (does the meaning map one-to-one?), each easy, medium or hard, with an optional reason.
+_Avoid_: Difficulty (that's Transfer and Frequency together), cognate score
+
+**Your languages**:
+The languages you already know, which Transfer and the Tutor's bridges are measured against. You or the Tutor add them as they come up.
+
+### Practice
+
+**Review**:
+One graded recall of a Term: Missed, Hard or Got it. Reviews come from practice on a Page, the review in the Term list, and Tutor questions; reading past a Word is not a Review.
+_Avoid_: Test, card, rep
+
+**Due**:
+A Term is Due when its schedule, built only from its Reviews, says it needs another one. Only Learning 1–4 Terms are scheduled; a Term that Follows Parent shares its Parent's schedule. How overdue it is shows as a mark on the Word.
+_Avoid_: Scheduled, pending
+
+**Recall strength**:
+How well the Reviews show you know a Term: how many days the memory holds, and your chance of recalling it today. Shown on the Status scale beside your Status and the Tutor's assessment, as a measurement; it never sets either.
+_Avoid_: Memory score, mastery
+
+**Frequency**:
+How common a Word is in its Language, as a band (top 1,000, top 5,000, top 20,000, rare) from a frequency list.
+_Avoid_: Rank (fine for the list itself), popularity
+
+**Practice priority**:
+The order Due Terms come up in: Frequency first, then Transfer (harder first), then how overdue. It only orders; it never hides a Term.
+
+**Practice**:
+Going through Due Terms on a Page with the cursor, in a subset you choose (by priority, a paragraph, the Highlight, most overdue), recalling each in its Sentence and grading it as a Review.
 
 **Wiktionary panel**:
 The built-in lookup that shows English Wiktionary definitions for the selected Word or Multi-word Term, each of which can be added as a Translation with one click.

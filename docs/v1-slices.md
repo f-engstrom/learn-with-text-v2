@@ -117,4 +117,4 @@ Each slice goes from the screen to the database and ends in something you can de
 
 ## Not in v1
 
-EPUB and PDF import; Anki export; audio; configurable hotkeys; editing Languages in the app; jieba; Bosnian Cyrillic; reading stats and streaks; multiple users and sync.
+EPUB and PDF import; Anki export; spaced repetition (now [Practice slices](practice-slices.md)); audio; configurable hotkeys; editing Languages in the app; jieba; Bosnian Cyrillic; reading stats and streaks; multiple users and sync.
