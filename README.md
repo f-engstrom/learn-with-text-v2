@@ -11,6 +11,15 @@ npm run dev
 
 The database is a single SQLite file at `DATABASE_PATH` (default `data/reader.db`). Migrations run when the server starts.
 
+To run it day to day, build it once and start the built app at http://localhost:3000:
+
+```sh
+npm run build
+npm start
+```
+
+The build bakes in that address (SvelteKit checks it before accepting any form). For another one, set it at build time and start to match, e.g. `ORIGIN=http://localhost:4000 npm run build` then `PORT=4000 npm start`.
+
 ```sh
 npm test        # unit tests
 npm run check   # type check

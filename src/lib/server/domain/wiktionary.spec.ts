@@ -37,6 +37,11 @@ describe('lookUp', () => {
 		});
 	});
 
+	it('lists a definition once when two senses read the same', async () => {
+		const source = fake({ мышь: { ru: [entry('Noun', 'mouse', '<i>mouse</i>', 'computer mouse')] } });
+		expect((await lookUp(source, ru, { normalised: 'мышь', text: 'мышь' }))?.entries[0].definitions).toEqual(['mouse', 'computer mouse']);
+	});
+
 	it('looks Bosnian up under Serbo-Croatian', async () => {
 		const source = fake({ knjiga: { sh: [entry('Noun', 'book')], other: [] } });
 		expect((await lookUp(source, { code: 'bs' }, { normalised: 'knjiga', text: 'knjiga' }))?.entries[0].definitions).toEqual(['book']);

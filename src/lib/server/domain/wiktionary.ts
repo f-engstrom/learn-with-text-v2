@@ -52,7 +52,11 @@ export async function lookUp(
 
 function toEntries(raw: RawDefinitions[string] | undefined): WiktionaryEntry[] {
 	return (raw ?? [])
-		.map((e) => ({ partOfSpeech: e.partOfSpeech, definitions: e.definitions.map((d) => plainText(d.definition)).filter((d) => d !== '') }))
+		// Senses can read the same once their markup is gone (мышь: "mouse" the animal and the device).
+		.map((e) => ({
+			partOfSpeech: e.partOfSpeech,
+			definitions: [...new Set(e.definitions.map((d) => plainText(d.definition)))].filter((d) => d !== '')
+		}))
 		.filter((e) => e.definitions.length > 0);
 }
 
