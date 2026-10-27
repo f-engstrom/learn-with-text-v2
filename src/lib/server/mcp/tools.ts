@@ -8,7 +8,7 @@ import { createBook, findBookByUrl, getPage, InvalidBook, listBooks } from '../d
 import { listLanguages, type Language } from '../domain/languages';
 import { termKey } from '../domain/parsing';
 import { getBookmark, InvalidBookmark, markPageRead, setBookmark } from '../domain/reading';
-import { findSuggestions, getFitRange, type SuggestionSources } from '../domain/suggestions';
+import { findSuggestions, getFitRange, importArticle, type SuggestionSources } from '../domain/suggestions';
 import { findTerms, InvalidTerm, type TermView } from '../domain/terms';
 import { adjustLearning, saveGloss } from '../domain/tutoring';
 import { fetchArticle, InvalidAddress, type WebArticle } from '../domain/webpages';
@@ -80,7 +80,7 @@ export function createReaderServer(
 			description:
 				"Sentences of a Book's Page, from the Bookmark unless a Page and Sentence are given, with each Word's Status and Translations. " +
 				'Status "unknown" means the Word has no Term. A matched Multi-word Term (e.g. "в течение") is one entry. ' +
-				'Stays within one Page; nextPage says where to continue.',
+				'Each Sentence carries its paragraph number on the Page. Stays within one Page; nextPage says where to continue.',
 			inputSchema: {
 				book_id: z.number().int().describe('The Book, from list_books.'),
 				page: z.number().int().min(1).optional().describe("1-based Page; the Bookmark's by default."),
@@ -96,11 +96,12 @@ export function createReaderServer(
 			const page = await getPage(db, book_id, position);
 			if (!page) return failure(`Book ${book_id} has no Page ${position}.`);
 			const from = start ?? (position === bookmark.page ? bookmark.sentence : 1);
-			const all = page.paragraphs.flatMap((p) => p.sentences);
+			const all = page.paragraphs.flatMap((p, paragraph) => p.sentences.map((s) => ({ ...s, paragraph: paragraph + 1 })));
 			const sentences = all.slice(from - 1, from - 1 + count).map((s, i) => {
 				const words = s.tokens.flatMap((t) => (t.key === undefined ? [] : [wordView(t.text, page.terms[t.key], t.words ?? 1)]));
 				return {
 					position: from + i,
+					paragraph: s.paragraph,
 					isBookmark: position === bookmark.page && from + i === bookmark.sentence,
 					text: s.tokens.map((t) => t.text).join('').trim(),
 					words
@@ -260,6 +261,13 @@ export function createReaderServer(
 				const language = await findLanguage(db, name);
 				if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
 				if ((text === undefined) === (url === undefined)) return failure('Give either text or url.');
+				// A Wikipedia article comes in through its API, cut like a Suggestion, without the page's notices.
+				const wikipedia = url === undefined ? undefined : wikipediaTitle(url, language.code);
+				if (wikipedia !== undefined) {
+					const bookId = await importArticle(db, sources.wikipedia, language, wikipedia);
+					if (bookId === undefined) return failure(`Wikipedia has no article "${wikipedia}".`);
+					return json({ bookId, title: wikipedia });
+				}
 				if (url !== undefined) {
 					const article = await readArticle(url);
 					const existing = await findBookByUrl(db, article.url);
@@ -272,6 +280,18 @@ export function createReaderServer(
 	);
 
 	return server;
+}
+
+/** The article title of an address on the Language's Wikipedia, e.g. https://ru.wikipedia.org/wiki/Футбол. */
+export function wikipediaTitle(url: string, code: string): string | undefined {
+	try {
+		const parsed = new URL(url);
+		if (!new RegExp(`^${code}(\\.m)?\\.wikipedia\\.org$`).test(parsed.hostname)) return undefined;
+		const match = parsed.pathname.match(/^\/wiki\/(.+)$/);
+		return match ? decodeURIComponent(match[1]).replaceAll('_', ' ') : undefined;
+	} catch {
+		return undefined;
+	}
 }
 
 /** Turns a broken rule into an error result the Tutor can read and act on. */

@@ -24,6 +24,8 @@ Tools that read: `list_languages`, `list_books`, `get_bookmark`, `get_sentences`
 
 Tools that write: `save_gloss` (a Translation with Source Tutor, only for Unknown Words and Learning 1–2 Terms), `adjust_learning` (one step within Learning 1–4), `set_bookmark`, `mark_page_read` and `import_book` (from text or a web address). Their rules live in the domain code, so the web app and the Tutor can't disagree.
 
+The Tutor itself is the [`reader-tutor`](.claude/skills/reader-tutor/SKILL.md) skill: the reading-tutor skill reworked to read from the Bookmark, Gloss by Status, make Tutor adjustments and find new Books through these tools, keeping only teaching notes in memory.
+
 ## Layout
 
 - `src/lib/server/db`: connection, schema types and migrations.

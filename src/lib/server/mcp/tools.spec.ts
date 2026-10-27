@@ -8,7 +8,7 @@ import { listLanguages } from '../domain/languages';
 import { setBookmark } from '../domain/reading';
 import type { SuggestionSources } from '../domain/suggestions';
 import { listTerms, saveTerm } from '../domain/terms';
-import { createReaderServer } from './tools';
+import { createReaderServer, wikipediaTitle } from './tools';
 
 const words = (n: number) => Array.from({ length: n }, () => 'кот').join(' ') + '.';
 const sources: SuggestionSources = {
@@ -84,9 +84,9 @@ describe('Reader MCP server', () => {
 	it("gives Sentences from the Bookmark with each Word's Status, and which Words are still Unknown", async () => {
 		const { call, bookId } = await connect();
 		const result = await call('get_sentences', { book_id: bookId, count: 2 });
-		expect(result.sentences.map((s: { text: string; isBookmark: boolean }) => [s.text, s.isBookmark])).toEqual([
-			['В течение дня кот спит.', true],
-			['Мышь бежит.', false]
+		expect(result.sentences.map((s: { text: string; isBookmark: boolean; paragraph: number }) => [s.text, s.isBookmark, s.paragraph])).toEqual([
+			['В течение дня кот спит.', true, 1],
+			['Мышь бежит.', false, 1]
 		]);
 		expect(result.sentences[0].words).toEqual([
 			{ text: 'В течение', multiWord: true, status: 'learning2', translations: ['during'] },
@@ -165,5 +165,21 @@ describe('Reader MCP server', () => {
 		expect(await call('import_book', { language: 'ru', title: 'x' })).toEqual({ error: 'Give either text or url.' });
 		expect(await call('import_book', { language: 'ru', url: 'https://news.example/missing' })).toEqual({ error: 'The site answered 404.' });
 		expect(await call('import_book', { language: 'ru', title: ' ', text: 'Кот.' })).toEqual({ error: 'Give the Book a title.' });
+	});
+
+	it('imports a Wikipedia address through the Wikipedia API, like a Suggestion', async () => {
+		const { call } = await connect();
+		const result = await call('import_book', { language: 'ru', url: 'https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D1%82' });
+		expect(result).toMatchObject({ title: 'Кот' });
+		expect(await call('import_book', { language: 'ru', url: 'https://ru.wikipedia.org/wiki/Кот' })).toEqual({ bookId: result.bookId, title: 'Кот' });
+	});
+});
+
+describe('wikipediaTitle', () => {
+	it("reads the title from an address on the Language's Wikipedia only", () => {
+		expect(wikipediaTitle('https://ru.wikipedia.org/wiki/%D0%A4%D1%83%D1%82%D0%B1%D0%BE%D0%BB', 'ru')).toBe('Футбол');
+		expect(wikipediaTitle('https://ru.m.wikipedia.org/wiki/Футбольная_лига', 'ru')).toBe('Футбольная лига');
+		expect(wikipediaTitle('https://en.wikipedia.org/wiki/Football', 'ru')).toBeUndefined();
+		expect(wikipediaTitle('https://news.example/wiki/x', 'ru')).toBeUndefined();
 	});
 });
