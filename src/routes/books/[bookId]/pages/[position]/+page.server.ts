@@ -2,14 +2,18 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { database } from '#lib/server/database.ts';
 import { getPage } from '#lib/server/domain/books.ts';
 import { listDictionaries } from '#lib/server/domain/dictionaries.ts';
-import { InvalidBookmark, markPageRead, setBookmark } from '#lib/server/domain/reading.ts';
+import { getHighlight, InvalidBookmark, markPageRead, setBookmark } from '#lib/server/domain/reading.ts';
 import { deleteTermAction, saveTermAction, setStatusAction } from '#lib/server/term-actions.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const page = await getPage(database(), Number(params.bookId), Number(params.position));
 	if (!page) error(404, 'Page not found');
-	return { ...page, dictionaries: await listDictionaries(database(), page.language.id) };
+	return {
+		...page,
+		dictionaries: await listDictionaries(database(), page.language.id),
+		highlight: (await getHighlight(database(), page.book.id)) ?? null
+	};
 };
 
 export const actions: Actions = {

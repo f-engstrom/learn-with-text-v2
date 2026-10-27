@@ -7,7 +7,18 @@ import type { Database } from '../db/schema';
 import { createBook, findBookByUrl, getPage, InvalidBook, listBooks } from '../domain/books';
 import { listLanguages, type Language } from '../domain/languages';
 import { termKey } from '../domain/parsing';
-import { getBookmark, InvalidBookmark, latestBookmark, markPageRead, setBookmark } from '../domain/reading';
+import {
+	clearHighlight,
+	getBookmark,
+	getHighlight,
+	highlightNoteLength,
+	InvalidBookmark,
+	InvalidHighlight,
+	latestBookmark,
+	markPageRead,
+	setBookmark,
+	setHighlight
+} from '../domain/reading';
 import { findSuggestions, getFitRange, importArticle, type SuggestionSources } from '../domain/suggestions';
 import { findTerms, InvalidTerm, type TermView } from '../domain/terms';
 import { adjustLearning, linkParent, saveGloss } from '../domain/tutoring';
@@ -30,7 +41,7 @@ export function createReaderServer(
 				'A Word with no Term is Unknown. A Term has a Status (learning1–4, known, ignored), ordered Translations each with a Source (you, wiktionary, tutor), an optional Pronunciation and Parent. ' +
 				'Start with list_books, then get_sentences to read from the Bookmark; where_am_i says where the learner is right now when they read on their own. ' +
 				'While tutoring: save_gloss for a meaning you give (only Unknown Words and Learning 1–2 Terms), set_parent to link an inflected form to its dictionary form, adjust_learning after the learner answers about a Term, ' +
-				'set_bookmark as you move through the text, and mark_page_read at the end of a Page. Only the learner sets Known or Ignored.'
+				'set_bookmark as you move through the text, set_highlight to point the learner at Sentences in their reading screen, and mark_page_read at the end of a Page. Only the learner sets Known or Ignored.'
 		}
 	);
 	const readOnly = { readOnlyHint: true, openWorldHint: false } as const;
@@ -58,7 +69,7 @@ export function createReaderServer(
 			title: 'Where am I',
 			description:
 				'Where the learner is right now: the Book whose Bookmark moved most recently (in the reading screen or by you), ' +
-				'its Sentence with the paragraph so far, and the Word or phrase they last selected there, with its Status and Translations. ' +
+				'its Sentence with the paragraph so far, the Word or phrase they last selected there with its Status and Translations, and your Highlight in that Book if any. ' +
 				'Use it when the learner says "I\'m here", "help me with this" or similar while reading on their own.',
 			annotations: readOnly
 		},
@@ -78,7 +89,8 @@ export function createReaderServer(
 				movedAt: latest.at,
 				sentence: current && text(current),
 				paragraphSoFar: current && sentences.filter((s, i) => s.paragraph === current.paragraph && i < latest.bookmark.sentence).map(text).join(' '),
-				word: token?.key !== undefined ? wordView(token.text, page.terms[token.key], token.words ?? 1) : undefined
+				word: token?.key !== undefined ? wordView(token.text, page.terms[token.key], token.words ?? 1) : undefined,
+				highlight: await getHighlight(db, latest.bookId)
 			});
 		}
 	);
@@ -112,7 +124,7 @@ export function createReaderServer(
 			description:
 				"Sentences of a Book's Page, from the Bookmark unless a Page and Sentence are given, with each Word's Status and Translations. " +
 				'Status "unknown" means the Word has no Term. A matched Multi-word Term (e.g. "в течение") is one entry. ' +
-				'Each Sentence carries its paragraph number on the Page; the Word the learner selected in the Bookmark Sentence is marked selected. Stays within one Page; nextPage says where to continue.',
+				'Each Sentence carries its paragraph number on the Page; the Word the learner selected in the Bookmark Sentence is marked selected, and Sentences in your Highlight are marked highlighted. Stays within one Page; nextPage says where to continue.',
 			inputSchema: {
 				book_id: z.number().int().describe('The Book, from list_books.'),
 				page: z.number().int().min(1).optional().describe("1-based Page; the Bookmark's by default."),
@@ -128,6 +140,8 @@ export function createReaderServer(
 			const page = await getPage(db, book_id, position);
 			if (!page) return failure(`Book ${book_id} has no Page ${position}.`);
 			const from = start ?? (position === bookmark.page ? bookmark.sentence : 1);
+			const highlight = await getHighlight(db, book_id);
+			const inHighlight = (n: number) => highlight?.page === position && n >= highlight.first && n <= highlight.last;
 			const all = page.paragraphs.flatMap((p, paragraph) => p.sentences.map((s) => ({ ...s, paragraph: paragraph + 1 })));
 			const sentences = all.slice(from - 1, from - 1 + count).map((s, i) => {
 				const isBookmark = position === bookmark.page && from + i === bookmark.sentence;
@@ -146,6 +160,7 @@ export function createReaderServer(
 					position: from + i,
 					paragraph: s.paragraph,
 					isBookmark,
+					...(inHighlight(from + i) ? { highlighted: true } : {}),
 					text: s.tokens.map((t) => t.text).join('').trim(),
 					words
 				};
@@ -156,6 +171,7 @@ export function createReaderServer(
 				book: { id: book_id, title: page.book.title, language: page.language.name, pageCount: page.book.pageCount },
 				page: { position, read: page.read, sentenceCount: all.length },
 				bookmark,
+				...(highlight ? { highlight } : {}),
 				sentences,
 				unknown,
 				nextPage: last >= all.length && position < page.book.pageCount ? position + 1 : undefined
@@ -289,6 +305,41 @@ export function createReaderServer(
 	);
 
 	server.registerTool(
+		'set_highlight',
+		{
+			title: 'Highlight Sentences',
+			description:
+				'Points the learner at a run of Sentences on one Page (1-based, inclusive) with an optional short note, e.g. "Who is speaking here?". ' +
+				'Their open reading screen shows it within a few seconds. It replaces the Book’s previous Highlight, never moves the Bookmark, ' +
+				'and lasts until you set another, clear_highlight, or the Page is marked Read.',
+			inputSchema: {
+				book_id: z.number().int(),
+				page: z.number().int().min(1),
+				first: z.number().int().min(1).describe('First Sentence on the Page.'),
+				last: z.number().int().min(1).optional().describe('Last Sentence; the first by default.'),
+				note: z.string().max(highlightNoteLength).optional().describe('A sentence or two shown beside the Highlight.')
+			},
+			annotations: { ...writes, idempotentHint: true }
+		},
+		async ({ book_id, page, first, last, note }) =>
+			guard(async () => json({ highlight: await setHighlight(db, book_id, { page, first, last: last ?? first, note }) }))
+	);
+
+	server.registerTool(
+		'clear_highlight',
+		{
+			title: 'Clear the Highlight',
+			description: 'Removes the Book’s Highlight, e.g. when the learner has read what you pointed them to.',
+			inputSchema: { book_id: z.number().int() },
+			annotations: { ...writes, idempotentHint: true }
+		},
+		async ({ book_id }) => {
+			await clearHighlight(db, book_id);
+			return json({ highlight: null });
+		}
+	);
+
+	server.registerTool(
 		'mark_page_read',
 		{
 			title: 'Mark a Page Read',
@@ -367,7 +418,7 @@ async function guard(run: () => Promise<CallToolResult>): Promise<CallToolResult
 	try {
 		return await run();
 	} catch (e) {
-		if (e instanceof InvalidTerm || e instanceof InvalidBookmark || e instanceof InvalidBook || e instanceof InvalidAddress) {
+		if (e instanceof InvalidTerm || e instanceof InvalidBookmark || e instanceof InvalidHighlight || e instanceof InvalidBook || e instanceof InvalidAddress) {
 			return failure(e.message);
 		}
 		throw e;

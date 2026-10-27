@@ -4,6 +4,20 @@ import { getPage, toBookmark, type Bookmark } from './books';
 import { suggestPronunciation } from './pronunciation';
 
 export class InvalidBookmark extends Error {}
+export class InvalidHighlight extends Error {}
+
+/** A run of Sentences on one Page that the Tutor points you to. Sentences are 1-based and inclusive. */
+export interface Highlight {
+	page: number;
+	first: number;
+	last: number;
+	note?: string;
+	/** When it was set. */
+	at: string;
+}
+
+/** The longest note a Highlight takes: a sentence or two, not a lesson. */
+export const highlightNoteLength = 300;
 
 export async function getBookmark(db: Kysely<Database>, bookId: number): Promise<Bookmark | undefined> {
 	const row = await db
@@ -56,6 +70,59 @@ export async function setBookmark(db: Kysely<Database>, bookId: number, bookmark
 	return { page: bookmark.page, sentence, ...(word ? { word } : {}) };
 }
 
+export async function getHighlight(db: Kysely<Database>, bookId: number): Promise<Highlight | undefined> {
+	const row = await db
+		.selectFrom('book')
+		.select(['highlight_page', 'highlight_first', 'highlight_last', 'highlight_note', 'highlighted_at'])
+		.where('id', '=', bookId)
+		.executeTakeFirst();
+	if (!row || row.highlight_page === null || row.highlight_first === null || row.highlight_last === null) return undefined;
+	return {
+		page: row.highlight_page,
+		first: row.highlight_first,
+		last: row.highlight_last,
+		...(row.highlight_note ? { note: row.highlight_note } : {}),
+		at: row.highlighted_at ?? ''
+	};
+}
+
+/** Sets the Book's Highlight, replacing any it had. The Sentences must be on the Page, in order. */
+export async function setHighlight(
+	db: Kysely<Database>,
+	bookId: number,
+	highlight: Omit<Highlight, 'at'>
+): Promise<Highlight> {
+	const page = await db
+		.selectFrom('page')
+		.select((eb) =>
+			eb.selectFrom('sentence').whereRef('sentence.page_id', '=', 'page.id').select(eb.fn.countAll<number>().as('n')).as('sentences')
+		)
+		.where('book_id', '=', bookId)
+		.where('position', '=', highlight.page)
+		.executeTakeFirst();
+	if (!page) throw new InvalidHighlight('No such Page.');
+	const count = Number(page.sentences);
+	const { first, last } = highlight;
+	if (!Number.isInteger(first) || !Number.isInteger(last) || first < 1 || last < first || last > count) {
+		throw new InvalidHighlight(`Page ${highlight.page} has Sentences 1–${count}; a Highlight runs from one of them to the same or a later one.`);
+	}
+	const note = highlight.note?.trim().replace(/\s+/g, ' ') || undefined;
+	if (note && note.length > highlightNoteLength) throw new InvalidHighlight(`A Highlight's note is at most ${highlightNoteLength} characters.`);
+	const at = new Date().toISOString();
+	await db
+		.updateTable('book')
+		.set({ highlight_page: highlight.page, highlight_first: first, highlight_last: last, highlight_note: note ?? null, highlighted_at: at })
+		.where('id', '=', bookId)
+		.execute();
+	return { page: highlight.page, first, last, ...(note ? { note } : {}), at };
+}
+
+const noHighlight = { highlight_page: null, highlight_first: null, highlight_last: null, highlight_note: null, highlighted_at: null };
+
+export async function clearHighlight(db: Kysely<Database>, bookId: number): Promise<void> {
+	await db.updateTable('book').set(noHighlight).where('id', '=', bookId).execute();
+}
+
 export interface MarkRead {
 	/** Also make every Unknown Word on the Page Known. */
 	restKnown?: boolean;
@@ -106,6 +173,8 @@ export async function markPageRead(
 				.execute();
 		}
 		await trx.updateTable('page').set({ read_at: now }).where('book_id', '=', bookId).where('position', '=', position).execute();
+		// A Highlight on a Page you've finished has done its job.
+		await trx.updateTable('book').set(noHighlight).where('id', '=', bookId).where('highlight_page', '=', position).execute();
 		if (next !== undefined) {
 			await trx
 				.updateTable('book')

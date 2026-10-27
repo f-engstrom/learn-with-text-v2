@@ -4,7 +4,17 @@ import { migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
 import { createBook, getPage } from './books';
 import { findTerms, saveTerm } from './terms';
-import { getBookmark, InvalidBookmark, latestBookmark, markPageRead, setBookmark } from './reading';
+import {
+	clearHighlight,
+	getBookmark,
+	getHighlight,
+	InvalidBookmark,
+	InvalidHighlight,
+	latestBookmark,
+	markPageRead,
+	setBookmark,
+	setHighlight
+} from './reading';
 
 async function setup(text = 'Кот спит. Мышь бежит.\n---\nКот и мышь. Мышь спит.') {
 	const db = openDatabase(':memory:');
@@ -130,5 +140,46 @@ describe('latestBookmark', () => {
 		await new Promise((r) => setTimeout(r, 5));
 		await markPageRead(db, bookId, 1);
 		expect(await latestBookmark(db)).toMatchObject({ bookId, bookmark: { page: 2, sentence: 1 } });
+	});
+});
+
+describe('Highlight', () => {
+	it('is set on a run of Sentences with a note, replacing the last one', async () => {
+		const { db, bookId } = await setup();
+		expect(await getHighlight(db, bookId)).toBeUndefined();
+		await setHighlight(db, bookId, { page: 1, first: 1, last: 1 });
+		const set = await setHighlight(db, bookId, { page: 2, first: 1, last: 2, note: '  Who is  asleep? ' });
+		expect(set).toMatchObject({ page: 2, first: 1, last: 2, note: 'Who is asleep?' });
+		expect(await getHighlight(db, bookId)).toEqual(set);
+	});
+
+	it('leaves the Bookmark where it is', async () => {
+		const { db, bookId } = await setup();
+		await setBookmark(db, bookId, { page: 1, sentence: 2, word: 'Мышь' });
+		await setHighlight(db, bookId, { page: 2, first: 1, last: 1 });
+		expect(await getBookmark(db, bookId)).toEqual({ page: 1, sentence: 2, word: 'Мышь' });
+	});
+
+	it('rejects Sentences that are not on the Page, out of order, or a Page the Book lacks', async () => {
+		const { db, bookId } = await setup();
+		await expect(setHighlight(db, bookId, { page: 1, first: 1, last: 3 })).rejects.toThrow(InvalidHighlight);
+		await expect(setHighlight(db, bookId, { page: 1, first: 2, last: 1 })).rejects.toThrow(InvalidHighlight);
+		await expect(setHighlight(db, bookId, { page: 1, first: 0, last: 1 })).rejects.toThrow(InvalidHighlight);
+		await expect(setHighlight(db, bookId, { page: 3, first: 1, last: 1 })).rejects.toThrow(InvalidHighlight);
+		await expect(setHighlight(db, bookId, { page: 1, first: 1, last: 1, note: 'x'.repeat(301) })).rejects.toThrow(InvalidHighlight);
+		expect(await getHighlight(db, bookId)).toBeUndefined();
+	});
+
+	it('is cleared by the Tutor, or by marking its Page Read', async () => {
+		const { db, bookId } = await setup();
+		await setHighlight(db, bookId, { page: 1, first: 1, last: 2 });
+		await clearHighlight(db, bookId);
+		expect(await getHighlight(db, bookId)).toBeUndefined();
+
+		await setHighlight(db, bookId, { page: 2, first: 1, last: 1 });
+		await markPageRead(db, bookId, 1);
+		expect(await getHighlight(db, bookId)).toMatchObject({ page: 2 });
+		await markPageRead(db, bookId, 2);
+		expect(await getHighlight(db, bookId)).toBeUndefined();
 	});
 });

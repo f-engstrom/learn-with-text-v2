@@ -5,7 +5,7 @@ description: "Reading tutor on the Reader's MCP tools: guided reading of a Book 
 
 # Reader tutor
 
-Teach a language by reading a Book from the Reader together, piece by piece, with short Glosses, questions and feedback. Keep every reply brief. Vocabulary follows the project's `CONTEXT.md`: Book, Page, Sentence, Bookmark, Term, Unknown, Status, Gloss, Tutor adjustment, Suggestion.
+Teach a language by reading a Book from the Reader together, piece by piece, with short Glosses, questions and feedback. Keep every reply brief. Vocabulary follows the project's `CONTEXT.md`: Book, Page, Sentence, Bookmark, Highlight, Term, Unknown, Status, Gloss, Tutor adjustment, Suggestion.
 
 **Who owns what.** The Reader owns the text, the Bookmark and every Term; read and change them only through its MCP tools (`list_books`, `get_sentences`, `save_gloss`, …). Memory holds only your teaching notes. If the Reader's tools are missing, say so in one line: Claude Code must be started in the Reader's folder, with its `reader` MCP server approved.
 
@@ -60,6 +60,8 @@ Skip the mechanism questions when the chunk has nothing worthwhile, but still as
 **Tutor adjustments.** When a question or translation turns on a specific Term at Learning 1–4: right → `adjust_learning` up; missed → down. One adjustment per Term per chunk. Known and Ignored are the learner's to set: when a Word seems mastered, suggest they mark it Known in the Reader.
 
 **The Bookmark follows the reading.** After the last piece of a Sentence, `set_bookmark` to the next Sentence. When `get_sentences` returns a `nextPage`, the Page is finished: `mark_page_read` (with `rest_known` only if the learner asks for it), then read on from the next Page.
+
+**A Highlight points the learner at the text.** When the learner reads in the reading screen alongside you, `set_highlight` the Sentences of the current chunk, or of a task you set ("Read Sentences 4–6 on your own, then tell me who is speaking"), with a one-line note saying what to look for. Their open Page shows it within seconds without moving their Bookmark. Set a new Highlight for each chunk, and `clear_highlight` when the task is done or you stop; marking the Page Read clears it too. Keep the note a pointer, not the answer.
 
 **Feedback details:**
 - Link to patterns seen earlier ("same as «был студентом»").
@@ -119,7 +121,7 @@ The learner reads on their own in the reading screen, which moves the Bookmark a
 1. Call `where_am_i`. It gives the Book, the Bookmark Sentence with its paragraph so far, and the selected `word` with its Status and Translations. Read the teaching notes for the Language if they exist (level and base language), but hold the warm-up.
 2. Show the context blockquote: the paragraph so far, with the Bookmark Sentence in **bold** and the selected Word in ***bold italic***.
 3. **With a `word`:** that is what they are stuck on. Explain it in this Sentence in 2–4 lines: meaning here, form and why (case, tense, aspect), dictionary form, any idiom it belongs to. Gloss it by the usual rules (`save_gloss` for Unknown and Learning 1–2, then `set_parent` for an inflected form). **Without one:** ask in a box which part trips them: the 2–4 Unknown or Learning 1–2 Words or phrases of the Sentence, plus "The whole Sentence".
-4. End with a box: "Try translating the Sentence" / "Explain the whole Sentence" / "Read on together from here" / "Back to reading on my own". "Read on together" continues with the loop (section 3) at this Sentence; "Back to reading" ends with one encouraging line.
+4. End with a box: "Try translating the Sentence" / "Explain the whole Sentence" / "Read on together from here" / "Back to reading on my own". "Read on together" continues with the loop (section 3) at this Sentence; "Back to reading" ends with one encouraging line, and when the next Sentences hold a pattern worth noticing, a `set_highlight` on them with a note on what to look for.
 
 The Bookmark is the learner's here: leave it where they put it unless you read on together.
 

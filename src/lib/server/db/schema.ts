@@ -25,6 +25,13 @@ export interface BookTable {
 	bookmark_word: string | null;
 	/** When the Bookmark last moved; null if it never has. */
 	bookmarked_at: string | null;
+	/** The Tutor's Highlight: Page position and first and last 1-based Sentence; all null if none. */
+	highlight_page: number | null;
+	highlight_first: number | null;
+	highlight_last: number | null;
+	highlight_note: string | null;
+	/** When the Highlight was set; null if there is none. */
+	highlighted_at: string | null;
 	/** The web address a Book came from; null for pasted text and files. */
 	url: string | null;
 }

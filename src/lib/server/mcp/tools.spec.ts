@@ -60,6 +60,8 @@ describe('Reader MCP server', () => {
 			adjust_learning: false,
 			set_parent: false,
 			set_bookmark: false,
+			set_highlight: false,
+			clear_highlight: false,
 			mark_page_read: false,
 			import_book: false
 		});
@@ -208,6 +210,24 @@ describe('Reader MCP server', () => {
 		expect(await call('set_bookmark', { book_id: bookId, page: 1, sentence: 3, word: 'видит' })).toEqual({ bookmark: { page: 1, sentence: 3, word: 'видит' } });
 		expect(await call('set_bookmark', { book_id: bookId, page: 1, sentence: 3, word: 'бежит' })).toEqual({ error: '“бежит” isn\'t in Sentence 3 of Page 1.' });
 		expect((await call('where_am_i')).word).toMatchObject({ text: 'видит' });
+	});
+
+	it('highlights Sentences for the reading screen, and shows the Highlight back', async () => {
+		const { call, bookId } = await connect();
+		const set = await call('set_highlight', { book_id: bookId, page: 1, first: 2, last: 3, note: 'Who chases whom?' });
+		expect(set.highlight).toMatchObject({ page: 1, first: 2, last: 3, note: 'Who chases whom?' });
+		const sentences = await call('get_sentences', { book_id: bookId, page: 1, sentence: 1, count: 3 });
+		expect(sentences.highlight).toMatchObject({ first: 2, last: 3 });
+		expect(sentences.sentences.map((s: { highlighted?: boolean }) => s.highlighted ?? false)).toEqual([false, true, true]);
+		await call('set_bookmark', { book_id: bookId, page: 1, sentence: 1 });
+		expect((await call('where_am_i')).highlight).toMatchObject({ page: 1, first: 2 });
+
+		expect(await call('set_highlight', { book_id: bookId, page: 1, first: 3, last: 9 })).toEqual({
+			error: 'Page 1 has Sentences 1–3; a Highlight runs from one of them to the same or a later one.'
+		});
+		expect((await call('set_highlight', { book_id: bookId, page: 2, first: 1 })).highlight).toMatchObject({ page: 2, first: 1, last: 1 });
+		expect(await call('clear_highlight', { book_id: bookId })).toEqual({ highlight: null });
+		expect((await call('where_am_i')).highlight).toBeUndefined();
 	});
 });
 

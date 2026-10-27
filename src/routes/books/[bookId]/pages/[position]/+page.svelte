@@ -6,6 +6,7 @@
 	import { commandFor } from '#lib/reading/keys.ts';
 	import { termKey } from '#lib/normalise.ts';
 	import type { ReadingToken } from '#lib/server/domain/books.ts';
+	import type { Highlight } from '#lib/server/domain/reading.ts';
 	import type { Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
 	import Dictionaries from './Dictionaries.svelte';
@@ -86,6 +87,40 @@
 			localStorage.setItem(zenKey, zen ? 'on' : 'off');
 		} catch {}
 		wake();
+	}
+
+	/** The Tutor's Highlight, kept current by polling while the Page is open. */
+	let highlight = $state<Highlight | null>(null);
+	$effect(() => {
+		highlight = data.highlight;
+	});
+	let sentenceNumbers = $derived(new Map(sentences.map((s, i) => [s, i + 1])));
+	let highlightHere = $derived(highlight?.page === data.position ? highlight : undefined);
+	const highlighted = (sentence: (typeof sentences)[number]) => {
+		const n = sentenceNumbers.get(sentence) ?? 0;
+		return highlightHere !== undefined && n >= highlightHere.first && n <= highlightHere.last;
+	};
+	let highlightElement = $state<HTMLElement>();
+
+	onMount(() => {
+		const poll = setInterval(async () => {
+			if (document.hidden) return;
+			const latest: Highlight | null = await fetch(`/books/${data.book.id}/highlight`)
+				.then((r) => (r.ok ? r.json() : highlight))
+				.catch(() => highlight);
+			if (latest?.at === highlight?.at) return;
+			highlight = latest;
+			// A new Highlight on this Page comes into view; the cursor and Bookmark stay put.
+			if (latest?.page === data.position) {
+				await tick();
+				highlightElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+		}, 2000);
+		return () => clearInterval(poll);
+	});
+
+	function showHighlight() {
+		highlightElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 	}
 
 	const statusOf = (key: string) => pending[key] ?? data.terms[key]?.status ?? 'unknown';
@@ -327,7 +362,11 @@
 		{#each data.paragraphs as paragraph, p (p)}
 			<p>
 				{#each paragraph.sentences as sentence, s (s)}
-					<span class="sentence">
+					{@const isHighlighted = highlighted(sentence)}
+					{#if isHighlighted && sentenceNumbers.get(sentence) === highlightHere?.first}<span
+							class="highlight-start"
+							bind:this={highlightElement}
+						></span>{/if}<span class="sentence" class:highlighted={isHighlighted}>
 						{#each sentence.tokens as token, t (t)}
 							{#if token.key !== undefined && token.index !== undefined}{@const word = token as Word}<span
 									role="button"
@@ -350,6 +389,19 @@
 	</article>
 
 	<aside class="side">
+		{#if highlight}
+			<div class="highlight-note card" role="status">
+				<p class="from">From the Tutor</p>
+				{#if highlight.note}<p class="note-text">{highlight.note}</p>{/if}
+				{#if highlightHere}
+					<button type="button" onclick={showHighlight}
+						>{highlight.first === highlight.last ? `Sentence ${highlight.first}` : `Sentences ${highlight.first}–${highlight.last}`}</button
+					>
+				{:else}
+					<a class="button" href="/books/{data.book.id}/pages/{highlight.page}">On Page {highlight.page} →</a>
+				{/if}
+			</div>
+		{/if}
 		{#if open && selected}
 			<div class="term-panel card">
 				<button type="button" class="close" aria-label="Close the Term form" onclick={() => (open = false)}>✕</button>
@@ -544,6 +596,38 @@
 	.side {
 		position: sticky;
 		top: 1rem;
+		display: grid;
+		gap: 1rem;
+	}
+	/* The Tutor's Highlight: a soft band over its Sentences. */
+	.sentence.highlighted {
+		background: color-mix(in srgb, var(--accent) 14%, transparent);
+		border-radius: 0.3em;
+		box-decoration-break: clone;
+		-webkit-box-decoration-break: clone;
+		box-shadow: 0 0 0 0.12em color-mix(in srgb, var(--accent) 14%, transparent);
+	}
+	.highlight-start {
+		scroll-margin: 6rem;
+	}
+	.highlight-note {
+		display: grid;
+		gap: 0.5rem;
+		justify-items: start;
+		border-inline-start: 4px solid var(--accent);
+	}
+	.highlight-note p {
+		margin: 0;
+	}
+	.highlight-note .from {
+		color: var(--muted);
+		font-size: 0.8rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+	.note-text {
+		font-size: 1.05rem;
 	}
 	.term-panel {
 		position: relative;
