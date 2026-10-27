@@ -30,6 +30,8 @@ export interface BookTable {
 	highlight_first: number | null;
 	highlight_last: number | null;
 	highlight_note: string | null;
+	/** A passage within the Highlight's Sentences, as written; null when it covers them whole. */
+	highlight_text: string | null;
 	/** When the Highlight was set; null if there is none. */
 	highlighted_at: string | null;
 	/** The web address a Book came from; null for pasted text and files. */

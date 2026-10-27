@@ -14,6 +14,7 @@
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import PracticeCard from './PracticeCard.svelte';
 	import PracticePanel, { type PracticeState } from './PracticePanel.svelte';
+	import { passageParts } from '#lib/reading/passage.ts';
 	import { frequencyLabels, levelLabels, practiceQueue, suggestedStatus, transferLabel, type DueWord, type Subset } from '#lib/practice.ts';
 	import WiktionaryPanel from './WiktionaryPanel.svelte';
 
@@ -278,10 +279,32 @@
 			.map((subset) => ({ subset, count: practiceQueue(dueWords, subset, practiceContext).length }))
 	);
 
-	const highlighted = (sentence: (typeof sentences)[number]) => {
+	/** Whether a Sentence is in the Highlight's run of Sentences. */
+	const inHighlight = (sentence: (typeof sentences)[number]) => {
 		const n = sentenceNumbers.get(sentence) ?? 0;
 		return highlightHere !== undefined && n >= highlightHere.first && n <= highlightHere.last;
 	};
+	/** A whole Sentence underlined: when the Highlight has no passage. */
+	const highlighted = (sentence: (typeof sentences)[number]) => inHighlight(sentence) && !highlightHere?.text;
+	/** With a passage, the tokens it covers, as "sentence:token" (1-based Sentence on the Page). */
+	let passage = $derived.by(() => {
+		const text = highlightHere?.text;
+		if (!text) return new Set<string>();
+		const keys: string[] = [];
+		const parts: string[] = [];
+		for (const sentence of sentences.filter(inHighlight)) {
+			const n = sentenceNumbers.get(sentence)!;
+			sentence.tokens.forEach((token, t) => {
+				keys.push(`${n}:${t}`);
+				parts.push(token.text);
+			});
+			// Sentences may not end in a space; keep their last and first Words apart.
+			keys.push('');
+			parts.push(' ');
+		}
+		return new Set((passageParts(parts, text) ?? []).map((i) => keys[i]).filter(Boolean));
+	});
+	const inPassage = (sentence: (typeof sentences)[number], t: number) => passage.has(`${sentenceNumbers.get(sentence)}:${t}`);
 	let highlightElement = $state<HTMLElement>();
 
 	onMount(() => {
@@ -585,7 +608,11 @@
 			{#if highlight.note}<p class="note-text">{highlight.note}</p>{/if}
 			{#if highlightHere}
 				<button type="button" onclick={showHighlight}
-					>{highlight.first === highlight.last ? `Sentence ${highlight.first}` : `Sentences ${highlight.first}–${highlight.last}`}</button
+					>{highlight.text
+						? `“${highlight.text.length > 40 ? `${highlight.text.slice(0, 40)}…` : highlight.text}”`
+						: highlight.first === highlight.last
+							? `Sentence ${highlight.first}`
+							: `Sentences ${highlight.first}–${highlight.last}`}</button
 				>
 			{:else}
 				<a class="button" href="/books/{data.book.id}/pages/{highlight.page}">On Page {highlight.page} →</a>
@@ -597,7 +624,7 @@
 			<p>
 				{#each paragraph.sentences as sentence, s (s)}
 					{@const isHighlighted = highlighted(sentence)}
-					{#if isHighlighted && sentenceNumbers.get(sentence) === highlightHere?.first}<span
+					{#if inHighlight(sentence) && sentenceNumbers.get(sentence) === highlightHere?.first}<span
 							class="highlight-start"
 							bind:this={highlightElement}
 						></span>{/if}<span class="sentence" class:highlighted={isHighlighted}>
@@ -609,13 +636,14 @@
 									class:current={current === word.index}
 									class:phrase={inPhrase(word.index)}
 									class:multi={(word.words ?? 1) > 1}
+									class:in-passage={inPassage(sentence, t)}
 									data-due={overdueOf(word.key) || undefined}
 									bind:this={wordElements[word.index]}
 									onmousedown={(e) => e.shiftKey && e.preventDefault()}
 									onclick={(e) => choose(word, e.shiftKey)}
 									onkeydown={(e) => !practising && (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), choose(word, false))}
 									>{word.text}{#if gloss && range?.[0] === word.index}<span class="gloss" aria-hidden="true" use:keepInView={gloss}>{gloss}</span>{/if}</span
-								>{:else}{token.text}{/if}
+								>{:else if inPassage(sentence, t)}<span class="in-passage">{token.text}</span>{:else}{token.text}{/if}
 						{/each}
 					</span>
 				{/each}
@@ -897,6 +925,7 @@
 		color: inherit;
 	}
 	.page.zen .word.multi,
+	.page.zen .in-passage,
 	.page.zen .sentence.highlighted {
 		text-decoration: none;
 	}
@@ -978,9 +1007,10 @@
 		display: grid;
 		gap: 1rem;
 	}
-	/* The Tutor's Highlight: a soft band over its Sentences. */
-	/* The Tutor's Highlight: a continuous accent underline, apart from the Status colours. */
-	.sentence.highlighted {
+	/* The Tutor's Highlight, whole Sentences or a passage: a continuous accent underline, apart from the Status colours. */
+	.sentence.highlighted,
+	.in-passage,
+	.word.multi.in-passage {
 		text-decoration: underline color-mix(in srgb, var(--accent) 55%, transparent) 0.11em;
 		text-underline-offset: 0.35em;
 		text-decoration-skip-ink: none;

@@ -256,6 +256,10 @@ describe('Reader MCP server', () => {
 			error: 'Page 1 has Sentences 1–3; a Highlight runs from one of them to the same or a later one.'
 		});
 		expect((await call('set_highlight', { book_id: bookId, page: 2, first: 1 })).highlight).toMatchObject({ page: 2, first: 1, last: 1 });
+		expect((await call('set_highlight', { book_id: bookId, page: 1, first: 1, text: 'кот спит' })).highlight).toMatchObject({ first: 1, last: 1, text: 'кот спит' });
+		expect(await call('set_highlight', { book_id: bookId, page: 1, first: 2, text: 'кот спит' })).toEqual({
+			error: '“кот спит” isn\'t in Sentence 2 of Page 1.'
+		});
 		expect(await call('clear_highlight', { book_id: bookId })).toEqual({ highlight: null });
 		expect((await call('where_am_i')).highlight).toBeUndefined();
 	});

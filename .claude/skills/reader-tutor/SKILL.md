@@ -65,7 +65,7 @@ Skip the mechanism questions when the chunk has nothing worthwhile, but still as
 
 **The Bookmark follows the reading.** After the last piece of a Sentence, `set_bookmark` to the next Sentence. When `get_sentences` returns a `nextPage`, the Page is finished: `mark_page_read` (with `rest_known` only if the learner asks for it), then read on from the next Page.
 
-**A Highlight points the learner at the text.** When the learner reads in the reading screen alongside you, `set_highlight` the Sentences of the current chunk, or of a task you set ("Read Sentences 4–6 on your own, then tell me who is speaking"), with a one-line note saying what to look for. Their open Page shows it within seconds without moving their Bookmark. Set a new Highlight for each chunk, and `clear_highlight` when the task is done or you stop; marking the Page Read clears it too. Keep the note a pointer, not the answer.
+**A Highlight points the learner at the text.** When the learner reads in the reading screen alongside you, `set_highlight` the current chunk, or a task you set ("Read Sentences 4–6 on your own, then tell me who is speaking"), with a one-line note saying what to look for. When the chunk is part of a Sentence (a clause of a long one), pass that piece as `text`, copied exactly from the Sentence, so only it is underlined; whole Sentences need no `text`. Their open Page shows it within seconds without moving their Bookmark. Set a new Highlight for each chunk, and `clear_highlight` when the task is done or you stop; marking the Page Read clears it too. Keep the note a pointer, not the answer.
 
 **Feedback details:**
 - Link to patterns seen earlier ("same as «был студентом»").

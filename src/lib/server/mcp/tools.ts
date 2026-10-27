@@ -412,7 +412,8 @@ export function createReaderServer(
 		{
 			title: 'Highlight Sentences',
 			description:
-				'Points the learner at a run of Sentences on one Page (1-based, inclusive) with an optional short note, e.g. "Who is speaking here?". ' +
+				'Points the learner at a run of Sentences on one Page (1-based, inclusive), or at a passage within them such as the clause you are working on (text), ' +
+				'with an optional short note, e.g. "Who is speaking here?". ' +
 				'Their open reading screen shows it within a few seconds. It replaces the Book’s previous Highlight, never moves the Bookmark, ' +
 				'and lasts until you set another, clear_highlight, or the Page is marked Read.',
 			inputSchema: {
@@ -420,12 +421,17 @@ export function createReaderServer(
 				page: z.number().int().min(1),
 				first: z.number().int().min(1).describe('First Sentence on the Page.'),
 				last: z.number().int().min(1).optional().describe('Last Sentence; the first by default.'),
+				text: z
+					.string()
+					.max(500)
+					.optional()
+					.describe('A passage within those Sentences, exactly as written there (case and spacing may differ), e.g. one clause of a long Sentence. Omit to highlight the Sentences whole.'),
 				note: z.string().max(highlightNoteLength).optional().describe('A sentence or two shown beside the Highlight.')
 			},
 			annotations: { ...writes, idempotentHint: true }
 		},
-		async ({ book_id, page, first, last, note }) =>
-			guard(async () => json({ highlight: await setHighlight(db, book_id, { page, first, last: last ?? first, note }) }))
+		async ({ book_id, page, first, last, text, note }) =>
+			guard(async () => json({ highlight: await setHighlight(db, book_id, { page, first, last: last ?? first, text, note }) }))
 	);
 
 	server.registerTool(

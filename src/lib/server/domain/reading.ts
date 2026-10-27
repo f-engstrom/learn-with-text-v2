@@ -2,6 +2,7 @@ import type { Kysely } from 'kysely';
 import type { Database } from '../db/schema';
 import { getPage, toBookmark, type Bookmark } from './books';
 import { suggestPronunciation } from './pronunciation';
+import { passageParts } from '../../reading/passage';
 
 export class InvalidBookmark extends Error {}
 export class InvalidHighlight extends Error {}
@@ -11,6 +12,8 @@ export interface Highlight {
 	page: number;
 	first: number;
 	last: number;
+	/** A passage within those Sentences (e.g. one clause), as written; without it the Sentences are highlighted whole. */
+	text?: string;
 	note?: string;
 	/** When it was set. */
 	at: string;
@@ -73,7 +76,7 @@ export async function setBookmark(db: Kysely<Database>, bookId: number, bookmark
 export async function getHighlight(db: Kysely<Database>, bookId: number): Promise<Highlight | undefined> {
 	const row = await db
 		.selectFrom('book')
-		.select(['highlight_page', 'highlight_first', 'highlight_last', 'highlight_note', 'highlighted_at'])
+		.select(['highlight_page', 'highlight_first', 'highlight_last', 'highlight_text', 'highlight_note', 'highlighted_at'])
 		.where('id', '=', bookId)
 		.executeTakeFirst();
 	if (!row || row.highlight_page === null || row.highlight_first === null || row.highlight_last === null) return undefined;
@@ -81,12 +84,16 @@ export async function getHighlight(db: Kysely<Database>, bookId: number): Promis
 		page: row.highlight_page,
 		first: row.highlight_first,
 		last: row.highlight_last,
+		...(row.highlight_text ? { text: row.highlight_text } : {}),
 		...(row.highlight_note ? { note: row.highlight_note } : {}),
 		at: row.highlighted_at ?? ''
 	};
 }
 
-/** Sets the Book's Highlight, replacing any it had. The Sentences must be on the Page, in order. */
+/**
+ * Sets the Book's Highlight, replacing any it had. The Sentences must be on the Page, in order, and
+ * a passage, if given, must be in them.
+ */
 export async function setHighlight(
 	db: Kysely<Database>,
 	bookId: number,
@@ -94,6 +101,7 @@ export async function setHighlight(
 ): Promise<Highlight> {
 	const page = await db
 		.selectFrom('page')
+		.select('page.id')
 		.select((eb) =>
 			eb.selectFrom('sentence').whereRef('sentence.page_id', '=', 'page.id').select(eb.fn.countAll<number>().as('n')).as('sentences')
 		)
@@ -108,16 +116,45 @@ export async function setHighlight(
 	}
 	const note = highlight.note?.trim().replace(/\s+/g, ' ') || undefined;
 	if (note && note.length > highlightNoteLength) throw new InvalidHighlight(`A Highlight's note is at most ${highlightNoteLength} characters.`);
+	const text = highlight.text?.trim().replace(/\s+/g, ' ') || undefined;
+	if (text) {
+		const sentences = await db
+			.selectFrom('sentence')
+			.select('text')
+			.where('page_id', '=', page.id)
+			.where('position', '>=', first)
+			.where('position', '<=', last)
+			.orderBy('position')
+			.execute();
+		if (!passageParts(sentences.map((s) => `${s.text} `), text)) {
+			const where = first === last ? `Sentence ${first}` : `Sentences ${first}–${last}`;
+			throw new InvalidHighlight(`“${text}” isn't in ${where} of Page ${highlight.page}.`);
+		}
+	}
 	const at = new Date().toISOString();
 	await db
 		.updateTable('book')
-		.set({ highlight_page: highlight.page, highlight_first: first, highlight_last: last, highlight_note: note ?? null, highlighted_at: at })
+		.set({
+			highlight_page: highlight.page,
+			highlight_first: first,
+			highlight_last: last,
+			highlight_text: text ?? null,
+			highlight_note: note ?? null,
+			highlighted_at: at
+		})
 		.where('id', '=', bookId)
 		.execute();
-	return { page: highlight.page, first, last, ...(note ? { note } : {}), at };
+	return { page: highlight.page, first, last, ...(text ? { text } : {}), ...(note ? { note } : {}), at };
 }
 
-const noHighlight = { highlight_page: null, highlight_first: null, highlight_last: null, highlight_note: null, highlighted_at: null };
+const noHighlight = {
+	highlight_page: null,
+	highlight_first: null,
+	highlight_last: null,
+	highlight_text: null,
+	highlight_note: null,
+	highlighted_at: null
+};
 
 export async function clearHighlight(db: Kysely<Database>, bookId: number): Promise<void> {
 	await db.updateTable('book').set(noHighlight).where('id', '=', bookId).execute();

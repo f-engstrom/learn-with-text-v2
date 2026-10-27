@@ -25,7 +25,7 @@ Where you are in a Book: its current Page and Sentence, and the Word (or phrase)
 _Avoid_: Position, resume point, current page
 
 **Highlight**:
-A run of one or more Sentences on one Page that the Tutor points you to, with an optional short note. A Book has at most one; it lasts until the Tutor replaces or clears it, or you mark its Page Read. It never moves the Bookmark.
+A run of one or more Sentences on one Page that the Tutor points you to, or a passage within them (such as one clause), with an optional short note. A Book has at most one; it lasts until the Tutor replaces or clears it, or you mark its Page Read. It never moves the Bookmark.
 _Avoid_: Selection (that's yours), focus, annotation
 
 **Word**:

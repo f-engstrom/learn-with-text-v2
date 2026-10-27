@@ -153,6 +153,18 @@ describe('Highlight', () => {
 		expect(await getHighlight(db, bookId)).toEqual(set);
 	});
 
+	it('can cover a passage within its Sentences, which must be there', async () => {
+		const { db, bookId } = await setup('В течение дня кот спит, а мышь бежит. Мышь спит.');
+		expect(await setHighlight(db, bookId, { page: 1, first: 1, last: 1, text: '  а мышь   бежит ' })).toMatchObject({ text: 'а мышь бежит' });
+		expect(await getHighlight(db, bookId)).toMatchObject({ first: 1, last: 1, text: 'а мышь бежит' });
+		expect(await setHighlight(db, bookId, { page: 1, first: 1, last: 2, text: 'бежит. Мышь' })).toMatchObject({ text: 'бежит. Мышь' });
+		await expect(setHighlight(db, bookId, { page: 1, first: 2, last: 2, text: 'а мышь бежит' })).rejects.toThrow(
+			'“а мышь бежит” isn\'t in Sentence 2 of Page 1.'
+		);
+		await setHighlight(db, bookId, { page: 1, first: 2, last: 2 });
+		expect((await getHighlight(db, bookId))?.text).toBeUndefined();
+	});
+
 	it('leaves the Bookmark where it is', async () => {
 		const { db, bookId } = await setup();
 		await setBookmark(db, bookId, { page: 1, sentence: 2, word: 'Мышь' });
