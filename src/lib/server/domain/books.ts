@@ -30,10 +30,18 @@ export interface ReadingToken extends Token {
 	sentence?: number;
 }
 
+export interface Bookmark {
+	/** 1-based Page position. */
+	page: number;
+	/** 1-based Sentence position on that Page. */
+	sentence: number;
+}
+
 export interface PageView {
-	book: { id: number; title: string; pageCount: number };
+	book: { id: number; title: string; pageCount: number; bookmark: Bookmark };
 	language: Language;
 	position: number;
+	read: boolean;
 	paragraphs: { sentences: { tokens: ReadingToken[] }[] }[];
 	/** Terms for the Words on this Page, keyed by Normalised form. A Word with no entry is Unknown. */
 	terms: Record<string, TermView>;
@@ -122,7 +130,15 @@ export async function getPage(db: Kysely<Database>, bookId: number, position: nu
 	const row = await db
 		.selectFrom('page')
 		.innerJoin('book', 'book.id', 'page.book_id')
-		.select(['book.id as bookId', 'book.title', 'book.language_id', 'page.text'])
+		.select([
+			'book.id as bookId',
+			'book.title',
+			'book.language_id',
+			'book.bookmark_page',
+			'book.bookmark_sentence',
+			'page.text',
+			'page.read_at'
+		])
 		.select((eb) =>
 			eb.selectFrom('page as p').whereRef('p.book_id', '=', 'book.id').select(eb.fn.countAll<number>().as('n')).as('pageCount')
 		)
@@ -148,9 +164,15 @@ export async function getPage(db: Kysely<Database>, bookId: number, position: nu
 		}));
 	const keys = paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.tokens.flatMap((t) => (t.key ? [t.key] : []))));
 	return {
-		book: { id: row.bookId, title: row.title, pageCount: Number(row.pageCount) },
+		book: {
+			id: row.bookId,
+			title: row.title,
+			pageCount: Number(row.pageCount),
+			bookmark: { page: row.bookmark_page, sentence: row.bookmark_sentence }
+		},
 		language,
 		position,
+		read: row.read_at !== null,
 		paragraphs,
 		terms: await findTerms(db, language.id, keys)
 	};

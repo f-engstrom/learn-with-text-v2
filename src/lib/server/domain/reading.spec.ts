@@ -1,0 +1,85 @@
+import { describe, it, expect } from 'vitest';
+import { openDatabase } from '../db/open';
+import { migrateToLatest } from '../db/migrate';
+import { listLanguages } from './languages';
+import { createBook, getPage } from './books';
+import { findTerms, saveTerm } from './terms';
+import { getBookmark, InvalidBookmark, markPageRead, setBookmark } from './reading';
+
+async function setup(text = 'Кот спит. Мышь бежит.\n---\nКот и мышь. Мышь спит.') {
+	const db = openDatabase(':memory:');
+	await migrateToLatest(db);
+	const byName = Object.fromEntries((await listLanguages(db)).map((l) => [l.name, l.id]));
+	const bookId = await createBook(db, { languageId: byName.Russian, title: 'Кот', text });
+	return { db, byName, bookId };
+}
+
+const statuses = (page: Awaited<ReturnType<typeof getPage>>) =>
+	page!.paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.tokens.flatMap((t) => (t.key ? [[t.text, page!.terms[t.key]?.status ?? 'unknown']] : []))));
+
+describe('Bookmark', () => {
+	it('starts at the first Sentence of the first Page', async () => {
+		const { db, bookId } = await setup();
+		expect(await getBookmark(db, bookId)).toEqual({ page: 1, sentence: 1 });
+		expect((await getPage(db, bookId, 1))?.book.bookmark).toEqual({ page: 1, sentence: 1 });
+	});
+
+	it('moves to a Page and Sentence, clamping the Sentence to the Page', async () => {
+		const { db, bookId } = await setup();
+		expect(await setBookmark(db, bookId, { page: 2, sentence: 2 })).toEqual({ page: 2, sentence: 2 });
+		expect(await getBookmark(db, bookId)).toEqual({ page: 2, sentence: 2 });
+		expect(await setBookmark(db, bookId, { page: 1, sentence: 9 })).toEqual({ page: 1, sentence: 2 });
+		expect(await setBookmark(db, bookId, { page: 1, sentence: 0 })).toEqual({ page: 1, sentence: 1 });
+	});
+
+	it('rejects a Page the Book does not have', async () => {
+		const { db, bookId } = await setup();
+		await expect(setBookmark(db, bookId, { page: 3, sentence: 1 })).rejects.toThrow(InvalidBookmark);
+		expect(await getBookmark(db, bookId)).toEqual({ page: 1, sentence: 1 });
+	});
+});
+
+describe('markPageRead', () => {
+	it('marks the Page Read and moves the Bookmark to the next Page', async () => {
+		const { db, bookId } = await setup();
+		await setBookmark(db, bookId, { page: 1, sentence: 2 });
+		expect(await markPageRead(db, bookId, 1)).toBe(2);
+		expect((await getPage(db, bookId, 1))?.read).toBe(true);
+		expect((await getPage(db, bookId, 2))?.read).toBe(false);
+		expect(await getBookmark(db, bookId)).toEqual({ page: 2, sentence: 1 });
+		expect(await db.selectFrom('term').select('id').execute()).toHaveLength(0);
+	});
+
+	it('keeps the Bookmark on the last Page', async () => {
+		const { db, bookId } = await setup();
+		await setBookmark(db, bookId, { page: 2, sentence: 2 });
+		expect(await markPageRead(db, bookId, 2)).toBeUndefined();
+		expect(await getBookmark(db, bookId)).toEqual({ page: 2, sentence: 2 });
+	});
+
+	it('with rest Known, makes only the Unknown Words Known, and the next Page shows them', async () => {
+		const { db, byName, bookId } = await setup();
+		await saveTerm(db, { languageId: byName.Russian, text: 'спит', status: 'learning2' });
+		await markPageRead(db, bookId, 1, { restKnown: true });
+		expect(statuses(await getPage(db, bookId, 2))).toEqual([
+			['Кот', 'known'],
+			['и', 'unknown'],
+			['мышь', 'known'],
+			['Мышь', 'known'],
+			['спит', 'learning2']
+		]);
+		expect((await findTerms(db, byName.Russian, ['кот'])).кот.text).toBe('кот');
+	});
+
+	it('gives Chinese Words made Known their pinyin', async () => {
+		const { db, byName } = await setup();
+		const bookId = await createBook(db, { languageId: byName.Chinese, title: '今天', text: '我喜欢猫。' });
+		await markPageRead(db, bookId, 1, { restKnown: true });
+		expect((await findTerms(db, byName.Chinese, ['喜欢'])).喜欢).toMatchObject({ status: 'known', pronunciation: 'xǐhuan' });
+	});
+
+	it('rejects a Page the Book does not have', async () => {
+		const { db, bookId } = await setup();
+		await expect(markPageRead(db, bookId, 5)).rejects.toThrow(InvalidBookmark);
+	});
+});

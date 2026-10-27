@@ -15,6 +15,9 @@ export interface BookTable {
 	language_id: number;
 	title: string;
 	created_at: string;
+	/** The Bookmark: 1-based Page position, and 1-based Sentence position on that Page. */
+	bookmark_page: Generated<number>;
+	bookmark_sentence: Generated<number>;
 }
 
 export interface PageTable {
@@ -23,6 +26,8 @@ export interface PageTable {
 	/** 1-based page number within the Book. */
 	position: number;
 	text: string;
+	/** When the Page was marked Read; null while it isn't. */
+	read_at: string | null;
 }
 
 export interface SentenceTable {

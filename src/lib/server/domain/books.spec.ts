@@ -44,7 +44,8 @@ describe('createBook', () => {
 		const id = await createBook(db, { languageId: byName.Russian, title: ' Сказка ', text: 'Жил-был кот. Он спал.\n---\nКонец.' });
 
 		const page = await getPage(db, id, 1);
-		expect(page?.book).toEqual({ id, title: 'Сказка', pageCount: 2 });
+		expect(page?.book).toEqual({ id, title: 'Сказка', pageCount: 2, bookmark: { page: 1, sentence: 1 } });
+	expect(page?.read).toBe(false);
 		expect(page?.language.name).toBe('Russian');
 		expect(page?.paragraphs[0].sentences).toHaveLength(2);
 
