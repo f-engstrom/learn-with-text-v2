@@ -7,6 +7,7 @@ const press = (key: string, code = '', mods: Partial<KeyInput> = {}): KeyInput =
 	ctrlKey: false,
 	metaKey: false,
 	altKey: false,
+	shiftKey: false,
 	...mods
 });
 
@@ -19,6 +20,11 @@ describe('commandFor', () => {
 	it('moves forward with the left arrow in right-to-left text', () => {
 		expect(commandFor(press('ArrowLeft'), true)).toEqual({ kind: 'move', by: 1 });
 		expect(commandFor(press('ArrowRight'), true)).toEqual({ kind: 'move', by: -1 });
+	});
+
+	it('extends a phrase selection with Shift and the arrows, following the text direction', () => {
+		expect(commandFor(press('ArrowRight', '', { shiftKey: true }), false)).toEqual({ kind: 'extend', by: 1 });
+		expect(commandFor(press('ArrowRight', '', { shiftKey: true }), true)).toEqual({ kind: 'extend', by: -1 });
 	});
 
 	it('moves by Sentence with up and down', () => {

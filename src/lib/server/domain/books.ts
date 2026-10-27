@@ -1,6 +1,7 @@
 import type { Kysely } from 'kysely';
 import type { Database } from '../db/schema';
 import { getLanguage, type Language } from './languages';
+import { candidateSpans, chooseSpans } from './multiword';
 import { normalise, parserFor, type Parser, type Token } from './parsing';
 import { findTerms, type TermView } from './terms';
 
@@ -21,13 +22,15 @@ export interface BookSummary {
 }
 
 /**
- * A Token on the reading screen. Words also carry their Normalised form (`key`), their order
- * among the Page's Words (`index`) and the index of their Sentence on the Page (`sentence`).
+ * A Token on the reading screen: a Word, a matched Multi-word Term, or what lies between them.
+ * Words and Multi-word Terms carry their Normalised form (`key`), their order on the Page
+ * (`index`), the index of their Sentence on the Page (`sentence`) and how many Words they span.
  */
 export interface ReadingToken extends Token {
 	key?: string;
 	index?: number;
 	sentence?: number;
+	words?: number;
 }
 
 export interface Bookmark {
@@ -43,7 +46,10 @@ export interface PageView {
 	position: number;
 	read: boolean;
 	paragraphs: { sentences: { tokens: ReadingToken[] }[] }[];
-	/** Terms for the Words on this Page, keyed by Normalised form. A Word with no entry is Unknown. */
+	/**
+	 * Terms for the Words and possible phrases on this Page, keyed by Normalised form.
+	 * A Word with no entry is Unknown.
+	 */
 	terms: Record<string, TermView>;
 }
 
@@ -149,20 +155,36 @@ export async function getPage(db: Kysely<Database>, bookId: number, position: nu
 
 	const language = await getLanguage(db, row.language_id);
 	if (!language) return undefined;
+	const parsed = parserFor(language).parse(row.text);
+	const spans = parsed.map((p) => p.sentences.map((s) => candidateSpans(s.tokens, language)));
+	const keys = [
+		...parsed.flatMap((p) => p.sentences.flatMap((s) => s.tokens.filter((t) => t.isWord).map((t) => normalise(t.text, language)))),
+		...spans.flat(2).map((s) => s.key)
+	];
+	const terms = await findTerms(db, language.id, keys);
+
 	let index = 0;
 	let sentence = 0;
-	const paragraphs = parserFor(language)
-		.parse(row.text)
-		.map((p) => ({
-			sentences: p.sentences.map((s) => {
-				const tokens = s.tokens.map(
-					(t): ReadingToken => (t.isWord ? { ...t, key: normalise(t.text, language), index: index++, sentence } : t)
-				);
-				sentence++;
-				return { tokens };
-			})
-		}));
-	const keys = paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.tokens.flatMap((t) => (t.key ? [t.key] : []))));
+	const paragraphs = parsed.map((p, i) => ({
+		sentences: p.sentences.map((s, j) => {
+			const tokens: ReadingToken[] = [];
+			const matches = chooseSpans(spans[i][j], (key) => key in terms);
+			for (let t = 0; t < s.tokens.length; t++) {
+				const match = matches.find((m) => m.start === t);
+				if (match) {
+					const text = s.tokens.slice(match.start, match.end + 1).map((token) => token.text).join('');
+					tokens.push({ text, isWord: true, key: match.key, index: index++, sentence, words: match.words });
+					t = match.end;
+				} else if (s.tokens[t].isWord) {
+					tokens.push({ ...s.tokens[t], key: normalise(s.tokens[t].text, language), index: index++, sentence, words: 1 });
+				} else {
+					tokens.push(s.tokens[t]);
+				}
+			}
+			sentence++;
+			return { tokens };
+		})
+	}));
 	return {
 		book: {
 			id: row.bookId,
@@ -174,6 +196,6 @@ export async function getPage(db: Kysely<Database>, bookId: number, position: nu
 		position,
 		read: row.read_at !== null,
 		paragraphs,
-		terms: await findTerms(db, language.id, keys)
+		terms
 	};
 }

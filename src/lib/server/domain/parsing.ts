@@ -1,5 +1,7 @@
 import type { Language } from './languages';
 
+export { normalise, termKey } from '../../normalise';
+
 /** A piece of text: a Word, or the punctuation and spaces between Words. */
 export interface Token {
 	text: string;
@@ -49,15 +51,6 @@ export class SegmenterParser implements Parser {
 
 export function parserFor(language: Pick<Language, 'code'>): Parser {
 	return new SegmenterParser(language.code);
-}
-
-/** The Normalised form used for matching: the Language's character map applied, then lowercased. */
-export function normalise(text: string, language: Pick<Language, 'code' | 'characterMap'>): string {
-	let mapped = '';
-	for (const ch of text.normalize('NFC')) {
-		mapped += Object.hasOwn(language.characterMap, ch) ? language.characterMap[ch] : ch;
-	}
-	return mapped.toLocaleLowerCase(language.code).normalize('NFC');
 }
 
 export function countWords(paragraphs: ParsedParagraph[]): number {

@@ -83,3 +83,14 @@ describe('markPageRead', () => {
 		await expect(markPageRead(db, bookId, 5)).rejects.toThrow(InvalidBookmark);
 	});
 });
+
+describe('markPageRead with Multi-word Terms', () => {
+	it('with rest Known, skips Words inside a Multi-word Term', async () => {
+		const { db, byName } = await setup();
+		const bookId = await createBook(db, { languageId: byName.Russian, title: 't', text: 'В течение дня кот спит.' });
+		await saveTerm(db, { languageId: byName.Russian, text: 'в течение', status: 'learning2' });
+		await markPageRead(db, bookId, 1, { restKnown: true });
+		const known = await findTerms(db, byName.Russian, ['в', 'течение', 'дня', 'кот', 'спит']);
+		expect(Object.keys(known).toSorted()).toEqual(['дня', 'кот', 'спит']);
+	});
+});

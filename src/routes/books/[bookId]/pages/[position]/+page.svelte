@@ -4,22 +4,38 @@
 	import { tick, untrack } from 'svelte';
 	import { moveCursor } from '#lib/reading/cursor.ts';
 	import { commandFor } from '#lib/reading/keys.ts';
+	import { termKey } from '#lib/normalise.ts';
 	import type { ReadingToken } from '#lib/server/domain/books.ts';
 	import type { Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
 	import TermForm from './TermForm.svelte';
 
+	/** A Word, or a matched Multi-word Term, on the Page. */
 	type Word = ReadingToken & { key: string; index: number; sentence: number };
+	/** What the Term form and the Status keys act on: one Word, or a phrase you selected. */
+	type Selection = Pick<Word, 'key' | 'text' | 'sentence'>;
 
 	let { data, form }: PageProps = $props();
 
 	let words = $derived(
 		data.paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.tokens.filter((t): t is Word => t.key !== undefined)))
 	);
-	/** The Word the keyboard is on, by index; the Term form shows it while `open`. */
+	let sentences = $derived(data.paragraphs.flatMap((p) => p.sentences));
+	/** The Word the keyboard is on, by index; the Term form shows the selection while `open`. */
 	let current = $state<number | undefined>();
+	/** Where a phrase selection starts (Shift-click or Shift+arrow); it runs to `current`. */
+	let anchor = $state<number | undefined>();
 	let open = $state(false);
-	let selected = $derived(current === undefined ? undefined : words[current]);
+	let range = $derived(
+		current === undefined ? undefined : ([Math.min(anchor ?? current, current), Math.max(anchor ?? current, current)] as const)
+	);
+	let selected: Selection | undefined = $derived.by(() => {
+		if (!range) return undefined;
+		const [first, last] = range;
+		if (first === last) return words[first];
+		const text = phraseText(first, last) ?? '';
+		return { text, key: termKey(text, data.language), sentence: words[first].sentence };
+	});
 	let term = $derived(selected && data.terms[selected.key]);
 	/** Statuses set by keyboard that the server hasn't confirmed yet, so the colour changes at once. */
 	let pending = $state<Record<string, Status>>({});
@@ -28,6 +44,46 @@
 	let dir: 'rtl' | 'ltr' = $derived(data.language.rightToLeft ? 'rtl' : 'ltr');
 
 	const statusOf = (key: string) => pending[key] ?? data.terms[key]?.status ?? 'unknown';
+	const inPhrase = (index: number) => range !== undefined && range[0] < range[1] && index >= range[0] && index <= range[1];
+
+	/**
+	 * The text from Word `first` to Word `last`, if they are in one Sentence with only whitespace
+	 * between them, as a Multi-word Term needs.
+	 */
+	function phraseText(first: number, last: number): string | undefined {
+		if (words[first].sentence !== words[last].sentence) return undefined;
+		const tokens = sentences[words[first].sentence].tokens;
+		const between = tokens.slice(
+			tokens.findIndex((t) => t.index === first),
+			tokens.findIndex((t) => t.index === last) + 1
+		);
+		if (between.some((t) => t.key === undefined && t.text.trim() !== '')) return undefined;
+		return between.map((t) => t.text).join('');
+	}
+
+	/** Grows or shrinks the phrase selection to end at Word `to`. */
+	function extendTo(to: number) {
+		const from = anchor ?? current;
+		if (from === undefined) return goTo(to);
+		if (phraseText(Math.min(from, to), Math.max(from, to)) === undefined) {
+			error = 'A Multi-word Term stays inside one Sentence, with no punctuation between its Words.';
+			return;
+		}
+		error = undefined;
+		anchor = from;
+		goTo(to);
+	}
+
+	// Saving or deleting a Multi-word Term regroups the Words, so the selection collapses to its start.
+	let wordCount = $derived(words.length);
+	$effect(() => {
+		wordCount;
+		untrack(() => {
+			if (anchor !== undefined && current !== undefined) current = Math.min(anchor, current);
+			anchor = undefined;
+			if (current !== undefined && current >= words.length) current = words.length - 1;
+		});
+	});
 
 	let pageKey = $derived(`${data.book.id}/${data.position}`);
 	/** The Sentence (1-based) on this Page the Bookmark was last saved at; 0 when it is on another Page. */
@@ -47,6 +103,7 @@
 	function enterPage() {
 		open = false;
 		error = undefined;
+		anchor = undefined;
 		const { bookmark } = data.book;
 		bookmarked = bookmark.page === data.position ? bookmark.sentence : 0;
 		const sentence = Math.max(bookmarked, 1);
@@ -64,13 +121,14 @@
 		fetch('?/bookmark', { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
 	}
 
-	async function goTo(index: number | undefined) {
+	async function goTo(index: number | undefined, { collapse = false } = {}) {
+		if (collapse) anchor = undefined;
 		current = index;
 		await tick();
 		if (index !== undefined) wordElements[index]?.focus();
 	}
 
-	async function setStatus(word: Word, status: Status) {
+	async function setStatus(word: Selection, status: Status) {
 		pending[word.key] = status;
 		const body = new FormData();
 		body.set('languageId', String(data.language.id));
@@ -105,7 +163,10 @@
 		switch (command.kind) {
 			case 'move':
 			case 'sentence':
-				goTo(moveCursor(words, current, command));
+				goTo(moveCursor(words, current, command), { collapse: true });
+				break;
+			case 'extend':
+				if (current !== undefined) extendTo(Math.min(Math.max(current + command.by, 0), words.length - 1));
 				break;
 			case 'status':
 				if (selected) setStatus(selected, command.status);
@@ -120,8 +181,9 @@
 		}
 	}
 
-	function choose(word: Word) {
-		current = word.index;
+	function choose(word: Word, shift: boolean) {
+		if (shift && current !== undefined) extendTo(word.index);
+		else goTo(word.index, { collapse: true });
 		open = true;
 	}
 </script>
@@ -148,7 +210,7 @@
 {@render pages()}
 <p class="keys">
 	<small
-		><kbd>←</kbd> <kbd>→</kbd> Word · <kbd>↑</kbd> <kbd>↓</kbd> Sentence · <kbd>1</kbd>–<kbd>4</kbd> Learning ·
+		><kbd>←</kbd> <kbd>→</kbd> Word · <kbd>Shift</kbd>+<kbd>←</kbd> <kbd>→</kbd> or Shift-click: phrase · <kbd>↑</kbd> <kbd>↓</kbd> Sentence · <kbd>1</kbd>–<kbd>4</kbd> Learning ·
 		<kbd>K</kbd> Known · <kbd>I</kbd> Ignored · <kbd>Enter</kbd> Term form · <kbd>Esc</kbd> close</small
 	>
 </p>
@@ -168,9 +230,12 @@
 									tabindex={word.index === (current ?? 0) ? 0 : -1}
 									class="word {statusOf(word.key)}"
 									class:current={current === word.index}
+									class:phrase={inPhrase(word.index)}
+									class:multi={(word.words ?? 1) > 1}
 									bind:this={wordElements[word.index]}
-									onclick={() => choose(word)}
-									onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), choose(word))}
+									onmousedown={(e) => e.shiftKey && e.preventDefault()}
+									onclick={(e) => choose(word, e.shiftKey)}
+									onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), choose(word, false))}
 									>{word.text}</span
 								>{:else}{token.text}{/if}
 						{/each}
@@ -217,6 +282,14 @@
 	}
 	.word.current {
 		outline: 2px solid #3366cc;
+	}
+	.word.phrase {
+		box-shadow: 0 0 0 2px #9db8ea;
+	}
+	/* A Multi-word Term reads as one unit. */
+	.word.multi {
+		text-decoration: underline dotted #888;
+		text-underline-offset: 0.2em;
 	}
 	.unknown {
 		background: #d6ebff;

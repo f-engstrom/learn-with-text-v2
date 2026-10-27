@@ -2,12 +2,14 @@ import type { Status } from '#lib/server/domain/terms.ts';
 
 export type Command =
 	| { kind: 'move'; by: 1 | -1 }
+	/** Shift+arrow: grow or shrink a phrase selection by one Word. */
+	| { kind: 'extend'; by: 1 | -1 }
 	| { kind: 'sentence'; by: 1 | -1 }
 	| { kind: 'status'; status: Status }
 	| { kind: 'open' }
 	| { kind: 'close' };
 
-export type KeyInput = Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'metaKey' | 'altKey'>;
+export type KeyInput = Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'metaKey' | 'altKey' | 'shiftKey'>;
 
 // Matched by physical key (`code`), so they work with a Russian or Farsi keyboard layout too.
 const statusKeys: Record<string, Status> = {
@@ -33,9 +35,9 @@ export function commandFor(e: KeyInput, rightToLeft: boolean): Command | undefin
 	const back = rightToLeft ? 'ArrowRight' : 'ArrowLeft';
 	switch (e.key) {
 		case forward:
-			return { kind: 'move', by: 1 };
+			return { kind: e.shiftKey ? 'extend' : 'move', by: 1 };
 		case back:
-			return { kind: 'move', by: -1 };
+			return { kind: e.shiftKey ? 'extend' : 'move', by: -1 };
 		case 'ArrowDown':
 			return { kind: 'sentence', by: 1 };
 		case 'ArrowUp':

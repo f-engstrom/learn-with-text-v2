@@ -176,3 +176,47 @@ describe('getPage with Terms', () => {
 		expect(texts(page!.terms.кот)).toEqual(['cat']);
 	});
 });
+
+describe('Multi-word Terms', () => {
+	const shown = (page: Awaited<ReturnType<typeof getPage>>) =>
+		page!.paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.tokens.flatMap((t) => (t.key ? [`${t.text}:${page!.terms[t.key]?.status ?? 'unknown'}`] : []))));
+
+	it('saves a phrase by its Normalised form, however it was spaced', async () => {
+		const { db, byName } = await setup();
+		const id = await saveTerm(db, { languageId: byName.Russian, text: ' В  тече́ние ', status: 'learning1' });
+		expect((await findTerms(db, byName.Russian, ['в течение']))['в течение']).toMatchObject({ id, text: 'в тече́ние' });
+	});
+
+	it('shows a matched phrase as one Term on the Page, and its Words again once it is deleted', async () => {
+		const { db, byName } = await setup();
+		const bookId = await createBook(db, { languageId: byName.Russian, title: 't', text: 'В течение дня кот спит.' });
+		const id = await saveTerm(db, { languageId: byName.Russian, text: 'в течение', status: 'learning2' });
+		expect(shown(await getPage(db, bookId, 1))).toEqual(['В течение:learning2', 'дня:unknown', 'кот:unknown', 'спит:unknown']);
+		const page = await getPage(db, bookId, 1);
+		expect(page!.paragraphs[0].sentences[0].tokens[0]).toMatchObject({ index: 0, words: 2 });
+		await deleteTerm(db, id);
+		expect(shown(await getPage(db, bookId, 1))).toEqual(['В:unknown', 'течение:unknown', 'дня:unknown', 'кот:unknown', 'спит:unknown']);
+	});
+
+	it('shows Chinese segments written together as one Term', async () => {
+		const { db, byName } = await setup();
+		const bookId = await createBook(db, { languageId: byName.Chinese, title: 't', text: '我喜欢猫。' });
+		const words = shown(await getPage(db, bookId, 1));
+		await saveTerm(db, { languageId: byName.Chinese, text: '喜欢猫', status: 'learning1' });
+		expect(shown(await getPage(db, bookId, 1))).toContain('喜欢猫:learning1');
+		expect(words.length).toBeGreaterThan(shown(await getPage(db, bookId, 1)).length);
+	});
+
+	it('does not match across punctuation', async () => {
+		const { db, byName } = await setup();
+		const bookId = await createBook(db, { languageId: byName.Russian, title: 't', text: 'В, течение.' });
+		await saveTerm(db, { languageId: byName.Russian, text: 'в течение', status: 'learning2' });
+		expect(shown(await getPage(db, bookId, 1))).toEqual(['В:unknown', 'течение:unknown']);
+	});
+
+	it('rejects punctuation and phrases that are too long', async () => {
+		const { db, byName } = await setup();
+		await expect(saveTerm(db, { languageId: byName.Russian, text: 'кот, мышь', status: 'known' })).rejects.toThrow(InvalidTerm);
+		await expect(saveTerm(db, { languageId: byName.Russian, text: 'а б в г д е ж з', status: 'known' })).rejects.toThrow(InvalidTerm);
+	});
+});

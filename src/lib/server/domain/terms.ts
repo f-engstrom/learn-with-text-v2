@@ -1,7 +1,8 @@
 import type { Kysely } from 'kysely';
 import type { Database, SourceValue, StatusValue } from '../db/schema';
 import { getLanguage } from './languages';
-import { normalise } from './parsing';
+import { MAX_TERM_WORDS } from './multiword';
+import { parserFor, termKey } from './parsing';
 import { suggestPronunciation } from './pronunciation';
 
 export type Status = StatusValue;
@@ -57,9 +58,17 @@ export async function saveTerm(db: Kysely<Database>, input: SaveTerm): Promise<n
 	if (!language) throw new InvalidTerm('Unknown Language.');
 	if (!isStatus(input.status)) throw new InvalidTerm('Choose a Status.');
 	const status = input.status;
-	const text = input.text.trim().toLocaleLowerCase(language.code);
-	const normalised = normalise(text, language);
-	if (normalised === '') throw new InvalidTerm('A Term needs some text.');
+	const text = input.text.trim().replace(/\s+/gu, ' ').toLocaleLowerCase(language.code);
+	const tokens = parserFor(language)
+		.parse(text)
+		.flatMap((p) => p.sentences.flatMap((s) => s.tokens));
+	const words = tokens.filter((t) => t.isWord).length;
+	if (words === 0) throw new InvalidTerm('A Term needs some text.');
+	if (tokens.some((t) => !t.isWord && t.text.trim() !== '')) {
+		throw new InvalidTerm('A Term can only hold Words and the spaces between them.');
+	}
+	if (words > MAX_TERM_WORDS) throw new InvalidTerm(`A Term can have at most ${MAX_TERM_WORDS} Words.`);
+	const normalised = termKey(text, language);
 	const pronunciation = input.pronunciation?.trim();
 	const translations = input.translations
 		?.map((t) => ({ id: t.id, text: t.text.trim() }))
