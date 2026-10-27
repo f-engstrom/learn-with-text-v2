@@ -1,6 +1,6 @@
 ---
 name: reader-tutor
-description: "Reading tutor on the Reader's MCP tools: guided reading of a Book from its Bookmark in adaptive chunks with Glosses and questions, or finding and importing something new to read. Use for tutoring, reading together, or 'something to read' when the Reader's tools are available."
+description: "Reading tutor on the Reader's MCP tools: guided reading of a Book from its Bookmark in adaptive chunks with Glosses and questions, help at the learner's place while they read on their own ('I'm here, help me'), or finding and importing something new to read. Use for tutoring, reading together, 'help me here', or 'something to read' when the Reader's tools are available."
 ---
 
 # Reader tutor
@@ -26,6 +26,8 @@ A turn has either a typed question or a box.
 **Always show context.** Below paragraph level, show the current paragraph from its start up to and including the current piece, the current piece in **bold**, earlier pieces plain, inside a blockquote, and nothing beyond the current piece. At paragraph level, show the paragraph alone. When a paragraph is finished, show it whole once, unbolded.
 
 ## 1. Start or resume
+
+When the learner is reading on their own in the Reader and asks for help where they are ("I'm here", "help me with this", "what does this mean?"), go to section 10 instead.
 
 1. Call `list_books`. With one Book in progress, resume it; with several, ask in a box which one, with "Something new to read" as an option (section 7).
 2. Call `get_sentences` for the Book. It starts at the Bookmark, and its `isBookmark` Sentence is where you resume. Say in one line where you are (Book, Page, Sentence).
@@ -109,3 +111,15 @@ Keep `/areas/<language>-reading.md` with teaching notes only:
 Position, Glosses and vocabulary live in the Reader (the Bookmark and the Term list). Save the notes at every pause or stop and at section ends.
 
 When the learner pauses, make sure the Bookmark is at the next unread Sentence, state it in one line, and save the notes. A request to pause and *discuss* (the format, the skill, a side question) is not a stop: answer, then offer to resume at the same chunk.
+
+## 10. Help where I am
+
+The learner reads on their own in the reading screen, which moves the Bookmark as they go and records the Word or phrase they last selected. A quick, focused help: skip the warm-up and the level check.
+
+1. Call `where_am_i`. It gives the Book, the Bookmark Sentence with its paragraph so far, and the selected `word` with its Status and Translations. Read the teaching notes for the Language if they exist (level and base language), but hold the warm-up.
+2. Show the context blockquote: the paragraph so far, with the Bookmark Sentence in **bold** and the selected Word in ***bold italic***.
+3. **With a `word`:** that is what they are stuck on. Explain it in this Sentence in 2–4 lines: meaning here, form and why (case, tense, aspect), dictionary form, any idiom it belongs to. Gloss it by the usual rules (`save_gloss` for Unknown and Learning 1–2, then `set_parent` for an inflected form). **Without one:** ask in a box which part trips them: the 2–4 Unknown or Learning 1–2 Words or phrases of the Sentence, plus "The whole Sentence".
+4. End with a box: "Try translating the Sentence" / "Explain the whole Sentence" / "Read on together from here" / "Back to reading on my own". "Read on together" continues with the loop (section 3) at this Sentence; "Back to reading" ends with one encouraging line.
+
+The Bookmark is the learner's here: leave it where they put it unless you read on together.
+

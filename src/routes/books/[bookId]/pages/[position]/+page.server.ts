@@ -22,7 +22,8 @@ export const actions: Actions = {
 		try {
 			await setBookmark(database(), Number(params.bookId), {
 				page: Number(params.position),
-				sentence: Number(form.get('sentence'))
+				sentence: Number(form.get('sentence')),
+				word: String(form.get('word') ?? '') || undefined
 			});
 		} catch (e) {
 			if (e instanceof InvalidBookmark) return fail(400, { message: e.message });

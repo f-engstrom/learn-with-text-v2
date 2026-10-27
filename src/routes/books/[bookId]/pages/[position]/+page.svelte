@@ -91,10 +91,10 @@
 	});
 
 	let pageKey = $derived(`${data.book.id}/${data.position}`);
-	/** The Sentence (1-based) on this Page the Bookmark was last saved at; 0 when it is on another Page. */
-	let bookmarked = 0;
+	/** The Sentence and Word the Bookmark was last saved at from this screen, as "sentence|word". */
+	let bookmarked = '';
 
-	// Opening a Page moves the Bookmark here; on the bookmarked Page the cursor resumes at its Sentence.
+	// Opening a Page moves the Bookmark here; on the bookmarked Page the cursor resumes at its Sentence and Word.
 	$effect(() => {
 		pageKey;
 		untrack(enterPage);
@@ -102,7 +102,7 @@
 
 	// Moving the cursor into another Sentence moves the Bookmark with it.
 	$effect(() => {
-		if (selected) saveBookmark(selected.sentence + 1);
+		if (selected) saveBookmark(selected.sentence + 1, selected.text);
 	});
 
 	function enterPage() {
@@ -110,19 +110,27 @@
 		error = undefined;
 		anchor = undefined;
 		const { bookmark } = data.book;
-		bookmarked = bookmark.page === data.position ? bookmark.sentence : 0;
-		const sentence = Math.max(bookmarked, 1);
-		const first = sentence > 1 ? words.find((w) => w.sentence === sentence - 1) : undefined;
+		const here = bookmark.page === data.position;
+		const sentence = here ? bookmark.sentence : 1;
+		const inSentence = words.filter((w) => w.sentence === sentence - 1);
+		// Back on the Bookmark's Word if it has one, else at the start of a later Sentence.
+		const word = here ? bookmark.word?.toLocaleLowerCase() : undefined;
+		const first = (word && inSentence.find((w) => w.text.toLocaleLowerCase() === word)) || (sentence > 1 ? inSentence[0] : undefined);
 		current = first?.index;
-		saveBookmark(sentence);
+		// Saved even when unchanged, so this Book becomes "where you are" for the Tutor.
+		bookmarked = '';
+		saveBookmark(sentence, first?.text);
 		if (first) tick().then(() => wordElements[first.index]?.scrollIntoView({ block: 'center' }));
 	}
 
-	function saveBookmark(sentence: number) {
-		if (sentence === bookmarked) return;
-		bookmarked = sentence;
+	/** Moves the Bookmark to a Sentence on this Page and the Word or phrase selected in it. */
+	function saveBookmark(sentence: number, word?: string) {
+		const key = `${sentence}|${word ?? ''}`;
+		if (key === bookmarked) return;
+		bookmarked = key;
 		const body = new FormData();
 		body.set('sentence', String(sentence));
+		if (word) body.set('word', word);
 		fetch('?/bookmark', { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
 	}
 

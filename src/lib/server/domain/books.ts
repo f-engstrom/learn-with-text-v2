@@ -26,6 +26,8 @@ export interface BookSummary {
 	/** How many Pages are Read. */
 	readCount: number;
 	bookmark: Bookmark;
+	/** When the Bookmark last moved (ISO time); undefined if it never has. */
+	bookmarkedAt?: string;
 	/** Share of the Book's distinct Words that are Unknown, from 0 to 1. */
 	unknownShare: number;
 }
@@ -47,6 +49,13 @@ export interface Bookmark {
 	page: number;
 	/** 1-based Sentence position on that Page. */
 	sentence: number;
+	/** The Word or phrase last selected in that Sentence, as written. */
+	word?: string;
+}
+
+/** A Bookmark as stored, without empty fields. */
+export function toBookmark(row: { bookmark_page: number; bookmark_sentence: number; bookmark_word: string | null }): Bookmark {
+	return { page: row.bookmark_page, sentence: row.bookmark_sentence, ...(row.bookmark_word ? { word: row.bookmark_word } : {}) };
 }
 
 export interface PageView {
@@ -149,7 +158,15 @@ export async function listBooks(db: Kysely<Database>): Promise<BookSummary[]> {
 	const rows = await db
 		.selectFrom('book')
 		.innerJoin('language', 'language.id', 'book.language_id')
-		.select(['book.id', 'book.title', 'language.name as languageName', 'book.bookmark_page', 'book.bookmark_sentence'])
+		.select([
+			'book.id',
+			'book.title',
+			'language.name as languageName',
+			'book.bookmark_page',
+			'book.bookmark_sentence',
+			'book.bookmark_word',
+			'book.bookmarked_at'
+		])
 		.select((eb) => [
 			eb.selectFrom('page').whereRef('page.book_id', '=', 'book.id').select(eb.fn.countAll<number>().as('n')).as('pageCount'),
 			eb
@@ -186,7 +203,8 @@ export async function listBooks(db: Kysely<Database>): Promise<BookSummary[]> {
 		languageName: r.languageName,
 		pageCount: Number(r.pageCount),
 		readCount: Number(r.readCount),
-		bookmark: { page: r.bookmark_page, sentence: r.bookmark_sentence },
+		bookmark: toBookmark(r),
+		...(r.bookmarked_at ? { bookmarkedAt: r.bookmarked_at } : {}),
 		unknownShare: Number(r.words) === 0 ? 0 : Number(r.unknown) / Number(r.words)
 	}));
 }
@@ -217,6 +235,7 @@ export async function getPage(db: Kysely<Database>, bookId: number, position: nu
 			'book.language_id',
 			'book.bookmark_page',
 			'book.bookmark_sentence',
+			'book.bookmark_word',
 			'page.text',
 			'page.read_at'
 		])
@@ -265,7 +284,7 @@ export async function getPage(db: Kysely<Database>, bookId: number, position: nu
 			id: row.bookId,
 			title: row.title,
 			pageCount: Number(row.pageCount),
-			bookmark: { page: row.bookmark_page, sentence: row.bookmark_sentence }
+			bookmark: toBookmark(row)
 		},
 		language,
 		position,

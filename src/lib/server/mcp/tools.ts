@@ -7,7 +7,7 @@ import type { Database } from '../db/schema';
 import { createBook, findBookByUrl, getPage, InvalidBook, listBooks } from '../domain/books';
 import { listLanguages, type Language } from '../domain/languages';
 import { termKey } from '../domain/parsing';
-import { getBookmark, InvalidBookmark, markPageRead, setBookmark } from '../domain/reading';
+import { getBookmark, InvalidBookmark, latestBookmark, markPageRead, setBookmark } from '../domain/reading';
 import { findSuggestions, getFitRange, importArticle, type SuggestionSources } from '../domain/suggestions';
 import { findTerms, InvalidTerm, type TermView } from '../domain/terms';
 import { adjustLearning, linkParent, saveGloss } from '../domain/tutoring';
@@ -28,7 +28,7 @@ export function createReaderServer(
 			instructions:
 				'The Reader holds Books (split into Pages and Sentences), each with a Bookmark, and Terms: what the learner knows about a Word or phrase. ' +
 				'A Word with no Term is Unknown. A Term has a Status (learning1–4, known, ignored), ordered Translations each with a Source (you, wiktionary, tutor), an optional Pronunciation and Parent. ' +
-				'Start with list_books, then get_sentences to read from the Bookmark. ' +
+				'Start with list_books, then get_sentences to read from the Bookmark; where_am_i says where the learner is right now when they read on their own. ' +
 				'While tutoring: save_gloss for a meaning you give (only Unknown Words and Learning 1–2 Terms), set_parent to link an inflected form to its dictionary form, adjust_learning after the learner answers about a Term, ' +
 				'set_bookmark as you move through the text, and mark_page_read at the end of a Page. Only the learner sets Known or Ignored.'
 		}
@@ -53,10 +53,42 @@ export function createReaderServer(
 	);
 
 	server.registerTool(
+		'where_am_i',
+		{
+			title: 'Where am I',
+			description:
+				'Where the learner is right now: the Book whose Bookmark moved most recently (in the reading screen or by you), ' +
+				'its Sentence with the paragraph so far, and the Word or phrase they last selected there, with its Status and Translations. ' +
+				'Use it when the learner says "I\'m here", "help me with this" or similar while reading on their own.',
+			annotations: readOnly
+		},
+		async () => {
+			const latest = await latestBookmark(db);
+			if (!latest) return failure('No Bookmark has moved yet: the learner hasn’t opened a Book. Use list_books.');
+			const page = await getPage(db, latest.bookId, latest.bookmark.page);
+			if (!page) return failure(`Book ${latest.bookId} has no Page ${latest.bookmark.page}.`);
+			const sentences = page.paragraphs.flatMap((p, paragraph) => p.sentences.map((s) => ({ ...s, paragraph })));
+			const current = sentences[latest.bookmark.sentence - 1];
+			const text = (s: { tokens: { text: string }[] }) => s.tokens.map((t) => t.text).join('').trim();
+			const wanted = latest.bookmark.word?.toLocaleLowerCase(page.language.code);
+			const token = current?.tokens.find((t) => t.key !== undefined && t.text.toLocaleLowerCase(page.language.code) === wanted);
+			return json({
+				book: { id: latest.bookId, title: latest.title, language: page.language.name, pageCount: page.book.pageCount },
+				bookmark: latest.bookmark,
+				movedAt: latest.at,
+				sentence: current && text(current),
+				paragraphSoFar: current && sentences.filter((s, i) => s.paragraph === current.paragraph && i < latest.bookmark.sentence).map(text).join(' '),
+				word: token?.key !== undefined ? wordView(token.text, page.terms[token.key], token.words ?? 1) : undefined
+			});
+		}
+	);
+
+	server.registerTool(
 		'get_bookmark',
 		{
 			title: 'Get Bookmark',
-			description: "Where the learner is in a Book: the Page and the Sentence on it (both 1-based), with that Sentence's text.",
+			description:
+				"Where the learner is in a Book: the Page and the Sentence on it (both 1-based), with that Sentence's text, and the Word they last selected there if any.",
 			inputSchema: { book_id: z.number().int().describe('The Book, from list_books.') },
 			annotations: readOnly
 		},
@@ -80,7 +112,7 @@ export function createReaderServer(
 			description:
 				"Sentences of a Book's Page, from the Bookmark unless a Page and Sentence are given, with each Word's Status and Translations. " +
 				'Status "unknown" means the Word has no Term. A matched Multi-word Term (e.g. "в течение") is one entry. ' +
-				'Each Sentence carries its paragraph number on the Page. Stays within one Page; nextPage says where to continue.',
+				'Each Sentence carries its paragraph number on the Page; the Word the learner selected in the Bookmark Sentence is marked selected. Stays within one Page; nextPage says where to continue.',
 			inputSchema: {
 				book_id: z.number().int().describe('The Book, from list_books.'),
 				page: z.number().int().min(1).optional().describe("1-based Page; the Bookmark's by default."),
@@ -98,11 +130,22 @@ export function createReaderServer(
 			const from = start ?? (position === bookmark.page ? bookmark.sentence : 1);
 			const all = page.paragraphs.flatMap((p, paragraph) => p.sentences.map((s) => ({ ...s, paragraph: paragraph + 1 })));
 			const sentences = all.slice(from - 1, from - 1 + count).map((s, i) => {
-				const words = s.tokens.flatMap((t) => (t.key === undefined ? [] : [wordView(t.text, page.terms[t.key], t.words ?? 1)]));
+				const isBookmark = position === bookmark.page && from + i === bookmark.sentence;
+				const selectedWord = isBookmark ? bookmark.word?.toLocaleLowerCase(page.language.code) : undefined;
+				const words = s.tokens.flatMap((t) =>
+					t.key === undefined
+						? []
+						: [
+								{
+									...wordView(t.text, page.terms[t.key], t.words ?? 1),
+									...(selectedWord !== undefined && t.text.toLocaleLowerCase(page.language.code) === selectedWord ? { selected: true } : {})
+								}
+							]
+				);
 				return {
 					position: from + i,
 					paragraph: s.paragraph,
-					isBookmark: position === bookmark.page && from + i === bookmark.sentence,
+					isBookmark,
 					text: s.tokens.map((t) => t.text).join('').trim(),
 					words
 				};
@@ -232,15 +275,17 @@ export function createReaderServer(
 		'set_bookmark',
 		{
 			title: 'Move the Bookmark',
-			description: 'Moves a Book’s Bookmark to a Page and Sentence (both 1-based). The reading screen opens there too.',
+			description:
+				'Moves a Book’s Bookmark to a Page and Sentence (both 1-based), optionally on a Word in that Sentence. The reading screen opens there too.',
 			inputSchema: {
 				book_id: z.number().int(),
 				page: z.number().int().min(1),
-				sentence: z.number().int().min(1).default(1)
+				sentence: z.number().int().min(1).default(1),
+				word: z.string().optional().describe('A Word or phrase in that Sentence, as written.')
 			},
 			annotations: { ...writes, idempotentHint: true }
 		},
-		async ({ book_id, page, sentence }) => guard(async () => json({ bookmark: await setBookmark(db, book_id, { page, sentence }) }))
+		async ({ book_id, page, sentence, word }) => guard(async () => json({ bookmark: await setBookmark(db, book_id, { page, sentence, word }) }))
 	);
 
 	server.registerTool(

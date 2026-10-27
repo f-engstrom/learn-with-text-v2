@@ -21,7 +21,7 @@ _Avoid_: Text (Lute's name for it), chapter
 One sentence of a Page, in order, as split by its Language's rules. Multi-word Terms never cross a Sentence boundary.
 
 **Bookmark**:
-Where you are in a Book: its current Page and Sentence. The reading screen and the Tutor both use the same Bookmark.
+Where you are in a Book: its current Page and Sentence, and the Word (or phrase) you last selected in that Sentence, if any. The reading screen and the Tutor both use the same Bookmark; the one moved most recently, in any Book, is where you are now.
 _Avoid_: Position, resume point, current page
 
 **Word**:

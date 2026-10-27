@@ -50,6 +50,7 @@ describe('Reader MCP server', () => {
 		const readOnly = Object.fromEntries(tools.map((t) => [t.name, t.annotations?.readOnlyHint]));
 		expect(readOnly).toEqual({
 			list_languages: true,
+			where_am_i: true,
 			list_books: true,
 			get_bookmark: true,
 			get_sentences: true,
@@ -184,6 +185,29 @@ describe('Reader MCP server', () => {
 		const result = await call('import_book', { language: 'ru', url: 'https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D1%82' });
 		expect(result).toMatchObject({ title: 'Кот' });
 		expect(await call('import_book', { language: 'ru', url: 'https://ru.wikipedia.org/wiki/Кот' })).toEqual({ bookId: result.bookId, title: 'Кот' });
+	});
+
+	it("says where the learner is: the latest Bookmark, its Sentence and paragraph so far, and the selected Word", async () => {
+		const { db, call, bookId } = await connect();
+		expect(await call('where_am_i')).toEqual({ error: 'No Bookmark has moved yet: the learner hasn’t opened a Book. Use list_books.' });
+		await setBookmark(db, bookId, { page: 1, sentence: 2, word: 'бежит' });
+		const here = await call('where_am_i');
+		expect(here).toMatchObject({
+			book: { id: bookId, title: 'Кот', language: 'Russian', pageCount: 2 },
+			bookmark: { page: 1, sentence: 2, word: 'бежит' },
+			sentence: 'Мышь бежит.',
+			paragraphSoFar: 'В течение дня кот спит. Мышь бежит.',
+			word: { text: 'бежит', status: 'unknown' }
+		});
+		const sentences = await call('get_sentences', { book_id: bookId, count: 1 });
+		expect(sentences.sentences[0].words.filter((w: { selected?: boolean }) => w.selected).map((w: { text: string }) => w.text)).toEqual(['бежит']);
+	});
+
+	it('moves the Bookmark onto a Word', async () => {
+		const { call, bookId } = await connect();
+		expect(await call('set_bookmark', { book_id: bookId, page: 1, sentence: 3, word: 'видит' })).toEqual({ bookmark: { page: 1, sentence: 3, word: 'видит' } });
+		expect(await call('set_bookmark', { book_id: bookId, page: 1, sentence: 3, word: 'бежит' })).toEqual({ error: '“бежит” isn\'t in Sentence 3 of Page 1.' });
+		expect((await call('where_am_i')).word).toMatchObject({ text: 'видит' });
 	});
 });
 

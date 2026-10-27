@@ -4,7 +4,7 @@ import { migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
 import { createBook, getPage } from './books';
 import { findTerms, saveTerm } from './terms';
-import { getBookmark, InvalidBookmark, markPageRead, setBookmark } from './reading';
+import { getBookmark, InvalidBookmark, latestBookmark, markPageRead, setBookmark } from './reading';
 
 async function setup(text = 'Кот спит. Мышь бежит.\n---\nКот и мышь. Мышь спит.') {
 	const db = openDatabase(':memory:');
@@ -92,5 +92,43 @@ describe('markPageRead with Multi-word Terms', () => {
 		await markPageRead(db, bookId, 1, { restKnown: true });
 		const known = await findTerms(db, byName.Russian, ['в', 'течение', 'дня', 'кот', 'спит']);
 		expect(Object.keys(known).toSorted()).toEqual(['дня', 'кот', 'спит']);
+	});
+});
+
+describe('the Bookmark Word', () => {
+	it('records the Word or phrase selected in the Sentence, in any spacing or case', async () => {
+		const { db, bookId } = await setup();
+		expect(await setBookmark(db, bookId, { page: 2, sentence: 2, word: ' спит ' })).toEqual({ page: 2, sentence: 2, word: 'спит' });
+		expect(await getBookmark(db, bookId)).toEqual({ page: 2, sentence: 2, word: 'спит' });
+		expect(await setBookmark(db, bookId, { page: 1, sentence: 1, word: 'КОТ  спит' })).toMatchObject({ word: 'КОТ спит' });
+		expect(await setBookmark(db, bookId, { page: 1, sentence: 2 })).toEqual({ page: 1, sentence: 2 });
+		expect(await getBookmark(db, bookId)).toEqual({ page: 1, sentence: 2 });
+	});
+
+	it('refuses a Word that is not in the Sentence', async () => {
+		const { db, bookId } = await setup();
+		await expect(setBookmark(db, bookId, { page: 1, sentence: 1, word: 'Мышь' })).rejects.toThrow('“Мышь” isn\'t in Sentence 1 of Page 1.');
+	});
+
+	it('is cleared when the Page is marked Read', async () => {
+		const { db, bookId } = await setup();
+		await setBookmark(db, bookId, { page: 1, sentence: 2, word: 'бежит' });
+		await markPageRead(db, bookId, 1);
+		expect(await getBookmark(db, bookId)).toEqual({ page: 2, sentence: 1 });
+	});
+});
+
+describe('latestBookmark', () => {
+	it('is the Bookmark moved most recently, in any Book', async () => {
+		const { db, byName, bookId } = await setup();
+		expect(await latestBookmark(db)).toBeUndefined();
+		const other = await createBook(db, { languageId: byName.Russian, title: 'Другая', text: 'Раз. Два.' });
+		await setBookmark(db, bookId, { page: 1, sentence: 2 });
+		await new Promise((r) => setTimeout(r, 5));
+		await setBookmark(db, other, { page: 1, sentence: 2, word: 'Два' });
+		expect(await latestBookmark(db)).toMatchObject({ bookId: other, title: 'Другая', bookmark: { page: 1, sentence: 2, word: 'Два' } });
+		await new Promise((r) => setTimeout(r, 5));
+		await markPageRead(db, bookId, 1);
+		expect(await latestBookmark(db)).toMatchObject({ bookId, bookmark: { page: 2, sentence: 1 } });
 	});
 });

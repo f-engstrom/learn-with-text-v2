@@ -1,6 +1,6 @@
 import type { Kysely } from 'kysely';
 import type { Database } from '../db/schema';
-import { getPage, type Bookmark } from './books';
+import { getPage, toBookmark, type Bookmark } from './books';
 import { suggestPronunciation } from './pronunciation';
 
 export class InvalidBookmark extends Error {}
@@ -8,16 +8,32 @@ export class InvalidBookmark extends Error {}
 export async function getBookmark(db: Kysely<Database>, bookId: number): Promise<Bookmark | undefined> {
 	const row = await db
 		.selectFrom('book')
-		.select(['bookmark_page', 'bookmark_sentence'])
+		.select(['bookmark_page', 'bookmark_sentence', 'bookmark_word'])
 		.where('id', '=', bookId)
 		.executeTakeFirst();
-	return row && { page: row.bookmark_page, sentence: row.bookmark_sentence };
+	return row && toBookmark(row);
 }
 
-/** Moves the Bookmark. A Sentence past the end of the Page is clamped to its last Sentence. */
+/** The Book whose Bookmark moved most recently: where you are now. */
+export async function latestBookmark(db: Kysely<Database>): Promise<{ bookId: number; title: string; bookmark: Bookmark; at: string } | undefined> {
+	const row = await db
+		.selectFrom('book')
+		.select(['id', 'title', 'bookmark_page', 'bookmark_sentence', 'bookmark_word', 'bookmarked_at'])
+		.where('bookmarked_at', 'is not', null)
+		.orderBy('bookmarked_at', 'desc')
+		.limit(1)
+		.executeTakeFirst();
+	return row && { bookId: row.id, title: row.title, bookmark: toBookmark(row), at: row.bookmarked_at! };
+}
+
+/**
+ * Moves the Bookmark. A Sentence past the end of the Page is clamped to its last Sentence.
+ * A Word, if given, must be in that Sentence.
+ */
 export async function setBookmark(db: Kysely<Database>, bookId: number, bookmark: Bookmark): Promise<Bookmark> {
 	const page = await db
 		.selectFrom('page')
+		.select('page.id')
 		.select((eb) =>
 			eb.selectFrom('sentence').whereRef('sentence.page_id', '=', 'page.id').select(eb.fn.countAll<number>().as('n')).as('sentences')
 		)
@@ -25,13 +41,19 @@ export async function setBookmark(db: Kysely<Database>, bookId: number, bookmark
 		.where('position', '=', bookmark.page)
 		.executeTakeFirst();
 	if (!page) throw new InvalidBookmark('No such Page.');
-	const saved = { page: bookmark.page, sentence: Math.min(Math.max(1, Math.trunc(bookmark.sentence) || 1), Number(page.sentences)) };
+	const sentence = Math.min(Math.max(1, Math.trunc(bookmark.sentence) || 1), Number(page.sentences));
+	const word = bookmark.word?.trim().replace(/\s+/g, ' ') || undefined;
+	if (word !== undefined) {
+		const row = await db.selectFrom('sentence').select('text').where('page_id', '=', page.id).where('position', '=', sentence).executeTakeFirst();
+		const flat = (text: string) => text.replace(/\s+/g, ' ').normalize('NFC').toLowerCase();
+		if (!row || !flat(row.text).includes(flat(word))) throw new InvalidBookmark(`“${word}” isn't in Sentence ${sentence} of Page ${bookmark.page}.`);
+	}
 	await db
 		.updateTable('book')
-		.set({ bookmark_page: saved.page, bookmark_sentence: saved.sentence })
+		.set({ bookmark_page: bookmark.page, bookmark_sentence: sentence, bookmark_word: word ?? null, bookmarked_at: new Date().toISOString() })
 		.where('id', '=', bookId)
 		.execute();
-	return saved;
+	return { page: bookmark.page, sentence, ...(word ? { word } : {}) };
 }
 
 export interface MarkRead {
@@ -85,7 +107,11 @@ export async function markPageRead(
 		}
 		await trx.updateTable('page').set({ read_at: now }).where('book_id', '=', bookId).where('position', '=', position).execute();
 		if (next !== undefined) {
-			await trx.updateTable('book').set({ bookmark_page: next, bookmark_sentence: 1 }).where('id', '=', bookId).execute();
+			await trx
+				.updateTable('book')
+				.set({ bookmark_page: next, bookmark_sentence: 1, bookmark_word: null, bookmarked_at: now })
+				.where('id', '=', bookId)
+				.execute();
 		}
 	});
 	return next;

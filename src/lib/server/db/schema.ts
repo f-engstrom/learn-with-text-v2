@@ -21,6 +21,10 @@ export interface BookTable {
 	/** The Bookmark: 1-based Page position, and 1-based Sentence position on that Page. */
 	bookmark_page: Generated<number>;
 	bookmark_sentence: Generated<number>;
+	/** The Word or phrase last selected in the Bookmark's Sentence, as written; null if none. */
+	bookmark_word: string | null;
+	/** When the Bookmark last moved; null if it never has. */
+	bookmarked_at: string | null;
 	/** The web address a Book came from; null for pasted text and files. */
 	url: string | null;
 }
