@@ -1,4 +1,5 @@
 import { database } from '#lib/server/database.ts';
+import { FREQUENCY_BANDS, type FrequencyBand } from '#lib/server/domain/frequency.ts';
 import { listLanguages } from '#lib/server/domain/languages.ts';
 import { isSource, isStatus, listTerms, TERM_PAGE_SIZE, type TermFilter } from '#lib/server/domain/terms.ts';
 import { deleteTermAction, reviewAction, saveTermAction, setStatusAction } from '#lib/server/term-actions.ts';
@@ -12,6 +13,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	const source = param('source');
 	const due = param('due');
 	const recall = param('recall');
+	const frequency = param('frequency');
 	const page = Math.max(1, Math.trunc(Number(param('page'))) || 1);
 	const filter: TermFilter = {
 		languageId,
@@ -20,6 +22,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		search: param('q') || undefined,
 		due: due === 'due' || due === 'later' ? due : undefined,
 		recall: recall === 'none' || isStatus(recall) ? recall : undefined,
+		frequency: (FREQUENCY_BANDS as readonly string[]).includes(frequency) ? (frequency as FrequencyBand) : undefined,
 		limit: TERM_PAGE_SIZE,
 		offset: (page - 1) * TERM_PAGE_SIZE
 	};
@@ -32,7 +35,8 @@ export const load: PageServerLoad = async ({ url }) => {
 			source: filter.source ?? '',
 			q: filter.search ?? '',
 			due: filter.due ?? '',
-			recall: filter.recall ?? ''
+			recall: filter.recall ?? '',
+			frequency: filter.frequency ?? ''
 		},
 		terms,
 		total,

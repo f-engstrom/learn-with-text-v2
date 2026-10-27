@@ -47,4 +47,14 @@ describe('practiceQueue', () => {
 		expect(practiceQueue(words, 'priority')).toEqual([2, 4, 0]);
 		expect(practiceQueue(words, 'overdue')).toEqual([2, 4, 0]);
 	});
+
+	it('puts frequent Words first in priority, then the more overdue', () => {
+		const banded = [
+			{ ...words[2], frequency: 'rare' as const },
+			{ ...words[4], frequency: 'top1k' as const },
+			{ ...words[0], frequency: 'top1k' as const }
+		];
+		expect(practiceQueue(banded, 'priority')).toEqual([4, 0, 2]);
+		expect(practiceQueue(banded, 'overdue')).toEqual([2, 4, 0]);
+	});
 });

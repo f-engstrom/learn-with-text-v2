@@ -1,3 +1,4 @@
+import type { FrequencyBand } from '#lib/server/domain/frequency.ts';
 import type { PracticeView, RecallStrength } from '#lib/server/domain/practice.ts';
 import type { Status } from '#lib/server/domain/terms.ts';
 
@@ -54,14 +55,30 @@ export interface DueWord {
 	sentence: number;
 	paragraph: number;
 	practice: PracticeView;
+	frequency?: FrequencyBand;
 }
+
+export const frequencyLabels: Record<FrequencyBand, string> = {
+	top1k: 'top 1,000',
+	top5k: 'top 5,000',
+	top20k: 'top 20,000',
+	rare: 'rare'
+};
+
+const bandOrder: Record<FrequencyBand, number> = { top1k: 0, top5k: 1, top20k: 2, rare: 3 };
 
 /** How many Words "Top by priority" takes. */
 export const TOP = 10;
 
-/** Practice priority between two Due Words; most overdue first until Frequency and Transfer exist. */
+/** Practice priority between two Due Words: the more frequent first, then the more overdue. */
 export function byPriority(a: DueWord, b: DueWord): number {
-	return b.practice.overdue - a.practice.overdue || Date.parse(a.practice.due) - Date.parse(b.practice.due) || a.index - b.index;
+	const band = (w: DueWord) => (w.frequency ? bandOrder[w.frequency] : 4);
+	return (
+		band(a) - band(b) ||
+		b.practice.overdue - a.practice.overdue ||
+		Date.parse(a.practice.due) - Date.parse(b.practice.due) ||
+		a.index - b.index
+	);
 }
 
 /**

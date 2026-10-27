@@ -14,7 +14,7 @@
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import PracticeCard from './PracticeCard.svelte';
 	import PracticePanel, { type PracticeState } from './PracticePanel.svelte';
-	import { practiceQueue, type DueWord, type Subset } from '#lib/practice.ts';
+	import { frequencyLabels, practiceQueue, type DueWord, type Subset } from '#lib/practice.ts';
 	import WiktionaryPanel from './WiktionaryPanel.svelte';
 
 	/** A Word, or a matched Multi-word Term, on the Page. */
@@ -74,7 +74,9 @@
 	let dueWords: DueWord[] = $derived(
 		words.flatMap((w) => {
 			const practice = data.terms[w.key]?.practice;
-			return practice ? [{ index: w.index, key: w.key, sentence: w.sentence + 1, paragraph: paragraphOf[w.sentence], practice }] : [];
+			return practice
+				? [{ index: w.index, key: w.key, sentence: w.sentence + 1, paragraph: paragraphOf[w.sentence], practice, frequency: data.frequency[w.key] }]
+				: [];
 		})
 	);
 	function startPractice() {
@@ -173,7 +175,12 @@
 	let practising = $state<PracticeState | undefined>();
 	/** While a practised Word's meaning is still hidden. */
 	let recalling = $derived(practising?.stage === 'run' && !practising.revealed);
-	let gloss = $derived(zen && !open && !recalling && term ? term.translations.map((t) => t.text).join('; ') : '');
+	let gloss = $derived.by(() => {
+		if (!zen || open || recalling || !selected) return '';
+		const meaning = term?.translations.map((t) => t.text).join('; ') ?? '';
+		const band = data.frequency[selected.key];
+		return [meaning, band && frequencyLabels[band]].filter(Boolean).join(' · ');
+	});
 
 	onMount(() => {
 		try {
@@ -569,6 +576,9 @@
 				{#key `${selected.key}:${JSON.stringify(term)}`}
 					<TermForm bind:this={termForm} language={data.language} text={selected.text} {term} error={form?.message} />
 				{/key}
+				{#if data.frequency[selected.key]}
+					<p class="facts">Frequency: <strong>{frequencyLabels[data.frequency[selected.key]]}</strong></p>
+				{/if}
 				{#if term?.practice}
 					<PracticeCard {term} onreview={(grade) => review(term.id, grade)} />
 				{/if}
@@ -824,6 +834,15 @@
 		display: grid;
 		gap: 1rem;
 		box-sizing: border-box;
+	}
+	.facts {
+		margin: 0;
+		color: var(--muted);
+		font-size: 0.9rem;
+	}
+	.facts strong {
+		color: var(--text);
+		font-weight: 600;
 	}
 	.close {
 		position: absolute;

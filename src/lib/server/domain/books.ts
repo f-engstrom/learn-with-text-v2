@@ -1,5 +1,6 @@
 import type { Kysely } from 'kysely';
 import type { Database } from '../db/schema';
+import { frequencyBands, type FrequencyBand } from './frequency';
 import { getLanguage, type Language } from './languages';
 import { candidateSpans, chooseSpans } from './multiword';
 import { normalise, parserFor, type Parser, type Token } from './parsing';
@@ -69,6 +70,8 @@ export interface PageView {
 	 * A Word with no entry is Unknown.
 	 */
 	terms: Record<string, TermView>;
+	/** Frequency bands of the Page's Words (not phrases), by Normalised form. */
+	frequency: Record<string, FrequencyBand>;
 }
 
 /**
@@ -290,6 +293,7 @@ export async function getPage(db: Kysely<Database>, bookId: number, position: nu
 		position,
 		read: row.read_at !== null,
 		paragraphs,
-		terms
+		terms,
+		frequency: await frequencyBands(db, language, keys)
 	};
 }

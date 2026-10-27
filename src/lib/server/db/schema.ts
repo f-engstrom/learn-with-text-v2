@@ -56,6 +56,13 @@ export interface SentenceTable {
 
 export type StatusValue = 'learning1' | 'learning2' | 'learning3' | 'learning4' | 'known' | 'ignored';
 
+/** A Language's frequency list, 1 being the most frequent. */
+export interface FrequencyTable {
+	language_id: number;
+	normalised: string;
+	rank: number;
+}
+
 export type GradeValue = 'missed' | 'hard' | 'got';
 export type ReviewSourceValue = 'page' | 'list' | 'tutor';
 
@@ -152,6 +159,7 @@ export interface Database {
 	term: TermTable;
 	translation: TranslationTable;
 	review: ReviewTable;
+	frequency: FrequencyTable;
 	schedule: ScheduleTable;
 	dictionary: DictionaryTable;
 	book_word: BookWordTable;

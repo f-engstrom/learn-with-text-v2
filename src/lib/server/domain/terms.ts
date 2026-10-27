@@ -1,6 +1,7 @@
 import { sql, type Kysely, type SelectQueryBuilder, type Transaction } from 'kysely';
 import type { Database, SourceValue, StatusValue } from '../db/schema';
-import { getLanguage, type Language } from './languages';
+import { bandRanks, ensureFrequencyLists, frequencyBands, type FrequencyBand } from './frequency';
+import { getLanguage, listLanguages, type Language } from './languages';
 import { MAX_TERM_WORDS } from './multiword';
 import { practiceViews, type PracticeView } from './practice';
 import { parserFor, termKey } from './parsing';
@@ -31,6 +32,8 @@ export interface TermView {
 	followsParent: boolean;
 	/** Learning 1–4 Terms only: when it is Due, and its Recall strength once reviewed. */
 	practice?: PracticeView;
+	/** For a one-Word Term in a Language with a frequency list. */
+	frequency?: FrequencyBand;
 }
 
 /** A Translation as submitted from a form: `id` refers to one the Term already has. */
@@ -284,6 +287,8 @@ export interface TermFilter {
 	due?: 'due' | 'later';
 	/** Practised Terms by their Recall strength's level, or with no Reviews yet. */
 	recall?: Status | 'none';
+	/** One-Word Terms in a Frequency band ('rare': not in the top 20,000). */
+	frequency?: FrequencyBand;
 	limit?: number;
 	offset?: number;
 }
@@ -293,6 +298,7 @@ export const TERM_PAGE_SIZE = 50;
 /** Terms matching a filter, newest first, with how many match in all. */
 export async function listTerms(db: Kysely<Database>, filter: TermFilter = {}): Promise<{ terms: TermListItem[]; total: number }> {
 	const search = filter.search?.trim().toLocaleLowerCase();
+	if (filter.frequency) await ensureFrequencyLists(db, await listLanguages(db));
 	const filtered = <Q extends SelectQueryBuilder<any, any, any>>(query: Q): Q => {
 		let q = query as SelectQueryBuilder<any, any, any>;
 		if (filter.languageId !== undefined) q = q.where('term.language_id', '=', filter.languageId);
@@ -303,6 +309,20 @@ export async function listTerms(db: Kysely<Database>, filter: TermFilter = {}): 
 			q = q.where((eb) =>
 				eb.exists(eb.selectFrom('translation').whereRef('translation.term_id', '=', 'term.id').where('translation.source', '=', source).select('translation.id'))
 			);
+		}
+		if (filter.frequency) {
+			const [low, high] = bandRanks(filter.frequency);
+			const ranked = (eb: any) =>
+				eb
+					.selectFrom('frequency')
+					.whereRef('frequency.language_id', '=', 'term.language_id')
+					.whereRef('frequency.normalised', '=', 'term.normalised')
+					.select('frequency.rank');
+			q = q.where('term.normalised', 'not like', '% %');
+			q =
+				filter.frequency === 'rare'
+					? q.where((eb) => eb.not(eb.exists(ranked(eb))))
+					: q.where((eb) => eb.exists(ranked(eb).where('frequency.rank', '>=', low).where('frequency.rank', '<=', high)));
 		}
 		if (search) {
 			const pattern = `%${search.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
@@ -402,6 +422,11 @@ async function toViews(db: Kysely<Database>, rows: TermRow[]): Promise<{ normali
 		.orderBy('position')
 		.execute();
 	const practice = await practiceViews(db, rows);
+	const frequency: Record<number, Record<string, FrequencyBand>> = {};
+	for (const languageId of new Set(rows.map((r) => r.language_id))) {
+		const language = await getLanguage(db, languageId);
+		if (language) frequency[languageId] = await frequencyBands(db, language, rows.filter((r) => r.language_id === languageId).map((r) => r.normalised));
+	}
 
 	return rows.map((t) => ({
 		normalised: t.normalised,
@@ -416,6 +441,7 @@ async function toViews(db: Kysely<Database>, rows: TermRow[]): Promise<{ normali
 					: { id: t.parentId, text: t.parentText, status: t.parentStatus },
 			followsParent: t.follows_parent === 1,
 			...(practice.has(t.id) ? { practice: practice.get(t.id) } : {}),
+			...(frequency[t.language_id]?.[t.normalised] ? { frequency: frequency[t.language_id][t.normalised] } : {}),
 			translations: translations
 				.filter((tr) => tr.term_id === t.id)
 				.map((tr) => ({ id: tr.id, text: tr.text, source: tr.source }))

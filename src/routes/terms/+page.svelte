@@ -4,7 +4,7 @@
 	import { page } from '$app/state';
 	import TermForm from '#lib/components/TermForm.svelte';
 	import { actionUrl } from '#lib/actions.ts';
-	import { dueLabel, levelLabels } from '#lib/practice.ts';
+	import { dueLabel, frequencyLabels, levelLabels } from '#lib/practice.ts';
 	import type { Source, Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
 
@@ -104,6 +104,15 @@
 		</select>
 	</label>
 	<label>
+		Frequency
+		<select name="frequency" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+			<option value="">Any</option>
+			{#each Object.entries(frequencyLabels) as [value, label] (value)}
+				<option {value} selected={data.filter.frequency === value}>{label}</option>
+			{/each}
+		</select>
+	</label>
+	<label>
 		Search
 		<input type="search" name="q" value={data.filter.q} placeholder="Term or Translation" />
 	</label>
@@ -143,6 +152,7 @@
 					<td>
 						<span class="term" lang={languageOf(term.languageId).code} dir={dirOf(term.languageId)}>{term.text}</span>
 						{#if term.pronunciation}<small class="pronunciation">{term.pronunciation}</small>{/if}
+						{#if term.frequency}<small class="frequency">{frequencyLabels[term.frequency]}</small>{/if}
 					</td>
 					{#if !data.filter.language}<td>{languageOf(term.languageId).name}</td>{/if}
 					<td>
@@ -231,6 +241,7 @@
 		padding-block: 0.25rem;
 	}
 	.pronunciation,
+	.frequency,
 	.children {
 		display: block;
 		color: var(--muted);
