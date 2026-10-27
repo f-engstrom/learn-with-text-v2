@@ -2,8 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { openDatabase } from '../db/open';
 import { migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
-import { findTerms, saveTerm } from './terms';
-import { InvalidReview, practiceView, recallLevel, recordReview } from './practice';
+import { createBook } from './books';
+import { findTerms, listTerms, saveTerm } from './terms';
+import { findExample, InvalidReview, practiceView, recallLevel, recordReview } from './practice';
 
 const DAY = 24 * 60 * 60 * 1000;
 const day = (n: number) => new Date(Date.UTC(2026, 0, 1) + n * DAY);
@@ -14,7 +15,7 @@ async function setup() {
 	const russian = (await listLanguages(db)).find((l) => l.code === 'ru')!;
 	const save = (text: string, status = 'learning1', more = {}) => saveTerm(db, { languageId: russian.id, text, status, ...more });
 	const view = async (text: string) => (await findTerms(db, russian.id, [text]))[text];
-	return { db, save, view };
+	return { db, save, view, russian };
 }
 
 describe('practiceView', () => {
@@ -84,5 +85,39 @@ describe('recordReview', () => {
 		expect((await view('читала')).practice).toEqual((await view('читать')).practice);
 		expect((await view('видела')).practice).toMatchObject({ reviews: 0 });
 		expect((await view('видеть')).practice).toMatchObject({ reviews: 0 });
+	});
+});
+
+describe('the Term list by practice', () => {
+	it('filters to Due Terms, most overdue first, and by Recall strength', async () => {
+		const { db, save, russian } = await setup();
+		const old = await save('кот');
+		const older = await save('дом');
+		await save('лес');
+		await save('мир', 'known');
+		await db.updateTable('term').set({ created_at: '2026-01-01T00:00:00.000Z' }).where('id', '=', older).execute();
+		await db.updateTable('term').set({ created_at: '2026-02-01T00:00:00.000Z' }).where('id', '=', old).execute();
+		const due = await listTerms(db, { languageId: russian.id, due: 'due' });
+		expect(due.terms.map((t) => t.text)).toEqual(['дом', 'кот']);
+		expect(due.total).toBe(2);
+		expect((await listTerms(db, { due: 'later' })).terms.map((t) => t.text)).toEqual(['лес']);
+
+		await recordReview(db, old, 'got', 'list');
+		expect((await listTerms(db, { recall: 'learning2' })).terms.map((t) => t.text)).toEqual(['кот']);
+		expect((await listTerms(db, { recall: 'none' })).terms.map((t) => t.text).sort()).toEqual(['дом', 'лес']);
+		expect((await listTerms(db, { due: 'due', limit: 1 })).terms.map((t) => t.text)).toEqual(['дом']);
+	});
+});
+
+describe('findExample', () => {
+	it('finds a Sentence with the Term, capitalised or not, preferring Pages you have read', async () => {
+		const { db, save, russian } = await setup();
+		await createBook(db, { languageId: russian.id, title: 'Первая', text: 'Кот спит. Мышь бежит.' });
+		const second = await createBook(db, { languageId: russian.id, title: 'Вторая', text: 'Там живёт кот.' });
+		const cat = await save('кот');
+		expect(await findExample(db, cat)).toEqual({ text: 'Там живёт кот.', bookId: second, title: 'Вторая', page: 1 });
+		await db.updateTable('page').set({ read_at: '2026-01-01T00:00:00.000Z' }).where('book_id', '!=', second).execute();
+		expect(await findExample(db, cat)).toMatchObject({ text: 'Кот спит.', title: 'Первая' });
+		expect(await findExample(db, await save('волк'))).toBeUndefined();
 	});
 });

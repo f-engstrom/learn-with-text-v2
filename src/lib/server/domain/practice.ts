@@ -1,4 +1,4 @@
-import type { Kysely, Transaction } from 'kysely';
+import { sql, type Kysely, type Transaction } from 'kysely';
 import { createEmptyCard, fsrs, Rating, type Card, type Grade as FsrsGrade } from 'ts-fsrs';
 import type { Database, GradeValue, ReviewSourceValue, ScheduleTable } from '../db/schema';
 import type { Status } from './terms';
@@ -112,8 +112,21 @@ export async function practiceViews(
 ): Promise<Map<number, PracticeView>> {
 	const practised = terms.filter((t) => isPractised(t.status));
 	if (practised.length === 0) return new Map();
-	const owners = new Map<number, number>();
-	for (const t of practised) owners.set(t.id, await scheduleOwner(db, t.id));
+	// Few Terms follow a Parent, so the whole chain map is small; walking it in memory saves a query per Term.
+	const following = new Map(
+		(await db.selectFrom('term').select(['id', 'parent_id']).where('follows_parent', '=', 1).where('parent_id', 'is not', null).execute()).map(
+			(r) => [r.id, r.parent_id!]
+		)
+	);
+	const ownerOf = (id: number) => {
+		const seen = new Set<number>();
+		while (following.has(id) && !seen.has(id)) {
+			seen.add(id);
+			id = following.get(id)!;
+		}
+		return id;
+	};
+	const owners = new Map(practised.map((t) => [t.id, ownerOf(t.id)]));
 	const ownerIds = [...new Set(owners.values())];
 	const [schedules, saved] = await Promise.all([
 		db.selectFrom('schedule').selectAll().where('term_id', 'in', ownerIds).execute(),
@@ -170,4 +183,37 @@ export async function recordReview(
 		const saved = await trx.selectFrom('term').select('created_at').where('id', '=', owner).executeTakeFirstOrThrow();
 		return practiceView(next, saved.created_at, now);
 	});
+}
+
+/** A Sentence from your Books where a Term appears, to review it in context. */
+export interface Example {
+	text: string;
+	bookId: number;
+	title: string;
+	page: number;
+}
+
+/**
+ * A Sentence containing the Term as written (or capitalised), preferring Pages you've read and then the
+ * most recent Book. SQLite's LIKE folds case only for ASCII, hence the two spellings.
+ */
+export async function findExample(db: Kysely<Database>, termId: number): Promise<Example | undefined> {
+	const term = await db.selectFrom('term').select(['text', 'language_id']).where('id', '=', termId).executeTakeFirst();
+	if (!term) return undefined;
+	const spellings = [...new Set([term.text, term.text.charAt(0).toLocaleUpperCase() + term.text.slice(1)])];
+	const like = (s: string) => `%${s.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+	const row = await db
+		.selectFrom('sentence')
+		.innerJoin('page', 'page.id', 'sentence.page_id')
+		.innerJoin('book', 'book.id', 'page.book_id')
+		.select(['sentence.text', 'book.id as bookId', 'book.title', 'page.position as page'])
+		.where('book.language_id', '=', term.language_id)
+		.where((eb) => eb.or(spellings.map((s) => eb('sentence.text', 'like', sql<string>`${like(s)} escape '\\'`))))
+		.orderBy(sql`page.read_at is null`)
+		.orderBy('book.id', 'desc')
+		.orderBy('page.position')
+		.orderBy('sentence.position')
+		.limit(1)
+		.executeTakeFirst();
+	return row && { text: row.text.trim(), bookId: row.bookId, title: row.title, page: row.page };
 }

@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import TermForm from '#lib/components/TermForm.svelte';
 	import { actionUrl } from '#lib/actions.ts';
+	import { dueLabel, levelLabels } from '#lib/practice.ts';
 	import type { Source, Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
 
@@ -50,7 +51,10 @@
 	<title>Terms · Reader</title>
 </svelte:head>
 
-<h1>Terms</h1>
+<header class="page-header">
+	<h1>Terms</h1>
+	<a class="button primary" href="/terms/review{data.filter.language ? `?language=${data.filter.language}` : ''}">Review Due Terms</a>
+</header>
 
 <form method="GET" class="filters card" data-sveltekit-keepfocus data-sveltekit-replacestate>
 	<label>
@@ -78,6 +82,24 @@
 			<option value="">Any</option>
 			{#each Object.entries(sourceLabels) as [value, label] (value)}
 				<option {value} selected={data.filter.source === value}>{label}</option>
+			{/each}
+		</select>
+	</label>
+	<label>
+		Practice
+		<select name="due" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+			<option value="">Any</option>
+			<option value="due" selected={data.filter.due === 'due'}>Due now</option>
+			<option value="later" selected={data.filter.due === 'later'}>Not Due yet</option>
+		</select>
+	</label>
+	<label>
+		Recall
+		<select name="recall" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+			<option value="">Any</option>
+			<option value="none" selected={data.filter.recall === 'none'}>No Reviews yet</option>
+			{#each ['learning1', 'learning2', 'learning3', 'learning4', 'known'] as const as level (level)}
+				<option value={level} selected={data.filter.recall === level}>{levelLabels[level]}</option>
 			{/each}
 		</select>
 	</label>
@@ -111,6 +133,7 @@
 				<th scope="col">Status</th>
 				<th scope="col">Translations</th>
 				<th scope="col">Parent</th>
+				<th scope="col">Practice</th>
 				<th scope="col"><span class="visually-hidden">Actions</span></th>
 			</tr>
 		</thead>
@@ -142,6 +165,12 @@
 						{#if term.parent}<span lang={languageOf(term.languageId).code} dir={dirOf(term.languageId)}>{term.parent.text}</span>{/if}
 						{#if term.children > 0}<small class="children">{term.children} {term.children === 1 ? 'form' : 'forms'}</small>{/if}
 					</td>
+					<td class="practice">
+						{#if term.practice}
+							<span class="due due-{term.practice.overdue}">{dueLabel(term.practice)}</span>
+							{#if term.practice.recall}<small>Recall {levelLabels[term.practice.recall.level]}</small>{/if}
+						{/if}
+					</td>
 					<td class="actions">
 						<button type="button" onclick={() => (editing = editing === term.id ? undefined : term.id)}
 							>{editing === term.id ? 'Close' : 'Edit'}</button
@@ -160,7 +189,7 @@
 				</tr>
 				{#if editing === term.id}
 					<tr class="editor">
-						<td colspan="6">
+						<td colspan="7">
 							{#key JSON.stringify(term)}
 								<TermForm language={languageOf(term.languageId)} text={term.text} {term} error={form?.message} />
 							{/key}
@@ -220,6 +249,23 @@
 	}
 	.delete {
 		color: var(--danger);
+	}
+	.practice {
+		white-space: nowrap;
+	}
+	.practice small {
+		display: block;
+		color: var(--muted);
+	}
+	.due-1 {
+		color: var(--due-1-text);
+	}
+	.due-2 {
+		color: var(--due-2-text);
+	}
+	.due-3 {
+		color: var(--due-3-text);
+		font-weight: 600;
 	}
 	.editor td {
 		padding: 1rem 1.25rem 1.25rem;

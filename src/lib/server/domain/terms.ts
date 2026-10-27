@@ -280,6 +280,10 @@ export interface TermFilter {
 	source?: Source;
 	/** Text the Term or one of its Translations contains, in any case. */
 	search?: string;
+	/** Practised Terms that are Due now (most overdue first), or not Due yet. */
+	due?: 'due' | 'later';
+	/** Practised Terms by their Recall strength's level, or with no Reviews yet. */
+	recall?: Status | 'none';
 	limit?: number;
 	offset?: number;
 }
@@ -319,13 +323,42 @@ export async function listTerms(db: Kysely<Database>, filter: TermFilter = {}): 
 		return q as Q;
 	};
 
+	const limit = filter.limit ?? TERM_PAGE_SIZE;
+	const offset = filter.offset ?? 0;
+	const withChildren = <Q extends SelectQueryBuilder<any, any, any>>(q: Q) =>
+		q.select((eb) => eb.selectFrom('term as child').whereRef('child.parent_id', '=', 'term.id').select(eb.fn.countAll<number>().as('n')).as('children'));
+
+	// Due and Recall strength aren't columns, so those filters work on the practice views.
+	if (filter.due || filter.recall) {
+		const candidates = await filtered(db.selectFrom('term').select(['term.id', 'term.status']))
+			.where('term.status', 'in', ['learning1', 'learning2', 'learning3', 'learning4'])
+			.orderBy('term.created_at', 'desc')
+			.orderBy('term.id', 'desc')
+			.execute();
+		const practice = await practiceViews(db, candidates);
+		let matching = candidates.filter((c) => {
+			const p = practice.get(c.id);
+			if (!p) return false;
+			if (filter.due === 'due' && p.overdue === 0) return false;
+			if (filter.due === 'later' && p.overdue > 0) return false;
+			if (filter.recall === 'none' ? p.recall !== undefined : filter.recall && p.recall?.level !== filter.recall) return false;
+			return true;
+		});
+		if (filter.due === 'due') matching = matching.sort((a, b) => Date.parse(practice.get(a.id)!.due) - Date.parse(practice.get(b.id)!.due));
+		const ids = matching.slice(offset, offset + limit).map((c) => c.id);
+		const rows = ids.length === 0 ? [] : await withChildren(selectTerms(db)).where('term.id', 'in', ids).execute();
+		const views = await toViews(db, rows);
+		const byId = new Map(views.map(({ view }, i) => [view.id, { ...view, languageId: rows[i].language_id, children: Number(rows[i].children) }]));
+		return { total: matching.length, terms: ids.map((id) => byId.get(id)!) };
+	}
+
 	const { total } = await filtered(db.selectFrom('term').select((eb) => eb.fn.countAll<number>().as('total'))).executeTakeFirstOrThrow();
 	const rows = await filtered(selectTerms(db))
 		.select((eb) => eb.selectFrom('term as child').whereRef('child.parent_id', '=', 'term.id').select(eb.fn.countAll<number>().as('n')).as('children'))
 		.orderBy('term.created_at', 'desc')
 		.orderBy('term.id', 'desc')
-		.limit(filter.limit ?? TERM_PAGE_SIZE)
-		.offset(filter.offset ?? 0)
+		.limit(limit)
+		.offset(offset)
 		.execute();
 	const views = await toViews(db, rows);
 	return {
