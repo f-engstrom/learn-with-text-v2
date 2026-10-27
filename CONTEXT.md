@@ -10,8 +10,8 @@ A personal tool for learning languages by reading: you read real texts, look up 
 A language being studied, with its own rules for splitting text into words and normalising them, and its own dictionaries.
 
 **Book**:
-A text you have imported to read, in one Language, split into Pages.
-_Avoid_: Text, document
+A text you have imported to read, in one Language, split into Pages. It comes from pasted text, a file, a web address or a Suggestion; one from the web keeps its address.
+_Avoid_: Text, document, article (an article becomes a Book once you pick it)
 
 **Page**:
 One readable chunk of a Book, in order; the unit you open and mark as read.
@@ -81,8 +81,24 @@ A Page is Read once you mark it so. Marking a Page Read can optionally make ever
 _Avoid_: Done, finished, completed (for Pages)
 
 **Unknown share**:
-The fraction of a Book's distinct Words that are Unknown.
+The fraction of a Book's (or a Suggestion's) distinct Words that are Unknown.
 _Avoid_: Unknown percent, difficulty
+
+**Suggestion**:
+A text the Reader found for you to read in a Language, from Wikipedia or a Feed, shown with its Unknown share and length. Picking a Suggestion imports it as a Book. A text you already have as a Book is never suggested again.
+_Avoid_: Recommendation, candidate, article
+
+**Fit range**:
+The range of Unknown share, set per Language, that a Suggestion should fall in to count as a good fit (5–15% unless you change it). Suggestions are ranked by fit, then by Topic, then by length (one to three Pages is best).
+_Avoid_: Level, difficulty
+
+**Topic**:
+A subject you like reading about, entered once in English and used to look for Suggestions in every Language.
+_Avoid_: Interest, tag, category
+
+**Feed**:
+A news feed (RSS or Atom) configured for a Language, which Suggestions can come from. Some are built in; you can add and remove them.
+_Avoid_: Source (that's who added a Translation), channel
 
 **Dictionary**:
 An external lookup source configured for a Language, shown alongside the Page. You copy from it and paste as a Translation.

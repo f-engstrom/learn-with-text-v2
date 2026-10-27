@@ -68,28 +68,53 @@ Each slice goes from the screen to the database and ends in something you can de
 - Also create a Book from an uploaded .txt file.
 - **Demo:** the Unknown share drops after you mark Words.
 
-### 12. Term list
+## Finding things to read
+
+### 12. Suggestions from Wikipedia
+- "Find something to read" on the Book list, per Language, opens the Suggestions screen.
+- Topics: one English list on a small settings screen. For each Topic, search English Wikipedia and follow its interlanguage link to the Language's Wikipedia. With no Topics, use random articles from that Wikipedia.
+- Fetch plain-text extracts through the Wikipedia API, not by scraping. Long articles keep the lead and following sections up to about three Pages.
+- Each Suggestion shows its title, Topic, Unknown share (computed against your Terms with the Language's parser) and Page count. Ranking: inside the Fit range first, then Topic, then length. The Fit range is a control on the screen, remembered per Language (default 5–15%).
+- Picking a Suggestion imports it as a Book that keeps its address. Books you already have are never suggested again.
+- The Wikipedia client sits behind a seam, so tests use a fake.
+- **Demo:** with the Topic "football", Russian Suggestions come back ranked by fit. After you mark some Words, running it again shows lower Unknown shares.
+- **Tests:** Unknown share of a text, ranking (fit, Topic, length), skipping texts you already have, and cutting long articles.
+
+### 13. Import from a web address
+- The New Book screen also takes a web address. The server fetches the page, extracts the article text and title, and lets you edit both before saving.
+- **Demo:** a Russian news article becomes a Book, without its menus, ads and footers.
+- **Tests:** extraction against saved HTML pages for each Language, including a right-to-left Farsi one.
+
+### 14. Feeds
+- Built-in Feeds per Language. A settings screen lists them and lets you add and remove Feeds.
+- The Suggestions screen also offers recent Feed items, extracted with slice 13's code and ranked the same way.
+- **Demo:** today's Farsi news, ranked by fit.
+
+## Library, continued
+
+### 15. Term list
 - Filter by Language, Status and Translation Source, with inline edit and delete.
-- **Demo:** filter to "Source: Tutor" (empty until slice 14).
+- **Demo:** filter to "Source: Tutor" (empty until slice 17).
 
 ## Tutor
 
-### 13. MCP server, read-only
+### 16. MCP server, read-only
 - A stdio entry point that reuses the domain code (ADR 0003).
-- Tools: list Books, get the Bookmark, get Sentences around the Bookmark with each Word's Term and Status, look up a Term.
+- Tools: list Books, get the Bookmark, get Sentences around the Bookmark with each Word's Term and Status, look up a Term, and get Suggestions for a Language.
 - **Demo:** Claude Code with the server configured can say where you are in a Book and which Words are still Unknown.
 
-### 14. MCP writes
+### 17. MCP writes
 - Save a Gloss (creates or extends a Term, as a Translation with Source "Tutor").
 - Tutor adjustment: up or down one Learning step, never leaving Learning 1–4. This rule is enforced in domain code.
-- Move the Bookmark, mark a Page Read, and import a Book.
+- Move the Bookmark, mark a Page Read, and import a Book, either from text or from a web address (reusing slice 13). This lets the Tutor search the web for something that fits and bring it in.
 - **Demo:** a tutoring exchange creates a Term that shows up in the reading screen after a reload and in the Term list under "Source: Tutor".
 
-### 15. Reading-tutor variant skill
+### 18. Reading-tutor variant skill
 - A copy of the reading-tutor skill in this repo that uses the MCP tools for text, Bookmark, Glosses and Tutor adjustments. Memory holds only teaching notes.
 - Glosses are offered only for Unknown Words and Learning 1–2 Terms.
-- **Demo:** start a tutoring session on a Book you've half read, and it resumes at your Bookmark.
+- When you ask for something new to read, it offers the Reader's Suggestions or searches the web itself, and imports your pick as a Book.
+- **Demo:** start a tutoring session on a Book you've half read, and it resumes at your Bookmark. Ask for "an article about football" and it ends up as a Book.
 
 ## Not in v1
 
-EPUB, PDF and URL import; Anki export; audio; configurable hotkeys; editing Languages in the app; jieba; Bosnian Cyrillic; reading stats and streaks; multiple users and sync.
+EPUB and PDF import; Anki export; audio; configurable hotkeys; editing Languages in the app; jieba; Bosnian Cyrillic; reading stats and streaks; multiple users and sync.
