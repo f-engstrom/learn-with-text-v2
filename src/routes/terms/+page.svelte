@@ -149,13 +149,13 @@
 		<tbody>
 			{#each data.terms as term (term.id)}
 				<tr class:open={editing === term.id}>
-					<td>
+					<td class="term-cell">
 						<span class="term" lang={languageOf(term.languageId).code} dir={dirOf(term.languageId)}>{term.text}</span>
 						{#if term.pronunciation}<small class="pronunciation">{term.pronunciation}</small>{/if}
 						{#if term.frequency}<small class="frequency">{frequencyLabels[term.frequency]}</small>{/if}
 					</td>
-					{#if !data.filter.language}<td>{languageOf(term.languageId).name}</td>{/if}
-					<td>
+					{#if !data.filter.language}<td class="language">{languageOf(term.languageId).name}</td>{/if}
+					<td class="status-cell">
 						<select
 							class="status {term.status}"
 							aria-label="Status of {term.text}"
@@ -167,11 +167,11 @@
 							{/each}
 						</select>
 					</td>
-					<td>
+					<td class="translations">
 						{#each term.translations as translation, i (translation.id)}{#if i > 0}; {/if}{translation.text}{#if translation.source !== 'you'}
 								<small class="source">{sourceLabels[translation.source]}</small>{/if}{/each}
 					</td>
-					<td>
+					<td class="parent">
 						{#if term.parent}<span lang={languageOf(term.languageId).code} dir={dirOf(term.languageId)}>{term.parent.text}</span>{/if}
 						{#if term.children > 0}<small class="children">{term.children} {term.children === 1 ? 'form' : 'forms'}</small>{/if}
 					</td>
@@ -228,6 +228,24 @@
 	.filters input[type='search'] {
 		min-width: 14rem;
 	}
+	/* A phone: filters two to a row, search and Filter on their own. */
+	@media (max-width: 40rem) {
+		.filters {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		.filters select,
+		.filters input[type='search'] {
+			width: 100%;
+			min-width: 0;
+		}
+		.filters label:has(input[type='search']) {
+			grid-column: 1 / -1;
+		}
+		.filters button {
+			justify-self: start;
+		}
+	}
 	.summary {
 		display: flex;
 		flex-wrap: wrap;
@@ -257,8 +275,55 @@
 	}
 	.actions {
 		display: flex;
-		flex-wrap: wrap;
 		gap: 0.35rem;
+		justify-content: flex-end;
+	}
+	.actions form {
+		display: contents;
+	}
+	/* A phone: each Term is a small card (Term and Status, then meaning, practice and actions). */
+	@media (max-width: 40rem) {
+		.terms thead {
+			display: none;
+		}
+		.terms tbody tr:not(.editor) {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 0.35rem 0.75rem;
+			padding: 0.75rem 1rem;
+			border-top: 1px solid var(--border);
+		}
+		.terms tbody tr:not(.editor) td {
+			padding: 0;
+			border: none;
+		}
+		.terms td.language {
+			display: none;
+		}
+		.terms td.translations,
+		.terms td.parent,
+		.terms td.practice,
+		.terms td.actions {
+			grid-column: 1 / -1;
+		}
+		.terms td.parent:empty,
+		.terms td.practice:empty {
+			display: none;
+		}
+		.terms td.practice {
+			white-space: normal;
+		}
+		.terms td.practice small {
+			display: inline;
+			margin-inline-start: 0.5rem;
+		}
+		.terms td.actions {
+			justify-content: flex-start;
+		}
+		.terms tr.editor,
+		.terms tr.editor td {
+			display: block;
+		}
 	}
 	.delete {
 		color: var(--danger);

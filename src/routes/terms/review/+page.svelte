@@ -3,7 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { actionUrl } from '#lib/actions.ts';
-	import { dueLabel, holdsLabel, levelLabels } from '#lib/practice.ts';
+	import { dueLabel, holdsLabel, levelLabels, wordAt } from '#lib/practice.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import type { PageProps } from './$types';
 
@@ -24,8 +24,7 @@
 	/** The example Sentence split around the Term (as written, in any case), to bold it. */
 	let parts = $derived.by(() => {
 		if (!data.term || !data.example) return undefined;
-		const lower = data.example.text.toLocaleLowerCase();
-		const at = lower.indexOf(data.term.text.toLocaleLowerCase());
+		const at = wordAt(data.example.text, data.term.text);
 		if (at < 0) return { before: data.example.text, word: '', after: '' };
 		const end = at + data.term.text.length;
 		return { before: data.example.text.slice(0, at), word: data.example.text.slice(at, end), after: data.example.text.slice(end) };

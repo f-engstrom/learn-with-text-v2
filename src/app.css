@@ -299,6 +299,14 @@ table.data tbody tr:hover td {
 	white-space: nowrap;
 }
 
+/* Key hints mean nothing on a touch screen. */
+@media (hover: none) and (pointer: coarse) {
+	button kbd,
+	.button kbd {
+		display: none;
+	}
+}
+
 .visually-hidden {
 	position: absolute;
 	width: 1px;

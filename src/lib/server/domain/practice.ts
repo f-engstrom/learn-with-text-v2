@@ -2,6 +2,9 @@ import { sql, type Kysely, type Transaction } from 'kysely';
 import { createEmptyCard, fsrs, Rating, type Card, type Grade as FsrsGrade } from 'ts-fsrs';
 import type { Database, GradeValue, ReviewSourceValue, ScheduleTable } from '../db/schema';
 import type { Status } from './terms';
+import { wordAt } from '../../practice';
+
+export { wordAt };
 
 export type Grade = GradeValue;
 export type ReviewSource = ReviewSourceValue;
@@ -202,7 +205,7 @@ export async function findExample(db: Kysely<Database>, termId: number): Promise
 	if (!term) return undefined;
 	const spellings = [...new Set([term.text, term.text.charAt(0).toLocaleUpperCase() + term.text.slice(1)])];
 	const like = (s: string) => `%${s.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
-	const row = await db
+	const rows = await db
 		.selectFrom('sentence')
 		.innerJoin('page', 'page.id', 'sentence.page_id')
 		.innerJoin('book', 'book.id', 'page.book_id')
@@ -213,7 +216,10 @@ export async function findExample(db: Kysely<Database>, termId: number): Promise
 		.orderBy('book.id', 'desc')
 		.orderBy('page.position')
 		.orderBy('sentence.position')
-		.limit(1)
-		.executeTakeFirst();
+		.limit(50)
+		.execute();
+	// LIKE finds the Term inside longer Words too (жил in пожилые); keep a whole-Word match.
+	const row = rows.find((r) => wordAt(r.text, term.text) >= 0);
 	return row && { text: row.text.trim(), bookId: row.bookId, title: row.title, page: row.page };
 }
+

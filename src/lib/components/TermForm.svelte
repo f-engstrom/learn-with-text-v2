@@ -188,13 +188,16 @@
 	{#if error}
 		<p class="error" role="alert">{error}</p>
 	{/if}
-	<button type="submit" class="primary save">Save</button>
+	<div class="form-actions">
+		<button type="submit" class="primary">Save</button>
+		<!-- Submits the delete form below; forms can't nest, but their buttons can share a row. -->
+		{#if term}<button type="submit" form="delete-term-{term.id}" class="danger">Delete Term</button>{/if}
+	</div>
 </form>
 
 {#if term}
-	<form method="POST" action={actionUrl('deleteTerm', page.url.search)} use:enhance>
+	<form id="delete-term-{term.id}" method="POST" action={actionUrl('deleteTerm', page.url.search)} use:enhance hidden>
 		<input type="hidden" name="id" value={term.id} />
-		<button type="submit" class="delete danger">Delete Term</button>
 	</form>
 {/if}
 
@@ -219,6 +222,9 @@
 	form {
 		display: grid;
 		gap: 0.75rem;
+	}
+	form[hidden] {
+		display: none;
 	}
 	label {
 		display: grid;
@@ -308,11 +314,11 @@
 		margin: -0.5rem 0 0;
 		color: var(--muted);
 	}
-	.save {
-		justify-self: start;
-	}
-	.delete {
-		justify-self: start;
+	.form-actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 0.5rem;
 	}
 	.row-actions {
 		display: flex;

@@ -81,4 +81,29 @@
 	main {
 		padding-block: 2rem 4rem;
 	}
+	/* A phone: brand and every section on one line, scrolling sideways only if a very narrow screen needs it. */
+	@media (max-width: 40rem) {
+		.site .inner {
+			flex-wrap: nowrap;
+			gap: 0.75rem;
+			min-height: 3rem;
+		}
+		nav {
+			flex-wrap: nowrap;
+			gap: 0;
+			overflow-x: auto;
+			scrollbar-width: none;
+		}
+		nav a {
+			padding: 0.3rem 0.55rem;
+			white-space: nowrap;
+		}
+		/* Books already leads home; the room goes to the sections. */
+		.brand {
+			display: none;
+		}
+		main {
+			padding-block: 1.25rem 3rem;
+		}
+	}
 </style>

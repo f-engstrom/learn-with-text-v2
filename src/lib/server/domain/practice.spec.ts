@@ -4,7 +4,7 @@ import { migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
 import { createBook } from './books';
 import { findTerms, listTerms, saveTerm } from './terms';
-import { findExample, InvalidReview, practiceView, recallLevel, recordReview } from './practice';
+import { findExample, InvalidReview, practiceView, recallLevel, recordReview, wordAt } from './practice';
 
 const DAY = 24 * 60 * 60 * 1000;
 const day = (n: number) => new Date(Date.UTC(2026, 0, 1) + n * DAY);
@@ -119,5 +119,16 @@ describe('findExample', () => {
 		await db.updateTable('page').set({ read_at: '2026-01-01T00:00:00.000Z' }).where('book_id', '!=', second).execute();
 		expect(await findExample(db, cat)).toMatchObject({ text: 'Кот спит.', title: 'Первая' });
 		expect(await findExample(db, await save('волк'))).toBeUndefined();
+		await createBook(db, { languageId: russian.id, title: 'Третья', text: 'Пожилые люди. Он жил там.' });
+		expect(await findExample(db, await save('жил'))).toMatchObject({ text: 'Он жил там.' });
+	});
+});
+
+describe('wordAt', () => {
+	it('finds a whole Word or phrase in any case, not one inside a longer Word', () => {
+		expect(wordAt('пожилые дамы', 'жил')).toBe(-1);
+		expect(wordAt('Он жил долго, пожилой', 'жил')).toBe(3);
+		expect(wordAt('Жил-был кот.', 'жил')).toBe(0);
+		expect(wordAt('Это было в течение дня.', 'в течение')).toBe(9);
 	});
 });

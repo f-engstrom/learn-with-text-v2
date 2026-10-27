@@ -138,3 +138,16 @@ export function suggestedStatus(
 	const from = tutor && recall ? 'The Tutor and your Reviews point' : tutor ? 'The Tutor points' : 'Your Reviews point';
 	return { level: views[0], from };
 }
+
+/** Where `word` first stands as a whole Word (or phrase) in `text`, in any case; -1 if nowhere. */
+export function wordAt(text: string, word: string): number {
+	const lower = text.toLocaleLowerCase();
+	const wanted = word.toLocaleLowerCase();
+	const letter = /[\p{L}\p{M}\p{N}]/u;
+	for (let at = lower.indexOf(wanted); at >= 0; at = lower.indexOf(wanted, at + 1)) {
+		const before = lower[at - 1];
+		const after = lower[at + wanted.length];
+		if ((before === undefined || !letter.test(before)) && (after === undefined || !letter.test(after))) return at;
+	}
+	return -1;
+}

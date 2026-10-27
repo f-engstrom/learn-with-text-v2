@@ -261,6 +261,8 @@
 		highlight: highlightHere
 	});
 	const subsetOrder: Subset[] = ['priority', 'paragraph', 'highlight', 'overdue'];
+	/** Due Terms on this Page, each counted once. */
+	let dueOnPage = $derived(showDue ? practiceQueue(dueWords, 'overdue').length : 0);
 	let subsets = $derived(
 		subsetOrder
 			.filter((s) => s !== 'highlight' || highlightHere)
@@ -538,7 +540,9 @@
 		<h1 lang={data.language.code} {dir}>{data.book.title}</h1>
 		<span class="tag">{data.language.name}</span>
 		<span class="toggles">
-			<button type="button" onclick={startPractice} title="Practise the Due Words (R)">Practice</button>
+			<button type="button" onclick={startPractice} title="Practise the Due Words (R)"
+				>Practice{#if dueOnPage > 0}<span class="count">{dueOnPage}</span>{/if}</button
+			>
 			<button type="button" aria-pressed={showDue} onclick={toggleDue} title="Due marks (D)">Due</button>
 			<button type="button" aria-pressed={zen} onclick={toggleZen} title="Zen mode (Z)">Zen</button>
 		</span>
@@ -550,6 +554,19 @@
 </div>
 
 <div class="reader" class:calm class:sheet-open={open && !!selected && !practising}>
+	{#if highlight}
+		<div class="highlight-note card" role="status" class:calm>
+			<p class="from">From the Tutor</p>
+			{#if highlight.note}<p class="note-text">{highlight.note}</p>{/if}
+			{#if highlightHere}
+				<button type="button" onclick={showHighlight}
+					>{highlight.first === highlight.last ? `Sentence ${highlight.first}` : `Sentences ${highlight.first}–${highlight.last}`}</button
+				>
+			{:else}
+				<a class="button" href="/books/{data.book.id}/pages/{highlight.page}">On Page {highlight.page} →</a>
+			{/if}
+		</div>
+	{/if}
 	<article class="page" class:calm class:practising={practising?.stage === 'run'} lang={data.language.code} {dir}>
 		{#each data.paragraphs as paragraph, p (p)}
 			<p>
@@ -582,19 +599,6 @@
 	</article>
 
 	<aside class="side">
-		{#if highlight}
-			<div class="highlight-note card" role="status">
-				<p class="from">From the Tutor</p>
-				{#if highlight.note}<p class="note-text">{highlight.note}</p>{/if}
-				{#if highlightHere}
-					<button type="button" onclick={showHighlight}
-						>{highlight.first === highlight.last ? `Sentence ${highlight.first}` : `Sentences ${highlight.first}–${highlight.last}`}</button
-					>
-				{:else}
-					<a class="button" href="/books/{data.book.id}/pages/{highlight.page}">On Page {highlight.page} →</a>
-				{/if}
-			</div>
-		{/if}
 		{#if practising}
 			<PracticePanel
 				state={practising}
@@ -642,7 +646,7 @@
 			</div>
 		{:else}
 			<div class="help card">
-				<p>Click a Word, or press <kbd>→</kbd> to start.</p>
+				<p class="start"><span class="pointer">Click a Word, or press <kbd>→</kbd> to start.</span><span class="touch">Tap a Word to open it.</span></p>
 				<details open>
 					<summary>Keys</summary>
 					{@render keys()}
@@ -654,6 +658,7 @@
 					<span class="swatch learning3"></span> 3
 					<span class="swatch learning4"></span> 4
 					<span class="swatch known"></span> Known
+					<span class="due-dot"></span> Due
 				</p>
 			</div>
 		{/if}
@@ -704,12 +709,26 @@
 		background: color-mix(in srgb, var(--ok) 18%, transparent);
 		color: var(--ok);
 	}
+	/* The Tutor's note sits above the side column beside the text, and above the text on a phone. */
 	.reader {
 		display: grid;
 		grid-template-columns: minmax(0, 44rem) minmax(20rem, 1fr);
-		gap: 3rem;
+		grid-template-areas:
+			'page note'
+			'page side';
+		grid-template-rows: auto 1fr;
+		gap: 1rem 3rem;
 		align-items: start;
 		margin-top: 1.5rem;
+	}
+	.page {
+		grid-area: page;
+	}
+	.highlight-note {
+		grid-area: note;
+	}
+	.side {
+		grid-area: side;
 	}
 	.page {
 		font-family: var(--font-text);
@@ -807,10 +826,12 @@
 		pointer-events: none;
 	}
 	.chrome,
+	.highlight-note,
 	.side {
 		transition: opacity 0.6s;
 	}
 	.chrome.calm,
+	.highlight-note.calm,
 	.reader.calm .side {
 		opacity: 0;
 		pointer-events: none;
@@ -831,6 +852,15 @@
 		padding-block: 0.2rem;
 		font-size: 0.85rem;
 	}
+	.toggles .count {
+		margin-inline-start: 0.4rem;
+		padding: 0 0.4rem;
+		border-radius: 999px;
+		background: var(--due-2);
+		color: #fff;
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
 	.toggles button[aria-pressed='true'] {
 		background: var(--accent-soft);
 		border-color: var(--accent);
@@ -846,12 +876,11 @@
 		gap: 1rem;
 	}
 	/* The Tutor's Highlight: a soft band over its Sentences. */
+	/* The Tutor's Highlight: a continuous accent underline, apart from the Status colours. */
 	.sentence.highlighted {
-		background: color-mix(in srgb, var(--accent) 14%, transparent);
-		border-radius: 0.3em;
-		box-decoration-break: clone;
-		-webkit-box-decoration-break: clone;
-		box-shadow: 0 0 0 0.12em color-mix(in srgb, var(--accent) 14%, transparent);
+		text-decoration: underline var(--accent) 0.15em;
+		text-underline-offset: 0.35em;
+		text-decoration-skip-ink: none;
 	}
 	.highlight-start {
 		scroll-margin: 6rem;
@@ -957,6 +986,27 @@
 		border-radius: 0.2rem;
 		margin-inline-start: 0.35rem;
 	}
+	.due-dot {
+		display: inline-block;
+		width: 0.5rem;
+		height: 0.5rem;
+		margin-inline-start: 0.35rem;
+		border-radius: 50%;
+		background: var(--due-2);
+	}
+	.start .touch {
+		display: none;
+	}
+	/* A touch screen has no keys to list. */
+	@media (hover: none) and (pointer: coarse) {
+		.start .pointer,
+		.help details {
+			display: none;
+		}
+		.start .touch {
+			display: inline;
+		}
+	}
 	.swatch.known {
 		border: 1px solid var(--border);
 	}
@@ -1001,7 +1051,9 @@
 			scroll-margin: 5rem 0 50vh;
 		}
 		.reader {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-areas: 'note' 'page' 'side';
+			grid-template-rows: auto;
 			gap: 1.5rem;
 		}
 		.side {
