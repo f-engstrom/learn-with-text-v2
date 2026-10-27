@@ -104,6 +104,21 @@ export interface TermTable {
 	/** 1 when this Term shares its Parent's Status. */
 	follows_parent: Generated<number>;
 	created_at: string;
+	/** The Tutor's assessment (Learning 1–4 or Known); null until it has asked about the Term. */
+	tutor_level: StatusValue | null;
+	/** Transfer from Your languages, set by the Tutor; null until judged. */
+	transfer_form: TransferValue | null;
+	transfer_concept: TransferValue | null;
+	transfer_reason: string | null;
+}
+
+export type TransferValue = 'easy' | 'medium' | 'hard';
+
+/** A language you already know, which Transfer and the Tutor's bridges are measured against. */
+export interface YourLanguageTable {
+	name: string;
+	level: 'native' | 'fluent' | 'some';
+	added_at: string;
 }
 
 export type SourceValue = 'you' | 'wiktionary' | 'tutor';
@@ -160,6 +175,7 @@ export interface Database {
 	translation: TranslationTable;
 	review: ReviewTable;
 	frequency: FrequencyTable;
+	your_language: YourLanguageTable;
 	schedule: ScheduleTable;
 	dictionary: DictionaryTable;
 	book_word: BookWordTable;

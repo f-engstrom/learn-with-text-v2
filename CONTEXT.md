@@ -117,7 +117,7 @@ _Avoid_: AI, assistant, bot
 A short meaning the Tutor offers for a Word during a session. It is offered only for Unknown Words and Learning 1–2 Terms, and is saved as a Translation with Source Tutor.
 
 **Tutor adjustment**:
-A step in the Tutor's assessment of a Term: up one after you answer correctly about it, down one after a miss. It never changes your Status.
+A step in the Tutor's assessment of a Term: up one after you answer correctly about it, down one after a miss, none after a hard-won answer. It never changes your Status; for a Learning Term the answer also counts as a Review.
 
 **Tutor's assessment**:
 How well the Tutor judges you know a Term, from your answers, on the Status scale (Learning 1–4 or Known). Shown beside your Status; empty until the Tutor has asked about the Term.

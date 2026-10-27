@@ -4,7 +4,7 @@
 	import { page } from '$app/state';
 	import TermForm from '#lib/components/TermForm.svelte';
 	import { actionUrl } from '#lib/actions.ts';
-	import { dueLabel, frequencyLabels, levelLabels } from '#lib/practice.ts';
+	import { dueLabel, frequencyLabels, levelLabels, transferLabel } from '#lib/practice.ts';
 	import type { Source, Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
 
@@ -180,6 +180,8 @@
 							<span class="due due-{term.practice.overdue}">{dueLabel(term.practice)}</span>
 							{#if term.practice.recall}<small>Recall {levelLabels[term.practice.recall.level]}</small>{/if}
 						{/if}
+						{#if term.tutor}<small>Tutor {levelLabels[term.tutor]}</small>{/if}
+						{#if term.transfer}<small title={term.transfer.reason}>Transfer: {transferLabel(term.transfer)}</small>{/if}
 					</td>
 					<td class="actions">
 						<button type="button" onclick={() => (editing = editing === term.id ? undefined : term.id)}

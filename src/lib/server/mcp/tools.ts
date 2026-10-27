@@ -20,8 +20,11 @@ import {
 	setHighlight
 } from '../domain/reading';
 import { findSuggestions, getFitRange, importArticle, type SuggestionSources } from '../domain/suggestions';
-import { findTerms, InvalidTerm, type TermView } from '../domain/terms';
-import { adjustLearning, linkParent, saveGloss } from '../domain/tutoring';
+import { findTerms, InvalidTerm, listTerms, type TermView } from '../domain/terms';
+import { assessTerm, linkParent, saveGloss, setTransfer } from '../domain/tutoring';
+import { InvalidReview } from '../domain/practice';
+import { InvalidYourLanguage, listYourLanguages, removeYourLanguage, setYourLanguage, YOUR_LANGUAGE_LEVELS } from '../domain/your-languages';
+import { byPriority, type DueWord } from '../../practice';
 import { fetchArticle, InvalidAddress, type WebArticle } from '../domain/webpages';
 
 /**
@@ -40,8 +43,10 @@ export function createReaderServer(
 				'The Reader holds Books (split into Pages and Sentences), each with a Bookmark, and Terms: what the learner knows about a Word or phrase. ' +
 				'A Word with no Term is Unknown. A Term has a Status (learning1–4, known, ignored), ordered Translations each with a Source (you, wiktionary, tutor), an optional Pronunciation and Parent. ' +
 				'Start with list_books, then get_sentences to read from the Bookmark; where_am_i says where the learner is right now when they read on their own. ' +
-				'While tutoring: save_gloss for a meaning you give (only Unknown Words and Learning 1–2 Terms), set_parent to link an inflected form to its dictionary form, adjust_learning after the learner answers about a Term, ' +
-				'set_bookmark as you move through the text, set_highlight to point the learner at Sentences in their reading screen, and mark_page_read at the end of a Page. Only the learner sets Known or Ignored.'
+				'While tutoring: save_gloss for a meaning you give (only Unknown Words and Learning 1–2 Terms), set_parent to link an inflected form to its dictionary form, ' +
+				'assess_term after the learner answers about a Term (it moves your own assessment, never their Status, and counts as a Review), set_transfer when you judge how hard a Term is to carry over from their languages (list_your_languages), ' +
+				'set_bookmark as you move through the text, set_highlight to point the learner at Sentences in their reading screen, and mark_page_read at the end of a Page. ' +
+				'get_due_terms lists Terms due for practice, by priority, for warm-ups and quizzes. Only the learner sets a Status.'
 		}
 	);
 	const readOnly = { readOnlyHint: true, openWorldHint: false } as const;
@@ -243,25 +248,123 @@ export function createReaderServer(
 	);
 
 	server.registerTool(
-		'adjust_learning',
+		'assess_term',
 		{
-			title: 'Adjust a Learning level',
+			title: 'Assess a Term from an answer',
 			description:
-				'A Tutor adjustment: one Learning step up after the learner answers correctly about a Term, one down after a miss. ' +
-				'Only for Learning 1–4 Terms, and never past Learning 1 or 4; Known and Ignored are the learner’s to set.',
+				"A Tutor adjustment after the learner answers about a Term: got moves your assessment of it one step up (Learning 1–4, then Known), missed one down, hard leaves it. " +
+				"It starts from the learner's Status and never changes it; when your assessment and their Status differ, you may suggest they change it. " +
+				'For a Learning 1–4 Term the answer also counts as a Review, which reschedules its practice.',
 			inputSchema: {
 				language: z.string().describe('Language name or code.'),
 				text: z.string().min(1).describe('The Word or phrase.'),
-				direction: z.enum(['up', 'down'])
+				answer: z.enum(['missed', 'hard', 'got'])
 			},
 			annotations: writes
 		},
-		async ({ language: name, text, direction }) =>
+		async ({ language: name, text, answer }) =>
 			guard(async () => {
 				const language = await findLanguage(db, name);
 				if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
-				return json(await adjustLearning(db, { languageId: language.id, text, direction }));
+				return json(await assessTerm(db, { languageId: language.id, text, answer }));
 			})
+	);
+
+	server.registerTool(
+		'set_transfer',
+		{
+			title: 'Set Transfer',
+			description:
+				"How hard a Term is to carry over from the learner's languages (list_your_languages): form (is there a look-alike word?) and concept (does the meaning map one-to-one?), " +
+				'each easy, medium or hard, with a short reason. Harder Terms come earlier in practice.',
+			inputSchema: {
+				language: z.string().describe('Language name or code.'),
+				text: z.string().min(1).describe('The Word or phrase; it must have a Term.'),
+				form: z.enum(['easy', 'medium', 'hard']),
+				concept: z.enum(['easy', 'medium', 'hard']),
+				reason: z.string().max(200).optional().describe('e.g. "no look-alike; Swedish längtan covers part of it".')
+			},
+			annotations: { ...writes, idempotentHint: true }
+		},
+		async ({ language: name, text, form, concept, reason }) =>
+			guard(async () => {
+				const language = await findLanguage(db, name);
+				if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
+				return json({ transfer: await setTransfer(db, { languageId: language.id, text, form, concept, reason }) });
+			})
+	);
+
+	server.registerTool(
+		'get_due_terms',
+		{
+			title: 'Get Due Terms',
+			description:
+				'Terms in a Language that are Due for practice, by Practice priority (frequent first, then harder to carry over, then most overdue), ' +
+				'with Translations, Frequency, Transfer, your assessment and Recall strength. Use them for warm-ups and quizzes.',
+			inputSchema: {
+				language: z.string().describe('Language name or code.'),
+				limit: z.number().int().min(1).max(50).default(10)
+			},
+			annotations: readOnly
+		},
+		async ({ language: name, limit }) => {
+			const language = await findLanguage(db, name);
+			if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
+			const { terms, total } = await listTerms(db, { languageId: language.id, due: 'due', limit: 1000 });
+			const ranked = terms
+				.map((term, index): DueWord & { term: (typeof terms)[number] } => ({
+					index,
+					key: term.text,
+					sentence: 0,
+					paragraph: 0,
+					practice: term.practice!,
+					frequency: term.frequency,
+					transfer: term.transfer,
+					term
+				}))
+				.sort(byPriority)
+				.slice(0, limit);
+			return json({ due: total, terms: ranked.map(({ term }) => ({ text: term.text, ...termView(term) })) });
+		}
+	);
+
+	server.registerTool(
+		'list_your_languages',
+		{
+			title: 'List Your languages',
+			description: "The languages the learner already knows (native, fluent or some): Transfer and your bridges are measured against these.",
+			annotations: readOnly
+		},
+		async () => json(await listYourLanguages(db))
+	);
+
+	server.registerTool(
+		'set_your_language',
+		{
+			title: 'Set one of Your languages',
+			description:
+				'Adds a language the learner knows, or changes how well. Add one when the learner mentions it ("I speak Swedish", "my German is rusty"), and say so in a line.',
+			inputSchema: {
+				name: z.string().min(1).describe('In English, e.g. "Swedish".'),
+				level: z.enum(YOUR_LANGUAGE_LEVELS as [string, ...string[]])
+			},
+			annotations: { ...writes, idempotentHint: true }
+		},
+		async ({ name, level }) => guard(async () => json(await setYourLanguage(db, { name, level })))
+	);
+
+	server.registerTool(
+		'remove_your_language',
+		{
+			title: 'Remove one of Your languages',
+			description: 'Removes a language the learner listed by mistake.',
+			inputSchema: { name: z.string().min(1) },
+			annotations: { ...writes, idempotentHint: true }
+		},
+		async ({ name }) => {
+			await removeYourLanguage(db, name);
+			return json(await listYourLanguages(db));
+		}
 	);
 
 	server.registerTool(
@@ -418,7 +521,7 @@ async function guard(run: () => Promise<CallToolResult>): Promise<CallToolResult
 	try {
 		return await run();
 	} catch (e) {
-		if (e instanceof InvalidTerm || e instanceof InvalidBookmark || e instanceof InvalidHighlight || e instanceof InvalidBook || e instanceof InvalidAddress) {
+		if (e instanceof InvalidTerm || e instanceof InvalidBookmark || e instanceof InvalidHighlight || e instanceof InvalidReview || e instanceof InvalidYourLanguage || e instanceof InvalidBook || e instanceof InvalidAddress) {
 			return failure(e.message);
 		}
 		throw e;
@@ -434,7 +537,20 @@ function termView(term: TermView) {
 		status: term.status,
 		translations: term.translations.map((t) => (t.source === 'you' ? t.text : `${t.text} (${t.source})`)),
 		...(term.pronunciation ? { pronunciation: term.pronunciation } : {}),
-		...(term.parent ? { parent: term.parent.text, followsParent: term.followsParent } : {})
+		...(term.parent ? { parent: term.parent.text, followsParent: term.followsParent } : {}),
+		...(term.tutor ? { yourAssessment: term.tutor } : {}),
+		...(term.transfer ? { transfer: term.transfer } : {}),
+		...(term.frequency ? { frequency: term.frequency } : {}),
+		...(term.practice
+			? {
+					practice: {
+						due: term.practice.due,
+						isDue: term.practice.overdue > 0,
+						reviews: term.practice.reviews,
+						...(term.practice.recall ? { recall: term.practice.recall.level } : {})
+					}
+				}
+			: {})
 	};
 }
 

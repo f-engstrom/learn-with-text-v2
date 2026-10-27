@@ -3,7 +3,7 @@ import { openDatabase } from '../db/open';
 import { migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
 import { findTerms, InvalidTerm, saveTerm } from './terms';
-import { adjustLearning, linkParent, saveGloss } from './tutoring';
+import { assessTerm, linkParent, saveGloss, setTransfer } from './tutoring';
 
 async function setup() {
 	const db = openDatabase(':memory:');
@@ -42,32 +42,49 @@ describe('saveGloss', () => {
 	});
 });
 
-describe('adjustLearning', () => {
-	it('moves a Learning Term one step, staying within Learning 1–4', async () => {
+describe('assessTerm', () => {
+	it("moves the Tutor's assessment from the Status, one step per answer, and never the Status", async () => {
 		const { db, ru, get } = await setup();
 		await saveTerm(db, { languageId: ru, text: 'кот', status: 'learning3' });
-		expect(await adjustLearning(db, { languageId: ru, text: 'кот', direction: 'up' })).toEqual({ from: 'learning3', to: 'learning4' });
-		expect(await adjustLearning(db, { languageId: ru, text: 'кот', direction: 'up' })).toEqual({ from: 'learning4', to: 'learning4' });
-		expect((await get('кот')).status).toBe('learning4');
+		expect(await assessTerm(db, { languageId: ru, text: 'кот', answer: 'got' })).toMatchObject({ status: 'learning3', to: 'learning4' });
+		expect(await assessTerm(db, { languageId: ru, text: 'кот', answer: 'got' })).toMatchObject({ from: 'learning4', to: 'known' });
+		expect(await assessTerm(db, { languageId: ru, text: 'кот', answer: 'got' })).toMatchObject({ to: 'known' });
+		expect(await assessTerm(db, { languageId: ru, text: 'кот', answer: 'hard' })).toMatchObject({ to: 'known' });
+		expect(await get('кот')).toMatchObject({ status: 'learning3', tutor: 'known' });
 		await saveTerm(db, { languageId: ru, text: 'мышь', status: 'learning1' });
-		expect(await adjustLearning(db, { languageId: ru, text: 'мышь', direction: 'down' })).toEqual({ from: 'learning1', to: 'learning1' });
+		expect(await assessTerm(db, { languageId: ru, text: 'мышь', answer: 'missed' })).toMatchObject({ to: 'learning1' });
 	});
 
-	it('never touches Unknown Words, Known or Ignored Terms', async () => {
+	it('counts the answer as a Review for a Learning Term, but not for a Known one', async () => {
 		const { db, ru, get } = await setup();
+		await saveTerm(db, { languageId: ru, text: 'кот', status: 'learning2' });
+		expect((await assessTerm(db, { languageId: ru, text: 'кот', answer: 'got' })).practice).toMatchObject({ reviews: 1 });
+		expect((await get('кот')).practice).toMatchObject({ reviews: 1 });
 		await saveTerm(db, { languageId: ru, text: 'и', status: 'known' });
-		await saveTerm(db, { languageId: ru, text: 'москва', status: 'ignored' });
-		await expect(adjustLearning(db, { languageId: ru, text: 'и', direction: 'down' })).rejects.toThrow('“и” is Known');
-		await expect(adjustLearning(db, { languageId: ru, text: 'москва', direction: 'up' })).rejects.toThrow('Ignored');
-		await expect(adjustLearning(db, { languageId: ru, text: 'дом', direction: 'up' })).rejects.toThrow('is Unknown');
-		expect((await get('и')).status).toBe('known');
+		expect(await assessTerm(db, { languageId: ru, text: 'и', answer: 'missed' })).toEqual({ status: 'known', to: 'learning4' });
 	});
 
-	it('moves a Parent along with a Term that Follows it', async () => {
+	it('refuses Unknown Words and Ignored Terms', async () => {
+		const { db, ru } = await setup();
+		await saveTerm(db, { languageId: ru, text: 'москва', status: 'ignored' });
+		await expect(assessTerm(db, { languageId: ru, text: 'москва', answer: 'got' })).rejects.toThrow('Ignored');
+		await expect(assessTerm(db, { languageId: ru, text: 'дом', answer: 'got' })).rejects.toThrow('is Unknown');
+		await expect(assessTerm(db, { languageId: ru, text: 'москва', answer: 'great' })).rejects.toThrow(InvalidTerm);
+	});
+});
+
+describe('setTransfer', () => {
+	it('records form and concept with a reason', async () => {
 		const { db, ru, get } = await setup();
-		await saveTerm(db, { languageId: ru, text: 'читала', status: 'learning2', parent: 'читать', followsParent: true });
-		await adjustLearning(db, { languageId: ru, text: 'читала', direction: 'up' });
-		expect((await get('читать')).status).toBe('learning3');
+		await saveTerm(db, { languageId: ru, text: 'тоска', status: 'learning1' });
+		expect(await setTransfer(db, { languageId: ru, text: 'тоска', form: 'hard', concept: 'hard', reason: ' no  one-word match ' })).toEqual({
+			form: 'hard',
+			concept: 'hard',
+			reason: 'no one-word match'
+		});
+		expect((await get('тоска')).transfer).toEqual({ form: 'hard', concept: 'hard', reason: 'no one-word match' });
+		await expect(setTransfer(db, { languageId: ru, text: 'тоска', form: 'tricky' as 'hard', concept: 'easy' })).rejects.toThrow(InvalidTerm);
+		await expect(setTransfer(db, { languageId: ru, text: 'дом', form: 'easy', concept: 'easy' })).rejects.toThrow('is Unknown');
 	});
 });
 

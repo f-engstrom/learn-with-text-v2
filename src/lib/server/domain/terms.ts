@@ -1,5 +1,5 @@
 import { sql, type Kysely, type SelectQueryBuilder, type Transaction } from 'kysely';
-import type { Database, SourceValue, StatusValue } from '../db/schema';
+import type { Database, SourceValue, StatusValue, TransferValue } from '../db/schema';
 import { bandRanks, ensureFrequencyLists, frequencyBands, type FrequencyBand } from './frequency';
 import { getLanguage, listLanguages, type Language } from './languages';
 import { MAX_TERM_WORDS } from './multiword';
@@ -9,6 +9,14 @@ import { suggestPronunciation } from './pronunciation';
 
 export type Status = StatusValue;
 export type Source = SourceValue;
+export type TransferLevel = TransferValue;
+
+/** How hard a Term is to carry over from Your languages (see CONTEXT.md). */
+export interface Transfer {
+	form: TransferLevel;
+	concept: TransferLevel;
+	reason?: string;
+}
 
 /** In display order: Learning 1–4, then Known and Ignored. */
 export const STATUSES: readonly Status[] = ['learning1', 'learning2', 'learning3', 'learning4', 'known', 'ignored'];
@@ -34,6 +42,10 @@ export interface TermView {
 	practice?: PracticeView;
 	/** For a one-Word Term in a Language with a frequency list. */
 	frequency?: FrequencyBand;
+	/** The Tutor's assessment, once it has asked about the Term. */
+	tutor?: Status;
+	/** Once the Tutor has judged it. */
+	transfer?: Transfer;
 }
 
 /** A Translation as submitted from a form: `id` refers to one the Term already has. */
@@ -399,6 +411,10 @@ function selectTerms(db: Kysely<Database>) {
 			'term.status',
 			'term.pronunciation',
 			'term.follows_parent',
+			'term.tutor_level',
+			'term.transfer_form',
+			'term.transfer_concept',
+			'term.transfer_reason',
 			'parent.id as parentId',
 			'parent.text as parentText',
 			'parent.status as parentStatus'
@@ -442,6 +458,10 @@ async function toViews(db: Kysely<Database>, rows: TermRow[]): Promise<{ normali
 			followsParent: t.follows_parent === 1,
 			...(practice.has(t.id) ? { practice: practice.get(t.id) } : {}),
 			...(frequency[t.language_id]?.[t.normalised] ? { frequency: frequency[t.language_id][t.normalised] } : {}),
+			...(t.tutor_level ? { tutor: t.tutor_level } : {}),
+			...(t.transfer_form && t.transfer_concept
+				? { transfer: { form: t.transfer_form, concept: t.transfer_concept, ...(t.transfer_reason ? { reason: t.transfer_reason } : {}) } }
+				: {}),
 			translations: translations
 				.filter((tr) => tr.term_id === t.id)
 				.map((tr) => ({ id: tr.id, text: tr.text, source: tr.source }))

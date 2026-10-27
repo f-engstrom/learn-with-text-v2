@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { dueLabel, holdsLabel, practiceQueue } from './practice';
+import { dueLabel, holdsLabel, practiceQueue, suggestedStatus, type DueWord } from './practice';
 
 const at = (day: number, hour: number) => new Date(2026, 9, day, hour);
 const due = (date: Date) => ({ due: date.toISOString(), overdue: 0 as const, reviews: 0 });
@@ -49,12 +49,37 @@ describe('practiceQueue', () => {
 	});
 
 	it('puts frequent Words first in priority, then the more overdue', () => {
-		const banded = [
+		const banded: DueWord[] = [
 			{ ...words[2], frequency: 'rare' as const },
 			{ ...words[4], frequency: 'top1k' as const },
 			{ ...words[0], frequency: 'top1k' as const }
 		];
 		expect(practiceQueue(banded, 'priority')).toEqual([4, 0, 2]);
+		// Within a band, the harder to carry over comes first.
+		banded[2] = { ...banded[2], transfer: { form: 'easy', concept: 'hard' } };
+		expect(practiceQueue(banded, 'priority')).toEqual([0, 4, 2]);
 		expect(practiceQueue(banded, 'overdue')).toEqual([2, 4, 0]);
+	});
+});
+
+describe('suggestedStatus', () => {
+	const practice = (level: 'learning2' | 'learning3', reviews: number) => ({
+		due: '2026-11-01T00:00:00.000Z',
+		overdue: 0 as const,
+		reviews,
+		recall: { level, holdsDays: 10, today: 0.95 }
+	});
+
+	it("suggests the Tutor's assessment, or settled Recall strength, when they differ from your Status", () => {
+		expect(suggestedStatus('learning1', 'learning3', undefined)).toEqual({ level: 'learning3', from: 'The Tutor points' });
+		expect(suggestedStatus('learning1', undefined, practice('learning3', 3))).toEqual({ level: 'learning3', from: 'Your Reviews point' });
+		expect(suggestedStatus('learning1', 'learning3', practice('learning3', 5))).toEqual({ level: 'learning3', from: 'The Tutor and your Reviews point' });
+	});
+
+	it('stays quiet when the views disagree, Recall has few Reviews, they match your Status, or it is Ignored', () => {
+		expect(suggestedStatus('learning1', 'learning3', practice('learning2', 5))).toBeUndefined();
+		expect(suggestedStatus('learning1', undefined, practice('learning3', 1))).toBeUndefined();
+		expect(suggestedStatus('learning3', 'learning3', undefined)).toBeUndefined();
+		expect(suggestedStatus('ignored', 'learning3', undefined)).toBeUndefined();
 	});
 });

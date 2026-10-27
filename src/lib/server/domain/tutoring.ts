@@ -2,13 +2,17 @@ import type { Kysely } from 'kysely';
 import type { Database } from '../db/schema';
 import { getLanguage } from './languages';
 import { termKey } from './parsing';
-import { findTerms, InvalidTerm, saveTerm, type Status } from './terms';
+import { isPractised, recordReview, type Grade, type PracticeView } from './practice';
+import { findTerms, InvalidTerm, saveTerm, type Status, type Transfer } from './terms';
 
 // The Tutor's changes to Terms. The rules live here so no entry point can break them (ADR 0003).
 
 /** Glosses are offered, and saved, only for these: Unknown Words and Learning 1–2 Terms. */
 const GLOSSABLE: readonly (Status | 'unknown')[] = ['unknown', 'learning1', 'learning2'];
 const LEARNING: readonly Status[] = ['learning1', 'learning2', 'learning3', 'learning4'];
+/** The Tutor's assessment runs on the Status scale without Ignored. */
+const ASSESSMENT: readonly Status[] = [...LEARNING, 'known'];
+const TRANSFER_LEVELS = ['easy', 'medium', 'hard'] as const;
 
 export interface Gloss {
 	languageId: number;
@@ -49,24 +53,48 @@ export async function saveGloss(db: Kysely<Database>, input: Gloss): Promise<{ t
 }
 
 /**
- * A Tutor adjustment: one Learning step up after a right answer, one down after a miss. It only
- * applies to Learning 1–4 Terms and never leaves that range; only you set Known or Ignored.
+ * A Tutor adjustment after the learner answers about a Term: Got it moves the Tutor's assessment one
+ * step up, Missed one down, Hard leaves it (ADR 0004). It starts from the learner's Status and never
+ * changes it. For a Learning 1–4 Term the answer also counts as a Review.
  */
-export async function adjustLearning(
+export async function assessTerm(
 	db: Kysely<Database>,
-	input: { languageId: number; text: string; direction: 'up' | 'down' }
-): Promise<{ from: Status; to: Status }> {
+	input: { languageId: number; text: string; answer: string }
+): Promise<{ status: Status; from?: Status; to: Status; practice?: PracticeView }> {
 	const language = await getLanguage(db, input.languageId);
 	if (!language) throw new InvalidTerm('Unknown Language.');
+	if (!['missed', 'hard', 'got'].includes(input.answer)) throw new InvalidTerm('An answer is missed, hard or got.');
 	const key = termKey(input.text, language);
 	const term = (await findTerms(db, language.id, [key]))[key];
 	if (!term) throw new InvalidTerm(`“${input.text}” is Unknown; save a Gloss first to give it a Term.`);
-	const level = LEARNING.indexOf(term.status);
-	if (level === -1) throw new InvalidTerm(`“${term.text}” is ${describe(term.status)}; the Tutor only adjusts Learning 1–4.`);
-	const to = LEARNING[Math.min(Math.max(level + (input.direction === 'up' ? 1 : -1), 0), LEARNING.length - 1)];
-	// Through saveTerm, so a Term that Follows its Parent moves with it.
-	if (to !== term.status) await saveTerm(db, { languageId: language.id, text: term.text, status: to });
-	return { from: term.status, to };
+	if (term.status === 'ignored') throw new InvalidTerm(`“${term.text}” is Ignored; it isn't vocabulary to assess.`);
+	const from = term.tutor ?? term.status;
+	const step = input.answer === 'got' ? 1 : input.answer === 'missed' ? -1 : 0;
+	const to = ASSESSMENT[Math.min(Math.max(ASSESSMENT.indexOf(from) + step, 0), ASSESSMENT.length - 1)];
+	await db.updateTable('term').set({ tutor_level: to }).where('id', '=', term.id).execute();
+	const practice = isPractised(term.status) ? await recordReview(db, term.id, input.answer as Grade, 'tutor') : undefined;
+	return { status: term.status, ...(term.tutor ? { from: term.tutor } : {}), to, ...(practice ? { practice } : {}) };
+}
+
+/** Records the Tutor's judgement of how hard a Term is to carry over from Your languages. */
+export async function setTransfer(
+	db: Kysely<Database>,
+	input: { languageId: number; text: string } & Transfer
+): Promise<Transfer> {
+	const language = await getLanguage(db, input.languageId);
+	if (!language) throw new InvalidTerm('Unknown Language.');
+	const valid = (v: string): v is (typeof TRANSFER_LEVELS)[number] => (TRANSFER_LEVELS as readonly string[]).includes(v);
+	if (!valid(input.form) || !valid(input.concept)) throw new InvalidTerm('Form and concept are each easy, medium or hard.');
+	const key = termKey(input.text, language);
+	const term = (await findTerms(db, language.id, [key]))[key];
+	if (!term) throw new InvalidTerm(`“${input.text}” is Unknown; save a Gloss first to give it a Term.`);
+	const reason = input.reason?.trim().replace(/\s+/g, ' ') || undefined;
+	await db
+		.updateTable('term')
+		.set({ transfer_form: input.form, transfer_concept: input.concept, transfer_reason: reason ?? null })
+		.where('id', '=', term.id)
+		.execute();
+	return { form: input.form, concept: input.concept, ...(reason ? { reason } : {}) };
 }
 
 /**

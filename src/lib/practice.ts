@@ -1,6 +1,6 @@
 import type { FrequencyBand } from '#lib/server/domain/frequency.ts';
 import type { PracticeView, RecallStrength } from '#lib/server/domain/practice.ts';
-import type { Status } from '#lib/server/domain/terms.ts';
+import type { Status, Transfer } from '#lib/server/domain/terms.ts';
 
 // Wording for practice, shared by the reading screen and the Term list.
 
@@ -56,6 +56,14 @@ export interface DueWord {
 	paragraph: number;
 	practice: PracticeView;
 	frequency?: FrequencyBand;
+	transfer?: Transfer;
+}
+
+const transferPoints = { easy: 0, medium: 1, hard: 2 } as const;
+
+/** How hard a Term is to carry over: 0 (form and concept easy) to 4 (both hard); -1 when not judged. */
+export function transferScore(transfer: Transfer | undefined): number {
+	return transfer ? transferPoints[transfer.form] + transferPoints[transfer.concept] : -1;
 }
 
 export const frequencyLabels: Record<FrequencyBand, string> = {
@@ -70,11 +78,12 @@ const bandOrder: Record<FrequencyBand, number> = { top1k: 0, top5k: 1, top20k: 2
 /** How many Words "Top by priority" takes. */
 export const TOP = 10;
 
-/** Practice priority between two Due Words: the more frequent first, then the more overdue. */
+/** Practice priority between two Due Words: the more frequent first, then the harder to carry over, then the more overdue. */
 export function byPriority(a: DueWord, b: DueWord): number {
 	const band = (w: DueWord) => (w.frequency ? bandOrder[w.frequency] : 4);
 	return (
 		band(a) - band(b) ||
+		transferScore(b.transfer) - transferScore(a.transfer) ||
 		b.practice.overdue - a.practice.overdue ||
 		Date.parse(a.practice.due) - Date.parse(b.practice.due) ||
 		a.index - b.index
@@ -103,4 +112,29 @@ export function practiceQueue(
 		case 'overdue':
 			return once([...due].sort((a, b) => Date.parse(a.practice.due) - Date.parse(b.practice.due) || a.index - b.index)).map((w) => w.index);
 	}
+}
+
+/** "form easy, concept hard". */
+export function transferLabel(transfer: Transfer): string {
+	return `form ${transfer.form}, concept ${transfer.concept}`;
+}
+
+/** How many Reviews Recall strength needs before it suggests a Status. */
+const SETTLED = 3;
+
+/**
+ * A Status to suggest when the other views of a Term agree with each other and not with yours: the
+ * Tutor's assessment, and Recall strength once it rests on a few Reviews (ADR 0004). Never Ignored.
+ */
+export function suggestedStatus(
+	status: Status,
+	tutor: Status | undefined,
+	practice: PracticeView | undefined
+): { level: Status; from: string } | undefined {
+	if (status === 'ignored') return undefined;
+	const recall = practice?.recall && practice.reviews >= SETTLED ? practice.recall.level : undefined;
+	const views = [tutor, recall].filter((v): v is Status => v !== undefined);
+	if (views.length === 0 || views.some((v) => v !== views[0]) || views[0] === status) return undefined;
+	const from = tutor && recall ? 'The Tutor and your Reviews point' : tutor ? 'The Tutor points' : 'Your Reviews point';
+	return { level: views[0], from };
 }

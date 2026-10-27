@@ -57,7 +57,12 @@ describe('Reader MCP server', () => {
 			look_up_term: true,
 			get_suggestions: true,
 			save_gloss: false,
-			adjust_learning: false,
+			assess_term: false,
+			set_transfer: false,
+			get_due_terms: true,
+			list_your_languages: true,
+			set_your_language: false,
+			remove_your_language: false,
 			set_parent: false,
 			set_bookmark: false,
 			set_highlight: false,
@@ -92,7 +97,7 @@ describe('Reader MCP server', () => {
 			['В течение дня кот спит.', true, 1],
 			['Мышь бежит.', false, 1]
 		]);
-		expect(result.sentences[0].words).toEqual([
+		expect(result.sentences[0].words).toMatchObject([
 			{ text: 'В течение', multiWord: true, status: 'learning2', translations: ['during'] },
 			{ text: 'дня', status: 'unknown' },
 			{ text: 'кот', status: 'learning1', translations: ['cat (wiktionary)'] },
@@ -112,7 +117,7 @@ describe('Reader MCP server', () => {
 
 	it('looks up a Term by any spelling, by Language name or code', async () => {
 		const { call } = await connect();
-		expect(await call('look_up_term', { language: 'ru', text: 'КОТ' })).toEqual({ text: 'кот', status: 'learning1', translations: ['cat (wiktionary)'] });
+		expect(await call('look_up_term', { language: 'ru', text: 'КОТ' })).toMatchObject({ text: 'кот', status: 'learning1', translations: ['cat (wiktionary)'] });
 		expect(await call('look_up_term', { language: 'Russian', text: 'В  тече́ние' })).toMatchObject({ text: 'в течение', status: 'learning2' });
 		expect(await call('look_up_term', { language: 'russian', text: 'мышь' })).toEqual({ text: 'мышь', status: 'unknown' });
 		expect(await call('look_up_term', { language: 'Klingon', text: 'x' })).toEqual({ error: 'Unknown Language "Klingon". Use list_languages.' });
@@ -138,12 +143,37 @@ describe('Reader MCP server', () => {
 		});
 	});
 
-	it('adjusts a Learning level one step, and refuses Known Terms', async () => {
+	it("assesses a Term from an answer without touching the learner's Status, counting it as a Review", async () => {
 		const { call } = await connect();
-		expect(await call('adjust_learning', { language: 'ru', text: 'кот', direction: 'up' })).toEqual({ from: 'learning1', to: 'learning2' });
-		expect(await call('adjust_learning', { language: 'ru', text: 'спит', direction: 'down' })).toEqual({
-			error: '“спит” is Known; the Tutor only adjusts Learning 1–4.'
+		expect(await call('assess_term', { language: 'ru', text: 'кот', answer: 'got' })).toMatchObject({
+			status: 'learning1',
+			to: 'learning2',
+			practice: { reviews: 1 }
 		});
+		expect(await call('assess_term', { language: 'ru', text: 'спит', answer: 'missed' })).toEqual({ status: 'known', to: 'learning4' });
+		expect(await call('look_up_term', { language: 'ru', text: 'кот' })).toMatchObject({ status: 'learning1', yourAssessment: 'learning2' });
+	});
+
+	it('records Transfer and lists Due Terms by priority', async () => {
+		const { call, db } = await connect();
+		await call('save_gloss', { language: 'ru', text: 'мышь', gloss: 'mouse' });
+		await call('save_gloss', { language: 'ru', text: 'бежит', gloss: 'runs' });
+		await db.updateTable('term').set({ created_at: '2026-01-01T00:00:00.000Z' }).execute();
+		expect(await call('set_transfer', { language: 'ru', text: 'бежит', form: 'hard', concept: 'medium', reason: 'motion verb pair' })).toEqual({
+			transfer: { form: 'hard', concept: 'medium', reason: 'motion verb pair' }
+		});
+		const due = await call('get_due_terms', { language: 'ru', limit: 2 });
+		expect(due.due).toBeGreaterThanOrEqual(3);
+		expect(due.terms.map((t: { text: string }) => t.text)).toContain('бежит');
+		expect(due.terms[0]).toMatchObject({ practice: { isDue: true } });
+	});
+
+	it("keeps the learner's languages", async () => {
+		const { call } = await connect();
+		expect(await call('list_your_languages')).toEqual([]);
+		await call('set_your_language', { name: 'Swedish', level: 'native' });
+		await call('set_your_language', { name: 'English', level: 'fluent' });
+		expect(await call('remove_your_language', { name: 'english' })).toEqual([{ name: 'Swedish', level: 'native' }]);
 	});
 
 	it('links a glossed form to its dictionary form, which get_sentences then shows', async () => {
@@ -151,7 +181,7 @@ describe('Reader MCP server', () => {
 		await call('save_gloss', { language: 'ru', text: 'дня', gloss: 'of the day' });
 		expect(await call('set_parent', { language: 'ru', text: 'дня', parent: 'день' })).toEqual({ term: 'дня', parent: 'день', createdParent: true });
 		const word = (await call('get_sentences', { book_id: bookId, count: 1 })).sentences[0].words[1];
-		expect(word).toEqual({ text: 'дня', status: 'learning1', translations: ['of the day (tutor)'], parent: 'день', followsParent: false });
+		expect(word).toMatchObject({ text: 'дня', status: 'learning1', translations: ['of the day (tutor)'], parent: 'день', followsParent: false });
 		expect(await call('set_parent', { language: 'ru', text: 'мышь', parent: 'мышь' })).toEqual({
 			error: '“мышь” is Unknown; save a Gloss first to give it a Term.'
 		});

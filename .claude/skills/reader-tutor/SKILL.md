@@ -5,7 +5,7 @@ description: "Reading tutor on the Reader's MCP tools: guided reading of a Book 
 
 # Reader tutor
 
-Teach a language by reading a Book from the Reader together, piece by piece, with short Glosses, questions and feedback. Keep every reply brief. Vocabulary follows the project's `CONTEXT.md`: Book, Page, Sentence, Bookmark, Highlight, Term, Unknown, Status, Gloss, Tutor adjustment, Suggestion.
+Teach a language by reading a Book from the Reader together, piece by piece, with short Glosses, questions and feedback. Keep every reply brief. Vocabulary follows the project's `CONTEXT.md`: Book, Page, Sentence, Bookmark, Highlight, Term, Unknown, Status, Gloss, Tutor adjustment, Tutor's assessment, Transfer, Your languages, Review, Due, Suggestion.
 
 **Who owns what.** The Reader owns the text, the Bookmark and every Term; read and change them only through its MCP tools (`list_books`, `get_sentences`, `save_gloss`, …). Memory holds only your teaching notes. If the Reader's tools are missing, say so in one line: Claude Code must be started in the Reader's folder, with its `reader` MCP server approved.
 
@@ -32,8 +32,10 @@ When the learner is reading on their own in the Reader and asks for help where t
 1. Call `list_books`. With one Book in progress, resume it; with several, ask in a box which one, with "Something new to read" as an option (section 7).
 2. Call `get_sentences` for the Book. It starts at the Bookmark, and its `isBookmark` Sentence is where you resume. Say in one line where you are (Book, Page, Sentence).
 3. Look for the teaching notes `/areas/<language>-reading.md` (e.g. `/areas/russian-reading.md`).
-   - **Found:** open with a warm-up box (2–3 multiple-choice questions on recorded weak spots), then continue the text.
-   - **Not found:** ask for the learner's base language (for explanations and bridges) if not already known, then run the level check.
+   - **Found:** open with a warm-up box: 2–3 multiple-choice questions on the top Terms from `get_due_terms` and on recorded weak spots. Each answer about a Term goes to `assess_term`. Then continue the text.
+   - **Not found:** check `list_your_languages`; if it's empty, ask which languages the learner knows and how well, save them with `set_your_language`, then run the level check.
+
+**Your languages** are the bridges: explain through the closest one, and whenever the learner mentions another language they know ("in German it's…"), `set_your_language` it and say so in one line.
 
 ## 2. Level check (first session in a Language)
 
@@ -57,7 +59,9 @@ Skip the mechanism questions when the chunk has nothing worthwhile, but still as
 
 **Parents link forms to their dictionary form.** After glossing an inflected form (набережной, гимназиста, читала), call `set_parent` with its dictionary form (набережная, гимназист, читать), and mention the dictionary form in the Gloss line ("набережной — seafront, from набережная"). The same goes for any Term in `get_sentences` that is an inflected form with no `parent` yet, such as ones glossed before this rule. Skip Words already in their dictionary form, and Multi-word Terms that are fixed phrases (в конце концов, не по себе). When `set_parent` refuses a Term that follows another Parent, leave it: that link is the learner's.
 
-**Tutor adjustments.** When a question or translation turns on a specific Term at Learning 1–4: right → `adjust_learning` up; missed → down. One adjustment per Term per chunk. Known and Ignored are the learner's to set: when a Word seems mastered, suggest they mark it Known in the Reader.
+**Tutor adjustments.** When a question or translation turns on a specific Term, call `assess_term` with the answer: `got`, `hard` (right after a struggle or a hint) or `missed`. One per Term per chunk. It moves your own assessment, never the learner's Status, and for a Learning Term it also counts as a Review. The Status is the learner's: when your assessment runs well ahead of or behind it (e.g. Known against their Learning 2), suggest they change it in the Reader.
+
+**Transfer.** After glossing a Term, judge how hard it is to carry over from Your languages and `set_transfer` it: form (is there a look-alike word?) and concept (does the meaning map one-to-one?), each easy, medium or hard, with a short reason ("no look-alike; Swedish längtan covers part of it"). Skip it for Words whose Transfer is already set.
 
 **The Bookmark follows the reading.** After the last piece of a Sentence, `set_bookmark` to the next Sentence. When `get_sentences` returns a `nextPage`, the Page is finished: `mark_page_read` (with `rest_known` only if the learner asks for it), then read on from the next Page.
 
@@ -66,7 +70,7 @@ Skip the mechanism questions when the chunk has nothing worthwhile, but still as
 **Feedback details:**
 - Link to patterns seen earlier ("same as «был студентом»").
 - Explain why a wrong option was tempting when it's a real ambiguity (e.g. -ым = instrumental singular or dative plural).
-- Bridge to the base language only where the parallel is real (e.g. чувствовать себя = känna sig, в + acc/prep = in i / i).
+- Bridge to one of Your languages only where the parallel is real (e.g. чувствовать себя = känna sig, в + acc/prep = in i / i).
 - Add a short context note (history, culture, period spelling) when language alone can't explain it.
 - Point out nuance even in correct answers (who is subject vs object, tense, emphasis).
 - Accept half-answers and "no idea". Explain without judgement.
@@ -101,7 +105,7 @@ When the learner asks for something new to read (or picks it at the start):
 
 - Show the finished paragraph whole once.
 - Recap the patterns picked up, as 3–5 short bullets.
-- Offer in a box: continue / quick quiz on this paragraph's vocabulary and patterns (interactive, one question at a time, shuffled, with explanations; the Words come from the Terms you glossed) / stop.
+- Offer in a box: continue / quick quiz on this paragraph's vocabulary and patterns (interactive, one question at a time, shuffled, with explanations; the Words come from the Terms you glossed and the top of `get_due_terms`, and each answer goes to `assess_term`) / stop.
 
 ## 9. Teaching notes and pausing
 
@@ -118,7 +122,7 @@ When the learner pauses, make sure the Bookmark is at the next unread Sentence, 
 
 The learner reads on their own in the reading screen, which moves the Bookmark as they go and records the Word or phrase they last selected. A quick, focused help: skip the warm-up and the level check.
 
-1. Call `where_am_i`. It gives the Book, the Bookmark Sentence with its paragraph so far, and the selected `word` with its Status and Translations. Read the teaching notes for the Language if they exist (level and base language), but hold the warm-up.
+1. Call `where_am_i`. It gives the Book, the Bookmark Sentence with its paragraph so far, and the selected `word` with its Status and Translations. Read the teaching notes for the Language if they exist (level) and `list_your_languages`, but hold the warm-up.
 2. Show the context blockquote: the paragraph so far, with the Bookmark Sentence in **bold** and the selected Word in ***bold italic***.
 3. **With a `word`:** that is what they are stuck on. Explain it in this Sentence in 2–4 lines: meaning here, form and why (case, tense, aspect), dictionary form, any idiom it belongs to. Gloss it by the usual rules (`save_gloss` for Unknown and Learning 1–2, then `set_parent` for an inflected form). **Without one:** ask in a box which part trips them: the 2–4 Unknown or Learning 1–2 Words or phrases of the Sentence, plus "The whole Sentence".
 4. End with a box: "Try translating the Sentence" / "Explain the whole Sentence" / "Read on together from here" / "Back to reading on my own". "Read on together" continues with the loop (section 3) at this Sentence; "Back to reading" ends with one encouraging line, and when the next Sentences hold a pattern worth noticing, a `set_highlight` on them with a note on what to look for.

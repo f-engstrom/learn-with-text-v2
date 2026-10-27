@@ -25,7 +25,7 @@ Spaced repetition woven into reading. Each slice goes from the screen to the dat
 - **Demo:** practise "top by priority" on a Page and the building-block Words come first.
 
 ### 23. The Tutor's assessment, Transfer and Your languages
-- The Tutor's assessment per Term; `adjust_learning` moves it instead of Status. Shown beside Status and Recall strength, with a suggestion when they disagree.
+- The Tutor's assessment per Term; `assess_term` (replacing `adjust_learning`) moves it instead of Status and records the answer as a Review. Shown beside Status and Recall strength, with a suggestion when they disagree.
 - Transfer (form and concept, easy/medium/hard, with a reason) set by the Tutor; Your languages, editable by you and the Tutor.
 - MCP: record a Review from a question, list Due Terms by priority, set Transfer, edit Your languages. The skill's warm-ups and quizzes draw on Due Terms.
 - Transfer and the Tutor's assessment in the Term panel, the zen tooltip and the Term list.
