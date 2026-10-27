@@ -59,6 +59,8 @@ export function extractArticle(html: string, url: string): Omit<WebArticle, 'url
 		.map((p) => p.replace(/\s+/g, ' ').trim())
 		// Lines without letters (dates, a row of dashes, which would start a new Page) aren't reading.
 		.filter((p) => /\p{L}/u.test(p));
+	// A copyright line at the end is the site's, not the article's.
+	while (paragraphs.length > 1 && /^(©|\(c\)|copyright)/i.test(paragraphs.at(-1)!)) paragraphs.pop();
 	const title = headline ?? ((article.title ?? '').replace(/\s+/g, ' ').trim() || fallbackTitle);
 	// The headline is the Book's title, not its first line.
 	if (paragraphs[0] === title) paragraphs.shift();

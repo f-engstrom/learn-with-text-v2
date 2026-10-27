@@ -4,7 +4,9 @@ import type { Database } from '../db/schema';
 import { createBook, findBookByUrl, PAGE_WORD_TARGET, splitIntoPages } from './books';
 import type { Language } from './languages';
 import { countWords, normalise, parserFor, type Parser } from './parsing';
+import { listFeeds, type FeedReader } from './feeds';
 import { listTopics } from './topics';
+import type { WebArticle } from './webpages';
 
 export type { FitRange, Suggestion } from '../../suggestions';
 
@@ -99,21 +101,48 @@ export async function setFitRange(db: Kysely<Database>, languageId: number, rang
 	return { min, max };
 }
 
+/** Where Suggestions come from: Wikipedia, and the Language's Feeds when given. */
+export interface SuggestionSources {
+	wikipedia: WikipediaSource;
+	feeds?: FeedReader;
+}
+
+/** How many recent items to try from each Feed, and from all Feeds together. */
+export const ITEMS_PER_FEED = 3;
+export const FEED_SUGGESTION_COUNT = 8;
+
 /**
- * Looks for things to read in a Language: articles for your Topics, or random ones if you have
- * none. Articles you already have as a Book and stubs are left out. Not ranked; see rankSuggestions.
+ * Looks for things to read in a Language: Wikipedia articles for your Topics (or random ones if
+ * you have none) and recent items from its Feeds. Articles you already have as a Book and stubs
+ * are left out. Not ranked; see rankSuggestions.
  */
-export async function findSuggestions(db: Kysely<Database>, source: WikipediaSource, language: Language): Promise<Candidate[]> {
+export async function findSuggestions(db: Kysely<Database>, sources: SuggestionSources, language: Language): Promise<Candidate[]> {
+	const failures: unknown[] = [];
+	const [fromWikipedia, fromFeeds] = await Promise.all([
+		wikipediaCandidates(db, sources.wikipedia, language, failures),
+		sources.feeds ? feedCandidates(db, sources.feeds, language, failures) : []
+	]);
+	const candidates = [...fromWikipedia, ...fromFeeds];
+	// Some failures are fine; a search that found nothing because every request failed is not.
+	if (candidates.length === 0 && failures.length > 0) throw failures[0];
+	return withoutBooks(db, candidates);
+}
+
+async function wikipediaCandidates(db: Kysely<Database>, source: WikipediaSource, language: Language, failures: unknown[]) {
 	const topics = await listTopics(db);
 	let found: { title: string; topic?: string }[];
-	const failures: unknown[] = [];
 	if (topics.length > 0) {
 		const perTopic = await Promise.allSettled(
 			topics.map(async (t) => shuffle(await source.search(t.text, language.code, 20)).map((title) => ({ title, topic: t.text })))
 		);
 		found = interleave(perTopic.flatMap((r) => (r.status === 'fulfilled' ? [r.value] : (failures.push(r.reason), []))));
 	} else {
-		found = (await source.random(language.code, SUGGESTION_COUNT * 2)).map((title) => ({ title }));
+		try {
+			found = (await source.random(language.code, SUGGESTION_COUNT * 2)).map((title) => ({ title }));
+		} catch (e) {
+			failures.push(e);
+			found = [];
+		}
 	}
 	found = found.filter((f, i) => found.findIndex((g) => g.title === f.title) === i).slice(0, SUGGESTION_COUNT * 2);
 
@@ -130,26 +159,64 @@ export async function findSuggestions(db: Kysely<Database>, source: WikipediaSou
 			return;
 		}
 		if (!article) return;
-		const text = cutArticle(article.text, parser);
-		if (countWords(parser.parse(text)) < MIN_WORDS) return;
-		candidates.push({
-			title: article.title,
-			url: article.url,
-			topic,
-			text,
-			unknownShare: await unknownShareOf(db, language, text),
-			pageCount: splitIntoPages(text, parser).length
-		});
+		const candidate = await toCandidate(db, language, { title: article.title, url: article.url, topic }, cutArticle(article.text, parser));
+		if (candidate) candidates.push(candidate);
 	});
+	return candidates;
+}
 
-	// Some failures are fine; a search that found nothing because every request failed is not.
-	if (candidates.length === 0 && failures.length > 0) throw failures[0];
-
-	const urls = candidates.map((c) => c.url);
-	const have = new Set(
-		urls.length === 0 ? [] : (await db.selectFrom('book').select('url').where('url', 'in', urls).execute()).map((b) => b.url)
+async function feedCandidates(db: Kysely<Database>, reader: FeedReader, language: Language, failures: unknown[]) {
+	const feeds = await listFeeds(db, language.id);
+	const perFeed = await Promise.allSettled(
+		feeds.map(async (f) => (await reader.items(f.url)).slice(0, ITEMS_PER_FEED).map((item) => ({ ...item, feed: f.name })))
 	);
-	return candidates.filter((c) => !have.has(c.url));
+	const items = await withoutBooks(
+		db,
+		interleave(perFeed.flatMap((r) => (r.status === 'fulfilled' ? [r.value] : (failures.push(r.reason), [])))).slice(
+			0,
+			FEED_SUGGESTION_COUNT
+		)
+	);
+
+	const candidates: Candidate[] = [];
+	await eachLimited(items, 2, async (item) => {
+		let article: WebArticle | undefined;
+		try {
+			article = await reader.article(item.url);
+		} catch (e) {
+			failures.push(e);
+			return;
+		}
+		if (!article) return;
+		// News articles are kept whole; their length counts in the ranking.
+		const candidate = await toCandidate(db, language, { title: article.title || item.title, url: item.url, feed: item.feed }, article.text);
+		if (candidate) candidates.push(candidate);
+	});
+	return candidates;
+}
+
+async function toCandidate(
+	db: Kysely<Database>,
+	language: Language,
+	about: Pick<Suggestion, 'title' | 'url' | 'topic' | 'feed'>,
+	text: string
+): Promise<Candidate | undefined> {
+	const parser = parserFor(language);
+	if (countWords(parser.parse(text)) < MIN_WORDS) return undefined;
+	return {
+		...about,
+		text,
+		unknownShare: await unknownShareOf(db, language, text),
+		pageCount: splitIntoPages(text, parser).length
+	};
+}
+
+/** Leaves out what you already have as a Book, by web address. */
+async function withoutBooks<T extends { url: string }>(db: Kysely<Database>, items: T[]): Promise<T[]> {
+	const urls = items.map((c) => c.url);
+	if (urls.length === 0) return items;
+	const have = new Set((await db.selectFrom('book').select('url').where('url', 'in', urls).execute()).map((b) => b.url));
+	return items.filter((c) => !have.has(c.url));
 }
 
 /** Imports an article as a Book that keeps its address; one you already have is reused. */
@@ -169,6 +236,20 @@ export async function importArticle(
 		text: cutArticle(article.text, parserFor(language)),
 		url: article.url
 	});
+}
+
+/** Imports a Feed item as a Book that keeps its address; one you already have is reused. */
+export async function importFeedItem(
+	db: Kysely<Database>,
+	reader: FeedReader,
+	language: Language,
+	url: string
+): Promise<number | undefined> {
+	const existing = await findBookByUrl(db, url);
+	if (existing !== undefined) return existing;
+	const article = await reader.article(url);
+	if (!article) return undefined;
+	return createBook(db, { languageId: language.id, title: article.title, text: article.text, url });
 }
 
 function shuffle<T>(items: T[]): T[] {

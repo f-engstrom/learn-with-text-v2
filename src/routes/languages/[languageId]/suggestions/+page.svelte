@@ -38,6 +38,13 @@
 		No Topics yet, so these are random Wikipedia articles.
 	{/if}
 	<a href="/topics">Edit Topics</a>
+	<br />
+	{#if data.feeds.length > 0}
+		Also the latest from {data.feeds.map((f) => f.name).join(', ')}.
+	{:else}
+		No Feeds for {data.language.name}.
+	{/if}
+	<a href="/feeds">Edit Feeds</a>
 </p>
 
 <fieldset class="fit">
@@ -52,7 +59,7 @@
 {/if}
 
 {#await data.suggestions}
-	<p class="note">Looking on Wikipedia…</p>
+	<p class="note">Looking on Wikipedia and in the Feeds…</p>
 {:then result}
 	{#if 'failed' in result}
 		<p class="error" role="alert">{result.failed}</p>
@@ -65,6 +72,7 @@
 					<div class="title">
 						<a href={suggestion.url} target="_blank" rel="noreferrer" lang={data.language.code} {dir}>{suggestion.title}</a>
 						{#if suggestion.topic}<small class="tag">{suggestion.topic}</small>{/if}
+						{#if suggestion.feed}<small class="tag feed">{suggestion.feed}</small>{/if}
 					</div>
 					<div class="facts">
 						<span class="share" title="Share of its distinct Words that are Unknown">{percent.format(suggestion.unknownShare)} Unknown</span>
@@ -81,7 +89,9 @@
 							};
 						}}
 					>
+						<input type="hidden" name="kind" value={suggestion.feed ? 'feed' : 'wikipedia'} />
 						<input type="hidden" name="title" value={suggestion.title} />
+						<input type="hidden" name="url" value={suggestion.url} />
 						<button disabled={picking !== undefined}>{picking === suggestion.url ? 'Importing…' : 'Read this'}</button>
 					</form>
 				</li>
@@ -147,6 +157,9 @@
 		padding: 0 0.35rem;
 		border-radius: 0.25rem;
 		background: #eee;
+	}
+	.tag.feed {
+		background: #e7eefb;
 	}
 	.note {
 		color: #555;

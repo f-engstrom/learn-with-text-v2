@@ -14,6 +14,8 @@ export interface Suggestion {
 	url: string;
 	/** The Topic it was found for; none for a random article. */
 	topic?: string;
+	/** The Feed it came from, by name; none for Wikipedia. */
+	feed?: string;
 	unknownShare: number;
 	pageCount: number;
 }

@@ -131,7 +131,7 @@ describe('findSuggestions', () => {
 	it('uses random articles without Topics, leaving out stubs, and gives each its share and Pages', async () => {
 		const { db, russian } = await setup();
 		const source = fake({ Кот: words(MIN_WORDS, 'кот'), Заглушка: words(MIN_WORDS - 1) });
-		const found = await findSuggestions(db, source, russian);
+		const found = await findSuggestions(db, { wikipedia: source }, russian);
 		expect(source.calls).toEqual(['random']);
 		expect(found).toEqual([
 			expect.objectContaining({ title: 'Кот', url: 'https://ru.wikipedia.org/wiki/Кот', topic: undefined, unknownShare: 1, pageCount: 1 })
@@ -143,7 +143,7 @@ describe('findSuggestions', () => {
 		await addTopic(db, 'football');
 		await addTopic(db, 'cats');
 		const source = fake({ Футбол: words(100), Кошка: words(100) }, { football: ['Футбол'], cats: ['Кошка', 'Нет такой'] });
-		const found = await findSuggestions(db, source, russian);
+		const found = await findSuggestions(db, { wikipedia: source }, russian);
 		expect(source.calls.toSorted()).toEqual(['search:cats', 'search:football']);
 		expect(Object.fromEntries(found.map((f) => [f.title, f.topic]))).toEqual({ Футбол: 'football', Кошка: 'cats' });
 	});
@@ -153,7 +153,7 @@ describe('findSuggestions', () => {
 		const source = fake({ Кот: words(100), Мышь: words(100) });
 		const id = await importArticle(db, source, russian, 'Кот');
 		expect((await listBooks(db)).find((b) => b.id === id)?.title).toBe('Кот');
-		expect((await findSuggestions(db, source, russian)).map((f) => f.title)).toEqual(['Мышь']);
+		expect((await findSuggestions(db, { wikipedia: source }, russian)).map((f) => f.title)).toEqual(['Мышь']);
 		expect(await importArticle(db, source, russian, 'Кот')).toBe(id);
 	});
 });
@@ -174,9 +174,9 @@ describe('findSuggestions when Wikipedia fails', () => {
 				return { title, url: title, text: words(100) };
 			}
 		};
-		expect((await findSuggestions(db, flaky, russian)).map((f) => f.title)).toEqual(['Футбол']);
+		expect((await findSuggestions(db, { wikipedia: flaky }, russian)).map((f) => f.title)).toEqual(['Футбол']);
 
 		const down: WikipediaSource = { ...flaky, search: async () => Promise.reject(new Error('429')) };
-		await expect(findSuggestions(db, down, russian)).rejects.toThrow('429');
+		await expect(findSuggestions(db, { wikipedia: down }, russian)).rejects.toThrow('429');
 	});
 });

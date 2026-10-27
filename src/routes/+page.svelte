@@ -19,7 +19,7 @@
 	{#each data.languages as language, i (language.id)}{#if i > 0}{' · '}{/if}<a href="/languages/{language.id}/suggestions"
 			>{language.name}</a
 		>{/each}
-	<small>(<a href="/topics">Topics</a>)</small>
+	<small>(<a href="/topics">Topics</a> · <a href="/feeds">Feeds</a>)</small>
 </p>
 {#if data.books.length === 0}
 	<p>No Books yet.</p>

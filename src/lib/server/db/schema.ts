@@ -99,6 +99,14 @@ export interface TopicTable {
 	text: string;
 }
 
+/** A news feed (RSS, RDF or Atom) that Suggestions can come from. */
+export interface FeedTable {
+	id: Generated<number>;
+	language_id: number;
+	name: string;
+	url: string;
+}
+
 export interface Database {
 	language: LanguageTable;
 	book: BookTable;
@@ -109,4 +117,5 @@ export interface Database {
 	dictionary: DictionaryTable;
 	book_word: BookWordTable;
 	topic: TopicTable;
+	feed: FeedTable;
 }
