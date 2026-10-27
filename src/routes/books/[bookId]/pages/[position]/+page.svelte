@@ -178,24 +178,23 @@
 		await invalidateAll();
 	}
 
-	/** Zen mode: after a few idle seconds everything but the text fades, and the selection shows its Translations. */
+	/**
+	 * Zen mode: only the text, plain and centred. Tapping a Word shows its Translations; the Page arrows
+	 * and Exit appear while you move the mouse or tap outside the text.
+	 */
 	let zen = $state(false);
 	let idle = $state(false);
 	let idleTimer: ReturnType<typeof setTimeout> | undefined;
 	const zenKey = 'reader.zen';
-	let calm = $derived(zen && idle && !open);
+	/** Whether the selected Word's Translation tooltip is showing, in zen mode. */
+	let glossShown = $state(false);
 	/** Practice on the Page, while it's open. */
 	let practising = $state<PracticeState | undefined>();
 	/** While a practised Word's meaning is still hidden. */
 	let recalling = $derived(practising?.stage === 'run' && !practising.revealed);
 	let gloss = $derived.by(() => {
-		if (!zen || open || recalling || !selected) return '';
-		const meaning = term?.translations.map((t) => t.text).join('; ') ?? '';
-		const band = data.frequency[selected.key];
-		const hard = term?.transfer && (['form', 'concept'] as const).filter((part) => term.transfer?.[part] === 'hard');
-		return [meaning, band && frequencyLabels[band], hard?.length ? `${hard.join(' and ')} hard` : '']
-			.filter(Boolean)
-			.join(' · ');
+		if (!zen || !glossShown || recalling || !selected) return '';
+		return term?.translations.map((t) => t.text).join('; ') || 'No Translation yet';
 	});
 
 	onMount(() => {
@@ -205,14 +204,14 @@
 		wake();
 		return () => {
 			clearTimeout(idleTimer);
-			delete document.documentElement.dataset.calm;
+			delete document.documentElement.dataset.zen;
 		};
 	});
 
-	// The site header lives in the layout, so it fades by a flag on the page root.
+	// The site header lives in the layout, so zen hides it by a flag on the page root.
 	$effect(() => {
-		if (calm) document.documentElement.dataset.calm = '';
-		else delete document.documentElement.dataset.calm;
+		if (zen) document.documentElement.dataset.zen = '';
+		else delete document.documentElement.dataset.zen;
 	});
 
 	/** Shifts the zen tooltip sideways so it stays on screen under a Word near either edge. */
@@ -233,18 +232,28 @@
 		return { update: place };
 	}
 
-	/** Brings everything back, and fades it again after three idle seconds while zen mode is on. */
+	/** Shows zen mode's controls, and hides them again after a couple of idle seconds. */
 	function wake() {
 		idle = false;
 		clearTimeout(idleTimer);
-		if (zen) idleTimer = setTimeout(() => (idle = true), 3000);
+		if (zen) idleTimer = setTimeout(() => (idle = true), 2500);
 	}
 
 	function toggleZen() {
 		zen = !zen;
+		open = false;
+		glossShown = false;
 		try {
 			localStorage.setItem(zenKey, zen ? 'on' : 'off');
 		} catch {}
+		wake();
+	}
+
+	/** In zen mode a tap outside the text dismisses the tooltip and shows the controls. */
+	function onpointerdown(e: PointerEvent) {
+		if (!zen) return;
+		if (e.target instanceof Element && e.target.closest('.word, .zen-controls')) return;
+		glossShown = false;
 		wake();
 	}
 
@@ -418,12 +427,21 @@
 		if (e.defaultPrevented) return;
 		if (!isTyping(e.target) && practiceKey(e)) {
 			e.preventDefault();
-			wake();
 			return;
 		}
 		const command = commandFor(e, data.language.rightToLeft);
-		// Reading on with the keyboard keeps zen mode calm; anything else brings the screen back.
-		if (!command || !['move', 'sentence', 'extend', 'status'].includes(command.kind)) wake();
+		// In zen mode Enter shows or hides the Translation tooltip, and Escape leaves.
+		if (zen && command?.kind === 'open') {
+			e.preventDefault();
+			glossShown = !glossShown;
+			return;
+		}
+		if (zen && command?.kind === 'close') {
+			e.preventDefault();
+			if (glossShown) glossShown = false;
+			else toggleZen();
+			return;
+		}
 		// While typing in the Term form, only Escape (close) applies.
 		if (!command || (isTyping(e.target) && command.kind !== 'close')) return;
 		if (command.kind === 'open' && isControl(e.target)) return;
@@ -452,6 +470,7 @@
 				toggleDue();
 				break;
 			case 'practice':
+				if (zen) toggleZen();
 				startPractice();
 				break;
 			case 'close':
@@ -475,15 +494,21 @@
 	}
 
 	function choose(word: Word, shift: boolean) {
+		const again = current === word.index && !shift;
 		if (shift && current !== undefined) extendTo(word.index);
 		else goTo(word.index, { collapse: true });
+		// In zen mode a tap shows the Word's Translations; tapping it again hides them.
+		if (zen) {
+			glossShown = !(again && glossShown);
+			return;
+		}
 		open = true;
 		// On a phone the Term panel is a sheet over the bottom of the screen; keep the Word above it.
 		tick().then(() => wordElements[word.index]?.scrollIntoView({ block: 'nearest' }));
 	}
 </script>
 
-<svelte:window {onkeydown} {onpaste} onmousemove={wake} onpointerdown={wake} />
+<svelte:window {onkeydown} {onpaste} onmousemove={wake} {onpointerdown} />
 
 <svelte:head>
 	<title>{data.book.title} · Reader</title>
@@ -535,7 +560,7 @@
 	</nav>
 {/snippet}
 
-<div class="chrome" class:calm>
+<div class="chrome" class:zen>
 	<header class="book">
 		<h1 lang={data.language.code} {dir}>{data.book.title}</h1>
 		<span class="tag">{data.language.name}</span>
@@ -553,9 +578,9 @@
 	{/if}
 </div>
 
-<div class="reader" class:calm class:sheet-open={open && !!selected && !practising}>
+<div class="reader" class:zen class:sheet-open={open && !!selected && !practising}>
 	{#if highlight}
-		<div class="highlight-note card" role="status" class:calm>
+		<div class="highlight-note card" role="status">
 			<p class="from">From the Tutor</p>
 			{#if highlight.note}<p class="note-text">{highlight.note}</p>{/if}
 			{#if highlightHere}
@@ -567,7 +592,7 @@
 			{/if}
 		</div>
 	{/if}
-	<article class="page" class:calm class:practising={practising?.stage === 'run'} lang={data.language.code} {dir}>
+	<article class="page" class:zen class:practising={practising?.stage === 'run'} lang={data.language.code} {dir}>
 		{#each data.paragraphs as paragraph, p (p)}
 			<p>
 				{#each paragraph.sentences as sentence, s (s)}
@@ -665,7 +690,20 @@
 	</aside>
 </div>
 
-<footer class="end chrome" class:calm>
+{#if zen}
+	<nav class="zen-controls" class:shown={!idle} aria-label="Zen mode">
+		{#if data.position > 1}
+			<a class="button" href="/books/{data.book.id}/pages/{data.position - 1}" aria-label="Previous Page">←</a>
+		{/if}
+		<span class="position">Page {data.position} of {data.book.pageCount}</span>
+		{#if data.position < data.book.pageCount}
+			<a class="button" href="/books/{data.book.id}/pages/{data.position + 1}" aria-label="Next Page">→</a>
+		{/if}
+		<button type="button" onclick={toggleZen}>Exit zen</button>
+	</nav>
+{/if}
+
+<footer class="end chrome" class:zen>
 	<form method="POST" action="?/markRead" class="mark-read" use:enhance>
 		<button class="primary">Mark as read</button>
 		<button name="restKnown" value="true">Mark as read, rest Known</button>
@@ -785,11 +823,6 @@
 			background-color 0.6s,
 			box-shadow 0.6s;
 	}
-	/* Zen mode, idle: Status colours soften to a faint underline. */
-	.page.calm .word:not(.current) {
-		background: transparent;
-		box-shadow: inset 0 -0.12em var(--status, transparent);
-	}
 	.word {
 		position: relative;
 	}
@@ -812,7 +845,7 @@
 	.word[data-due='3']::after {
 		background: var(--due-3);
 	}
-	/* Zen mode: the selected Word's Translations, under it. */
+	/* Zen mode: the tapped Word's Translations, under it. */
 	.gloss {
 		position: absolute;
 		top: calc(100% + 0.3rem);
@@ -826,26 +859,89 @@
 		background: var(--surface);
 		color: var(--text);
 		box-shadow: 0 4px 14px rgb(0 0 0 / 0.12);
-		font: 0.95rem/1.4 var(--font-ui);
+		font: 1rem/1.4 var(--font-ui);
 		pointer-events: none;
 	}
-	.chrome,
-	.highlight-note,
-	.side {
-		transition: opacity 0.6s;
+	/* Zen mode: nothing but the text, plain, centred and a little larger. */
+	:global(html[data-zen] header.site),
+	.chrome.zen,
+	.end.zen,
+	.reader.zen .side,
+	.reader.zen .highlight-note {
+		display: none;
 	}
-	.chrome.calm,
-	.highlight-note.calm,
-	.reader.calm .side {
+	.reader.zen {
+		grid-template-columns: minmax(0, 38rem);
+		grid-template-areas: 'page';
+		justify-content: center;
+		margin-top: 3.5rem;
+		padding-bottom: 6rem;
+	}
+	.page.zen {
+		font-size: 1.45rem;
+		line-height: 2.05;
+	}
+	@media (max-width: 40rem) {
+		.reader.zen {
+			margin-top: 1.5rem;
+		}
+		.page.zen {
+			font-size: 1.28rem;
+			line-height: 1.9;
+		}
+	}
+	.page.zen .word {
+		background: transparent;
+		color: inherit;
+	}
+	.page.zen .word.multi,
+	.page.zen .sentence.highlighted {
+		text-decoration: none;
+	}
+	.page.zen .word[data-due]::after {
+		display: none;
+	}
+	/* The keyboard's place: a quiet tint rather than an outline. */
+	.page.zen .word.current {
+		outline: none;
+		background: color-mix(in srgb, var(--accent) 12%, transparent);
+	}
+	.zen-controls {
+		position: fixed;
+		bottom: 1.25rem;
+		left: 50%;
+		z-index: 4;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.4rem 0.5rem 0.4rem 0.9rem;
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--surface) 92%, transparent);
+		box-shadow: var(--shadow-lifted);
+		backdrop-filter: blur(8px);
 		opacity: 0;
+		transform: translate(-50%, 0.5rem);
 		pointer-events: none;
+		transition:
+			opacity 0.35s,
+			transform 0.35s;
 	}
-	:global(html[data-calm] header.site) {
-		opacity: 0;
-		pointer-events: none;
+	.zen-controls.shown {
+		opacity: 1;
+		transform: translate(-50%, 0);
+		pointer-events: auto;
 	}
-	:global(header.site) {
-		transition: opacity 0.6s;
+	.zen-controls .position {
+		color: var(--muted);
+		font-size: 0.85rem;
+		white-space: nowrap;
+	}
+	.zen-controls .button,
+	.zen-controls button {
+		padding: 0.3rem 0.75rem;
+		border-radius: 999px;
+		font-size: 0.85rem;
 	}
 	.toggles {
 		display: flex;
