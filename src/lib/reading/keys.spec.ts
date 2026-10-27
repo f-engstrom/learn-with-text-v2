@@ -27,6 +27,12 @@ describe('commandFor', () => {
 		expect(commandFor(press('ArrowRight', '', { shiftKey: true }), true)).toEqual({ kind: 'extend', by: -1 });
 	});
 
+	it('pastes a Translation with P, on any keyboard layout', () => {
+		expect(commandFor(press('p', 'KeyP'), false)).toEqual({ kind: 'paste' });
+		expect(commandFor(press('з', 'KeyP'), false)).toEqual({ kind: 'paste' });
+		expect(commandFor(press('v', 'KeyV', { metaKey: true }), false)).toBeUndefined();
+	});
+
 	it('moves by Sentence with up and down', () => {
 		expect(commandFor(press('ArrowDown'), false)).toEqual({ kind: 'sentence', by: 1 });
 		expect(commandFor(press('ArrowUp'), true)).toEqual({ kind: 'sentence', by: -1 });

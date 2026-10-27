@@ -7,6 +7,8 @@ export type Command =
 	| { kind: 'sentence'; by: 1 | -1 }
 	| { kind: 'status'; status: Status }
 	| { kind: 'open' }
+	/** Add the clipboard text as a Translation of the selection. */
+	| { kind: 'paste' }
 	| { kind: 'close' };
 
 export type KeyInput = Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'metaKey' | 'altKey' | 'shiftKey'>;
@@ -47,6 +49,7 @@ export function commandFor(e: KeyInput, rightToLeft: boolean): Command | undefin
 		case 'Escape':
 			return { kind: 'close' };
 	}
+	if (e.code === 'KeyP') return { kind: 'paste' };
 	const status = statusKeys[e.code];
 	return status && { kind: 'status', status };
 }

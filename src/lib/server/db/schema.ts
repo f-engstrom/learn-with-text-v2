@@ -68,6 +68,20 @@ export interface TranslationTable {
 	source: SourceValue;
 }
 
+export type DictionaryDisplay = 'embedded' | 'popup';
+
+export interface DictionaryTable {
+	id: Generated<number>;
+	language_id: number;
+	/** 1-based order of the Language's Dictionaries. */
+	position: number;
+	name: string;
+	/** Address with a `[TERM]` placeholder. */
+	url: string;
+	/** Shown in a tab next to the Term form, or opened in a popup window for sites that refuse embedding. */
+	display: DictionaryDisplay;
+}
+
 export interface Database {
 	language: LanguageTable;
 	book: BookTable;
@@ -75,4 +89,5 @@ export interface Database {
 	sentence: SentenceTable;
 	term: TermTable;
 	translation: TranslationTable;
+	dictionary: DictionaryTable;
 }

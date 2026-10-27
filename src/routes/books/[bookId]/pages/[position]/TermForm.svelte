@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { tick } from 'svelte';
 	import type { Language } from '#lib/server/domain/languages.ts';
 	import type { Source, TermView } from '#lib/server/domain/terms.ts';
 
@@ -40,6 +41,36 @@
 	let parent = $state(saved().parent);
 	let followsParent = $state(saved().followsParent);
 
+	let formElement: HTMLFormElement;
+	let clipboardError = $state<string | undefined>();
+
+	/** Reads the clipboard (the browser may ask for permission) and pastes it as a Translation. */
+	export async function pasteFromClipboard() {
+		let text: string;
+		try {
+			text = await navigator.clipboard.readText();
+		} catch {
+			clipboardError = "Couldn't read the clipboard. Press ⌘V (Ctrl+V) on the Page instead, or allow clipboard access.";
+			return;
+		}
+		await pasteText(text);
+	}
+
+	/** Adds `copied` as a Translation and saves, keeping anything else you changed here. */
+	export async function pasteText(copied: string) {
+		const text = copied.trim().replace(/\s+/gu, ' ');
+		if (text === '') {
+			clipboardError = 'The clipboard is empty.';
+			return;
+		}
+		clipboardError = undefined;
+		const empty = rows.find((r) => r.text.trim() === '');
+		if (empty) empty.text = text;
+		else rows.push({ text, source: 'you' });
+		await tick();
+		formElement.requestSubmit();
+	}
+
 	function move(from: number, to: number) {
 		const [row] = rows.splice(from, 1);
 		rows.splice(to, 0, row);
@@ -52,7 +83,7 @@
 {/if}
 <p><small>{term ? 'Term' : 'Unknown'}</small></p>
 
-<form method="POST" action="?/saveTerm" use:enhance>
+<form method="POST" action="?/saveTerm" use:enhance bind:this={formElement}>
 	<input type="hidden" name="languageId" value={language.id} />
 	<input type="hidden" name="text" value={term?.text ?? text} />
 
@@ -82,7 +113,13 @@
 				</li>
 			{/each}
 		</ol>
-		<button type="button" class="add" onclick={() => rows.push({ text: '', source: 'you' })}>Add Translation</button>
+		<div class="row-actions">
+			<button type="button" onclick={() => rows.push({ text: '', source: 'you' })}>Add Translation</button>
+			<button type="button" onclick={pasteFromClipboard} title="Adds the copied text and saves (key: P)">Paste as Translation</button>
+		</div>
+		{#if clipboardError}
+			<p class="error" role="alert">{clipboardError}</p>
+		{/if}
 	</fieldset>
 
 	<label>
@@ -205,8 +242,11 @@
 		margin: -0.5rem 0 0;
 		color: #555;
 	}
-	.delete,
-	.add {
+	.delete {
 		justify-self: start;
+	}
+	.row-actions {
+		display: flex;
+		gap: 0.35rem;
 	}
 </style>

@@ -8,6 +8,7 @@
 	import type { ReadingToken } from '#lib/server/domain/books.ts';
 	import type { Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
+	import Dictionaries from './Dictionaries.svelte';
 	import TermForm from './TermForm.svelte';
 
 	/** A Word, or a matched Multi-word Term, on the Page. */
@@ -40,6 +41,9 @@
 	/** Statuses set by keyboard that the server hasn't confirmed yet, so the colour changes at once. */
 	let pending = $state<Record<string, Status>>({});
 	let error = $state<string | undefined>();
+	let termForm = $state<ReturnType<typeof TermForm>>();
+	/** The open Dictionary tab, kept while you move between Words. */
+	let dictionary = $state<number | undefined>();
 	let wordElements = $state<HTMLElement[]>([]);
 	let dir: 'rtl' | 'ltr' = $derived(data.language.rightToLeft ? 'rtl' : 'ltr');
 
@@ -174,11 +178,27 @@
 			case 'open':
 				if (selected) open = true;
 				break;
+			case 'paste':
+				if (selected) pasteTranslation();
+				break;
 			case 'close':
 				open = false;
 				goTo(current);
 				break;
 		}
+	}
+
+	async function pasteTranslation(copied?: string) {
+		open = true;
+		await tick();
+		await (copied === undefined ? termForm?.pasteFromClipboard() : termForm?.pasteText(copied));
+	}
+
+	// ⌘V / Ctrl+V on the Page (not in a field) pastes as a Translation; unlike P it needs no permission.
+	function onpaste(e: ClipboardEvent) {
+		if (!selected || isTyping(e.target)) return;
+		e.preventDefault();
+		pasteTranslation(e.clipboardData?.getData('text/plain') ?? '');
 	}
 
 	function choose(word: Word, shift: boolean) {
@@ -188,7 +208,7 @@
 	}
 </script>
 
-<svelte:window {onkeydown} />
+<svelte:window {onkeydown} {onpaste} />
 
 <svelte:head>
 	<title>{data.book.title} · Reader</title>
@@ -211,7 +231,7 @@
 <p class="keys">
 	<small
 		><kbd>←</kbd> <kbd>→</kbd> Word · <kbd>Shift</kbd>+<kbd>←</kbd> <kbd>→</kbd> or Shift-click: phrase · <kbd>↑</kbd> <kbd>↓</kbd> Sentence · <kbd>1</kbd>–<kbd>4</kbd> Learning ·
-		<kbd>K</kbd> Known · <kbd>I</kbd> Ignored · <kbd>Enter</kbd> Term form · <kbd>Esc</kbd> close</small
+		<kbd>K</kbd> Known · <kbd>I</kbd> Ignored · <kbd>Enter</kbd> Term form · <kbd>P</kbd> or <kbd>⌘V</kbd> paste as Translation · <kbd>Esc</kbd> close</small
 	>
 </p>
 {#if error}
@@ -253,8 +273,9 @@
 	{#if open && selected}
 		<aside class="term-panel">
 			{#key `${selected.key}:${JSON.stringify(term)}`}
-				<TermForm language={data.language} text={selected.text} {term} error={form?.message} />
+				<TermForm bind:this={termForm} language={data.language} text={selected.text} {term} error={form?.message} />
 			{/key}
+			<Dictionaries dictionaries={data.dictionaries} term={selected.key} bind:chosen={dictionary} />
 			<button type="button" class="close" onclick={() => (open = false)}>Close</button>
 		</aside>
 	{/if}
@@ -263,7 +284,7 @@
 <style>
 	.reader {
 		display: grid;
-		grid-template-columns: minmax(0, 48rem) minmax(16rem, 22rem);
+		grid-template-columns: minmax(0, 48rem) minmax(18rem, 28rem);
 		gap: 2rem;
 		align-items: start;
 	}
@@ -340,6 +361,9 @@
 	.term-panel {
 		position: sticky;
 		top: 1rem;
+		/* With a Dictionary open the panel is taller than the window, so it scrolls on its own. */
+		max-height: calc(100vh - 2rem);
+		overflow-y: auto;
 		display: grid;
 		gap: 0.75rem;
 		padding: 1rem;
