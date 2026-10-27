@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { deserialize, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { tick, untrack } from 'svelte';
+	import { onMount, tick, untrack } from 'svelte';
 	import { moveCursor } from '#lib/reading/cursor.ts';
 	import { commandFor } from '#lib/reading/keys.ts';
 	import { termKey } from '#lib/normalise.ts';
@@ -47,6 +47,46 @@
 	let dictionary = $state<number | undefined>();
 	let wordElements = $state<HTMLElement[]>([]);
 	let dir: 'rtl' | 'ltr' = $derived(data.language.rightToLeft ? 'rtl' : 'ltr');
+
+	/** Zen mode: after a few idle seconds everything but the text fades, and the selection shows its Translations. */
+	let zen = $state(false);
+	let idle = $state(false);
+	let idleTimer: ReturnType<typeof setTimeout> | undefined;
+	const zenKey = 'reader.zen';
+	let calm = $derived(zen && idle && !open);
+	let gloss = $derived(zen && !open && term ? term.translations.map((t) => t.text).join('; ') : '');
+
+	onMount(() => {
+		try {
+			zen = localStorage.getItem(zenKey) === 'on';
+		} catch {}
+		wake();
+		return () => {
+			clearTimeout(idleTimer);
+			delete document.documentElement.dataset.calm;
+		};
+	});
+
+	// The site header lives in the layout, so it fades by a flag on the page root.
+	$effect(() => {
+		if (calm) document.documentElement.dataset.calm = '';
+		else delete document.documentElement.dataset.calm;
+	});
+
+	/** Brings everything back, and fades it again after three idle seconds while zen mode is on. */
+	function wake() {
+		idle = false;
+		clearTimeout(idleTimer);
+		if (zen) idleTimer = setTimeout(() => (idle = true), 3000);
+	}
+
+	function toggleZen() {
+		zen = !zen;
+		try {
+			localStorage.setItem(zenKey, zen ? 'on' : 'off');
+		} catch {}
+		wake();
+	}
 
 	const statusOf = (key: string) => pending[key] ?? data.terms[key]?.status ?? 'unknown';
 	const inPhrase = (index: number) => range !== undefined && range[0] < range[1] && index >= range[0] && index <= range[1];
@@ -169,6 +209,8 @@
 	function onkeydown(e: KeyboardEvent) {
 		if (e.defaultPrevented) return;
 		const command = commandFor(e, data.language.rightToLeft);
+		// Reading on with the keyboard keeps zen mode calm; anything else brings the screen back.
+		if (!command || !['move', 'sentence', 'extend', 'status'].includes(command.kind)) wake();
 		// While typing in the Term form, only Escape (close) applies.
 		if (!command || (isTyping(e.target) && command.kind !== 'close')) return;
 		if (command.kind === 'open' && isControl(e.target)) return;
@@ -189,6 +231,9 @@
 				break;
 			case 'paste':
 				if (selected) pasteTranslation();
+				break;
+			case 'zen':
+				toggleZen();
 				break;
 			case 'close':
 				open = false;
@@ -217,7 +262,7 @@
 	}
 </script>
 
-<svelte:window {onkeydown} {onpaste} />
+<svelte:window {onkeydown} {onpaste} onmousemove={wake} onpointerdown={wake} />
 
 <svelte:head>
 	<title>{data.book.title} · Reader</title>
@@ -241,6 +286,8 @@
 		<dd>Paste as Translation</dd>
 		<dt><kbd>Esc</kbd></dt>
 		<dd>Close</dd>
+		<dt><kbd>Z</kbd></dt>
+		<dd>Zen mode</dd>
 	</dl>
 {/snippet}
 
@@ -263,17 +310,20 @@
 	</nav>
 {/snippet}
 
-<header class="book">
-	<h1 lang={data.language.code} {dir}>{data.book.title}</h1>
-	<span class="tag">{data.language.name}</span>
-</header>
-{@render pages()}
-{#if error}
-	<p class="error" role="alert">{error}</p>
-{/if}
+<div class="chrome" class:calm>
+	<header class="book">
+		<h1 lang={data.language.code} {dir}>{data.book.title}</h1>
+		<span class="tag">{data.language.name}</span>
+		<button type="button" class="zen-toggle" aria-pressed={zen} onclick={toggleZen} title="Zen mode (Z)">Zen</button>
+	</header>
+	{@render pages()}
+	{#if error}
+		<p class="error" role="alert">{error}</p>
+	{/if}
+</div>
 
-<div class="reader">
-	<article class="page" lang={data.language.code} {dir}>
+<div class="reader" class:calm>
+	<article class="page" class:calm lang={data.language.code} {dir}>
 		{#each data.paragraphs as paragraph, p (p)}
 			<p>
 				{#each paragraph.sentences as sentence, s (s)}
@@ -290,7 +340,7 @@
 									onmousedown={(e) => e.shiftKey && e.preventDefault()}
 									onclick={(e) => choose(word, e.shiftKey)}
 									onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), choose(word, false))}
-									>{word.text}</span
+									>{word.text}{#if gloss && range?.[0] === word.index}<span class="gloss" aria-hidden="true">{gloss}</span>{/if}</span
 								>{:else}{token.text}{/if}
 						{/each}
 					</span>
@@ -335,7 +385,7 @@
 	</aside>
 </div>
 
-<footer class="end">
+<footer class="end chrome" class:calm>
 	<form method="POST" action="?/markRead" class="mark-read" use:enhance>
 		<button class="primary">Mark as read</button>
 		<button name="restKnown" value="true">Mark as read, rest Known</button>
@@ -416,19 +466,77 @@
 		text-underline-offset: 0.25em;
 	}
 	.unknown {
-		background: var(--status-unknown);
+		--status: var(--status-unknown);
 	}
 	.learning1 {
-		background: var(--status-learning1);
+		--status: var(--status-learning1);
 	}
 	.learning2 {
-		background: var(--status-learning2);
+		--status: var(--status-learning2);
 	}
 	.learning3 {
-		background: var(--status-learning3);
+		--status: var(--status-learning3);
 	}
 	.learning4 {
-		background: var(--status-learning4);
+		--status: var(--status-learning4);
+	}
+	.word,
+	.swatch {
+		background: var(--status, transparent);
+		transition:
+			background-color 0.6s,
+			box-shadow 0.6s;
+	}
+	/* Zen mode, idle: Status colours soften to a faint underline. */
+	.page.calm .word:not(.current) {
+		background: transparent;
+		box-shadow: inset 0 -0.12em var(--status, transparent);
+	}
+	.word {
+		position: relative;
+	}
+	/* Zen mode: the selected Word's Translations, under it. */
+	.gloss {
+		position: absolute;
+		top: calc(100% + 0.3rem);
+		inset-inline-start: 0;
+		z-index: 1;
+		width: max-content;
+		max-width: 18rem;
+		padding: 0.2rem 0.55rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface);
+		color: var(--text);
+		box-shadow: 0 4px 14px rgb(0 0 0 / 0.12);
+		font: 0.95rem/1.4 var(--font-ui);
+		pointer-events: none;
+	}
+	.chrome,
+	.side {
+		transition: opacity 0.6s;
+	}
+	.chrome.calm,
+	.reader.calm .side {
+		opacity: 0;
+		pointer-events: none;
+	}
+	:global(html[data-calm] header.site) {
+		opacity: 0;
+		pointer-events: none;
+	}
+	:global(header.site) {
+		transition: opacity 0.6s;
+	}
+	.zen-toggle {
+		margin-inline-start: auto;
+		padding-block: 0.2rem;
+		font-size: 0.85rem;
+	}
+	.zen-toggle[aria-pressed='true'] {
+		background: var(--accent-soft);
+		border-color: var(--accent);
+		color: var(--accent);
 	}
 	.word.ignored {
 		color: var(--status-ignored);

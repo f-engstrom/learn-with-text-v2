@@ -27,6 +27,11 @@ describe('commandFor', () => {
 		expect(commandFor(press('ArrowRight', '', { shiftKey: true }), true)).toEqual({ kind: 'extend', by: -1 });
 	});
 
+	it('toggles zen mode with Z, on any keyboard layout', () => {
+		expect(commandFor(press('z', 'KeyZ'), false)).toEqual({ kind: 'zen' });
+		expect(commandFor(press('я', 'KeyZ'), false)).toEqual({ kind: 'zen' });
+	});
+
 	it('pastes a Translation with P, on any keyboard layout', () => {
 		expect(commandFor(press('p', 'KeyP'), false)).toEqual({ kind: 'paste' });
 		expect(commandFor(press('з', 'KeyP'), false)).toEqual({ kind: 'paste' });

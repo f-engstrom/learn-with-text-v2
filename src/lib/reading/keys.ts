@@ -9,6 +9,8 @@ export type Command =
 	| { kind: 'open' }
 	/** Add the clipboard text as a Translation of the selection. */
 	| { kind: 'paste' }
+	/** Zen mode on or off. */
+	| { kind: 'zen' }
 	| { kind: 'close' };
 
 export type KeyInput = Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'metaKey' | 'altKey' | 'shiftKey'>;
@@ -50,6 +52,7 @@ export function commandFor(e: KeyInput, rightToLeft: boolean): Command | undefin
 			return { kind: 'close' };
 	}
 	if (e.code === 'KeyP') return { kind: 'paste' };
+	if (e.code === 'KeyZ') return { kind: 'zen' };
 	const status = statusKeys[e.code];
 	return status && { kind: 'status', status };
 }
