@@ -1,73 +1,78 @@
 /* The Reader's shared look: colour tokens (light and dark), type, and the base controls every screen uses. */
 
+/* Calm paper: warm page, ink text, a serif for reading and headings, soft surfaces. */
 :root {
 	color-scheme: light dark;
 
-	--bg: #f6f5f1;
-	--surface: #ffffff;
-	--surface-2: #f0eee8;
-	--text: #1f2328;
-	--muted: #5d6167;
-	--border: #e0dcd3;
-	--accent: #2f5fb3;
-	--accent-soft: #e5edf9;
-	--on-accent: #ffffff;
-	--danger: #b3261e;
-	--ok: #2f7a3a;
+	--bg: #f6f1e7;
+	--surface: #fffcf6;
+	--surface-2: #f1eadc;
+	--text: #2a251f;
+	--muted: #7a6f61;
+	--border: #e6dccb;
+	--accent: #2e4f7c;
+	--accent-soft: #e4e9f1;
+	--on-accent: #fffcf6;
+	--danger: #a33a2c;
+	--ok: #4a6b3a;
+	--shadow: 0 1px 2px rgb(70 50 20 / 0.05), 0 6px 20px -8px rgb(70 50 20 / 0.12);
+	--shadow-lifted: 0 2px 4px rgb(70 50 20 / 0.06), 0 18px 40px -12px rgb(70 50 20 / 0.22);
 
-	/* Status colours, shared by the reading screen, the Term form and the Term list. */
-	--status-unknown: #d6e8fb;
-	--status-learning1: #f8c2aa;
-	--status-learning2: #f9d6a8;
-	--status-learning3: #f3e4a8;
-	--status-learning4: #e0ebb8;
-	--status-ignored: #8a8f96;
+	/* Status colours: light tints so a page of Unknown Words still reads as text. */
+	--status-unknown: #e3eaf3;
+	--status-learning1: #f5d5c6;
+	--status-learning2: #f3e0c2;
+	--status-learning3: #ece6c2;
+	--status-learning4: #dfe7cc;
+	--status-ignored: #9a9183;
 
 	/* Due marks, from just Due to long overdue; the -text variants are for words on a surface. */
-	--due-1: #e3a21a;
-	--due-2: #e46a1c;
-	--due-3: #d0281f;
-	--due-1-text: #9a6700;
-	--due-2-text: #b4500f;
-	--due-3-text: #b3261e;
+	--due-1: #d9a033;
+	--due-2: #d4703a;
+	--due-3: #b9412f;
+	--due-1-text: #8a6514;
+	--due-2-text: #9c4c1f;
+	--due-3-text: #a33a2c;
 
-	--font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-	/* Reading text: a serif with Latin and Cyrillic; Chinese and Farsi fall back to the system's fonts. */
-	--font-text: Charter, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+	--font-ui: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+	/* Reading text and headings: a book serif with Latin and Cyrillic; Chinese and Farsi fall back to the system's fonts. */
+	--font-text: 'Iowan Old Style', Charter, 'Palatino Linotype', ui-serif, Georgia, serif;
 
-	--radius: 0.5rem;
-	--radius-lg: 0.75rem;
-	--width: 76rem;
+	--radius: 0.55rem;
+	--radius-lg: 0.9rem;
+	--width: 74rem;
 	--gutter: 1.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--bg: #15171b;
-		--surface: #1d2025;
-		--surface-2: #252930;
-		--text: #e6e7e9;
-		--muted: #a2a7ae;
-		--border: #343941;
-		--accent: #8db5f7;
-		--accent-soft: #223452;
-		--on-accent: #10213d;
-		--danger: #f2a39c;
-		--ok: #8fd19a;
+		--bg: #1a1815;
+		--surface: #221f1b;
+		--surface-2: #2b2722;
+		--text: #ece5d8;
+		--muted: #a89d8c;
+		--border: #3a342c;
+		--accent: #9db6dc;
+		--accent-soft: #2a3342;
+		--on-accent: #16140f;
+		--danger: #e79a8c;
+		--ok: #a9c48f;
+		--shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 20px -8px rgb(0 0 0 / 0.5);
+		--shadow-lifted: 0 2px 4px rgb(0 0 0 / 0.35), 0 18px 40px -12px rgb(0 0 0 / 0.6);
 
-		--status-unknown: #1f3a5c;
-		--status-learning1: #6e3424;
-		--status-learning2: #6c4a20;
-		--status-learning3: #5d5420;
-		--status-learning4: #43522a;
-		--status-ignored: #8a8f96;
+		--status-unknown: #272d36;
+		--status-learning1: #4e3128;
+		--status-learning2: #4b3b26;
+		--status-learning3: #444027;
+		--status-learning4: #363f2a;
+		--status-ignored: #857b6c;
 
-		--due-1: #f0b73e;
-		--due-2: #f58b4c;
-		--due-3: #ff5a4f;
-		--due-1-text: #f0c060;
-		--due-2-text: #f8a070;
-		--due-3-text: #ff8a80;
+		--due-1: #e0ac47;
+		--due-2: #e48552;
+		--due-3: #e2624f;
+		--due-1-text: #e6bd6c;
+		--due-2-text: #eba07a;
+		--due-3-text: #ee8a7a;
 	}
 }
 
@@ -85,6 +90,12 @@ html {
 	color: var(--text);
 	font: 17px/1.55 var(--font-ui);
 	-webkit-text-size-adjust: 100%;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+::selection {
+	background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 body {
@@ -100,12 +111,14 @@ a {
 h1,
 h2,
 h3 {
-	line-height: 1.25;
-	letter-spacing: -0.01em;
+	font-family: var(--font-text);
+	font-weight: 600;
+	line-height: 1.2;
+	letter-spacing: -0.005em;
 }
 
 h1 {
-	font-size: 1.85rem;
+	font-size: 2.1rem;
 	margin: 0 0 1rem;
 }
 
@@ -143,11 +156,17 @@ button,
 	line-height: 1.3;
 	text-decoration: none;
 	cursor: pointer;
+	box-shadow: 0 1px 1px rgb(70 50 20 / 0.04);
+	transition:
+		border-color 0.15s,
+		background-color 0.15s,
+		box-shadow 0.15s;
 }
 
 button:hover:not(:disabled),
 .button:hover {
-	border-color: var(--accent);
+	border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+	background: color-mix(in srgb, var(--accent-soft) 40%, var(--surface));
 }
 
 button:disabled {
@@ -163,6 +182,12 @@ button.primary,
 	font-weight: 600;
 }
 
+button.primary:hover:not(:disabled),
+.button.primary:hover {
+	background: color-mix(in srgb, var(--accent) 88%, var(--text));
+	border-color: color-mix(in srgb, var(--accent) 88%, var(--text));
+}
+
 button.danger {
 	color: var(--danger);
 }
@@ -170,12 +195,27 @@ button.danger {
 input:not([type='checkbox'], [type='radio'], [type='file']),
 select,
 textarea {
-	padding: 0.45rem 0.6rem;
+	padding: 0.5rem 0.65rem;
 	border: 1px solid var(--border);
 	border-radius: var(--radius);
-	background: var(--surface);
+	background: color-mix(in srgb, var(--surface) 70%, var(--bg));
 	max-width: 100%;
 	box-sizing: border-box;
+	transition:
+		border-color 0.15s,
+		background-color 0.15s;
+}
+
+input:not([type='checkbox'], [type='radio'], [type='file']):focus,
+select:focus,
+textarea:focus {
+	background: var(--surface);
+	border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+	accent-color: var(--accent);
 }
 
 textarea {
@@ -210,19 +250,21 @@ kbd {
 /* Panels and tables */
 
 .card {
-	padding: 1.25rem 1.5rem;
-	border: 1px solid var(--border);
+	padding: 1.35rem 1.6rem;
+	border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 	border-radius: var(--radius-lg);
 	background: var(--surface);
+	box-shadow: var(--shadow);
 }
 
 .table-wrap {
 	/* Contains absolutely placed children (e.g. .visually-hidden labels) so only the table scrolls. */
 	position: relative;
 	overflow-x: auto;
-	border: 1px solid var(--border);
+	border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 	border-radius: var(--radius-lg);
 	background: var(--surface);
+	box-shadow: var(--shadow);
 }
 
 table.data {
@@ -238,15 +280,22 @@ table.data td {
 }
 
 table.data th {
-	background: var(--surface-2);
+	padding-block: 0.8rem 0.6rem;
+	border-bottom: 1px solid var(--border);
 	color: var(--muted);
-	font-size: 0.85rem;
+	font-size: 0.72rem;
 	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
 	white-space: nowrap;
 }
 
 table.data td {
-	border-top: 1px solid var(--border);
+	border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+table.data tbody tr:first-child td {
+	border-top: none;
 }
 
 table.data tbody tr:hover td {
@@ -290,12 +339,15 @@ table.data tbody tr:hover td {
 
 .tag {
 	display: inline-block;
-	padding: 0.05rem 0.45rem;
+	padding: 0.1rem 0.55rem;
 	border-radius: 999px;
 	background: var(--surface-2);
 	color: var(--muted);
-	font-size: 0.8rem;
-	font-weight: 500;
+	font-family: var(--font-ui);
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
 	white-space: nowrap;
 }
 

@@ -109,7 +109,9 @@
 		border-color: var(--accent);
 	}
 	.now strong {
-		font-size: 1.15rem;
+		font-family: var(--font-text);
+		font-size: 1.3rem;
+		font-weight: 600;
 	}
 	.now .label {
 		color: var(--muted);
@@ -143,12 +145,16 @@
 		margin: 0.75rem 0 0;
 		font-size: 0.9rem;
 	}
+	/* Book titles in the book serif, in ink; the accent only on hover. */
 	.title a {
-		font-weight: 500;
+		color: var(--text);
+		font-family: var(--font-text);
+		font-size: 1.12rem;
+		font-weight: 600;
 		text-decoration: none;
 	}
 	.title a:hover {
-		text-decoration: underline;
+		color: var(--accent);
 	}
 	.share {
 		display: inline-flex;

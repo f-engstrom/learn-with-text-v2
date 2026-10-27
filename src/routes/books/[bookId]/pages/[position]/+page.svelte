@@ -732,24 +732,28 @@
 	}
 	.page {
 		font-family: var(--font-text);
-		font-size: 1.3rem;
-		line-height: 1.95;
+		font-size: 1.32rem;
+		line-height: 2;
+		letter-spacing: 0.003em;
 	}
 	.page p {
 		margin: 0 0 1.1em;
 	}
 	/* Inline spans, not buttons: a button would let a line break before the punctuation after it. */
 	.word {
-		padding: 0.05em 0.08em;
-		border-radius: 0.25em;
+		padding: 0.02em 0.06em;
+		border-radius: 0.2em;
 		cursor: pointer;
+	}
+	.word:hover {
+		filter: brightness(0.96);
 	}
 	.word:focus {
 		outline: none;
 	}
 	.word.current {
 		outline: 2px solid var(--accent);
-		outline-offset: 1px;
+		outline-offset: 2px;
 	}
 	.word.phrase {
 		box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
@@ -878,7 +882,7 @@
 	/* The Tutor's Highlight: a soft band over its Sentences. */
 	/* The Tutor's Highlight: a continuous accent underline, apart from the Status colours. */
 	.sentence.highlighted {
-		text-decoration: underline var(--accent) 0.15em;
+		text-decoration: underline color-mix(in srgb, var(--accent) 55%, transparent) 0.11em;
 		text-underline-offset: 0.35em;
 		text-decoration-skip-ink: none;
 	}

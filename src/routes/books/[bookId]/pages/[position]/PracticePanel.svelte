@@ -102,9 +102,17 @@
 	.subsets {
 		display: grid;
 		gap: 0.4rem;
+		width: 100%;
 		margin: 0;
 		padding: 0;
 		list-style: none;
+	}
+	.subsets button {
+		width: 100%;
+		padding-block: 0.55rem;
+	}
+	.subsets .count {
+		margin-inline-start: auto;
 	}
 	.count {
 		color: var(--muted);

@@ -41,8 +41,9 @@
 		padding-inline: var(--gutter);
 	}
 	.site {
-		border-bottom: 1px solid var(--border);
-		background: var(--surface);
+		border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+		background: color-mix(in srgb, var(--bg) 85%, transparent);
+		backdrop-filter: blur(8px);
 	}
 	.site .inner {
 		display: flex;
@@ -53,8 +54,10 @@
 	}
 	.brand {
 		color: var(--text);
-		font-weight: 700;
-		font-size: 1.1rem;
+		font-family: var(--font-text);
+		font-style: italic;
+		font-weight: 600;
+		font-size: 1.3rem;
 		letter-spacing: -0.01em;
 		text-decoration: none;
 	}
@@ -75,8 +78,8 @@
 		background: var(--surface-2);
 	}
 	nav a[aria-current='page'] {
-		color: var(--accent);
-		background: var(--accent-soft);
+		color: var(--text);
+		background: var(--surface-2);
 	}
 	main {
 		padding-block: 2rem 4rem;

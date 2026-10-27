@@ -144,11 +144,14 @@
 {/if}
 
 <style>
+	/* One card in the middle of the page, like a page of a book. */
 	.review {
 		display: grid;
-		gap: 1rem;
+		gap: 1.1rem;
 		justify-items: start;
-		max-width: 44rem;
+		max-width: 40rem;
+		margin-inline: auto;
+		padding: 2rem 2.25rem;
 	}
 	.review p,
 	.done p {
@@ -158,7 +161,8 @@
 		display: grid;
 		gap: 1rem;
 		justify-items: start;
-		max-width: 44rem;
+		max-width: 40rem;
+		margin-inline: auto;
 	}
 	.meta {
 		display: flex;
@@ -169,11 +173,11 @@
 	}
 	.example {
 		margin: 0;
-		padding-inline-start: 1rem;
+		padding-inline-start: 1.1rem;
 		border-inline-start: 3px solid var(--border);
 		font-family: var(--font-text);
-		font-size: 1.35rem;
-		line-height: 1.7;
+		font-size: 1.5rem;
+		line-height: 1.65;
 	}
 	.example strong {
 		background: var(--accent-soft);
