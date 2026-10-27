@@ -14,6 +14,13 @@
 
 <h2>Books</h2>
 <p><a href="/books/new">New Book</a></p>
+<p class="find">
+	Find something to read:
+	{#each data.languages as language, i (language.id)}{#if i > 0}{' · '}{/if}<a href="/languages/{language.id}/suggestions"
+			>{language.name}</a
+		>{/each}
+	<small>(<a href="/topics">Topics</a>)</small>
+</p>
 {#if data.books.length === 0}
 	<p>No Books yet.</p>
 {:else}

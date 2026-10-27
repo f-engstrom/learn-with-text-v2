@@ -8,6 +8,9 @@ export interface LanguageTable {
 	right_to_left: number;
 	/** JSON object mapping characters to their replacement ('' removes them). */
 	character_map: string;
+	/** The Fit range for Suggestions, as Unknown shares from 0 to 1. */
+	fit_min: Generated<number>;
+	fit_max: Generated<number>;
 }
 
 export interface BookTable {
@@ -18,6 +21,8 @@ export interface BookTable {
 	/** The Bookmark: 1-based Page position, and 1-based Sentence position on that Page. */
 	bookmark_page: Generated<number>;
 	bookmark_sentence: Generated<number>;
+	/** The web address a Book came from; null for pasted text and files. */
+	url: string | null;
 }
 
 export interface PageTable {
@@ -88,6 +93,12 @@ export interface BookWordTable {
 	normalised: string;
 }
 
+/** A subject you like reading about, in English. */
+export interface TopicTable {
+	id: Generated<number>;
+	text: string;
+}
+
 export interface Database {
 	language: LanguageTable;
 	book: BookTable;
@@ -97,4 +108,5 @@ export interface Database {
 	translation: TranslationTable;
 	dictionary: DictionaryTable;
 	book_word: BookWordTable;
+	topic: TopicTable;
 }

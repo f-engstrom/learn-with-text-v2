@@ -14,6 +14,8 @@ export interface NewBook {
 	languageId: number;
 	title: string;
 	text: string;
+	/** The web address it came from, if any. */
+	url?: string;
 }
 
 export interface BookSummary {
@@ -110,7 +112,7 @@ export async function createBook(db: Kysely<Database>, input: NewBook): Promise<
 	return db.transaction().execute(async (trx) => {
 		const book = await trx
 			.insertInto('book')
-			.values({ language_id: language.id, title, created_at: new Date().toISOString() })
+			.values({ language_id: language.id, title, url: input.url ?? null, created_at: new Date().toISOString() })
 			.returning('id')
 			.executeTakeFirstOrThrow();
 
