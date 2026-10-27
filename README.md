@@ -18,7 +18,13 @@ npm run build
 npm start
 ```
 
-The build bakes in that address (SvelteKit checks it before accepting any form). For another one, set it at build time and start to match, e.g. `ORIGIN=http://localhost:4000 npm run build` then `PORT=4000 npm start`.
+Like `vite --host`, it serves this computer only unless you add `--host`, which also makes it reachable on your network and prints the addresses:
+
+```sh
+npm start -- --host
+```
+
+`PORT` and `HOST` override the port and the address it listens on. [serve.js](serve.js) marks every request as plain http, so forms work at any address you open it by (localhost, the network address, the computer's `.local` name). The Reader has no login: anyone on the network can read and change it.
 
 ```sh
 npm test        # unit tests
