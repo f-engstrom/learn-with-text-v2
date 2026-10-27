@@ -64,9 +64,19 @@
 			return;
 		}
 		clipboardError = undefined;
-		const empty = rows.find((r) => r.text.trim() === '');
-		if (empty) empty.text = text;
-		else rows.push({ text, source: 'you' });
+		await addTranslation(text, 'you');
+	}
+
+	/**
+	 * Adds a Translation (into the first empty row) and saves, keeping anything else you changed
+	 * here. A Translation the Term already has isn't added twice.
+	 */
+	export async function addTranslation(text: string, source: Source) {
+		if (!rows.some((r) => r.text.trim().toLocaleLowerCase() === text.toLocaleLowerCase())) {
+			const empty = rows.find((r) => r.text.trim() === '');
+			if (empty) Object.assign(empty, { text, source });
+			else rows.push({ text, source });
+		}
 		await tick();
 		formElement.requestSubmit();
 	}
@@ -103,7 +113,14 @@
 			{#each rows as row, i (row)}
 				<li>
 					<input type="hidden" name="translationId" value={row.id ?? ''} />
-					<input name="translationText" bind:value={row.text} aria-label="Translation {i + 1}" autocomplete="off" />
+					<input type="hidden" name="translationSource" value={row.source} />
+					<input
+						name="translationText"
+						bind:value={row.text}
+						oninput={() => (row.source = 'you')}
+						aria-label="Translation {i + 1}"
+						autocomplete="off"
+					/>
 					{#if sourceLabels[row.source]}<small class="source">{sourceLabels[row.source]}</small>{/if}
 					<button type="button" aria-label="Move up" disabled={i === 0} onclick={() => move(i, i - 1)}>↑</button>
 					<button type="button" aria-label="Move down" disabled={i === rows.length - 1} onclick={() => move(i, i + 1)}

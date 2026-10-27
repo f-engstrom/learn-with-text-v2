@@ -283,3 +283,22 @@ describe('Parents', () => {
 		expect(await get('читала')).toMatchObject({ parent: undefined, followsParent: false, status: 'learning1' });
 	});
 });
+
+describe('Translation Sources', () => {
+	it('keeps the Source a new Translation was submitted with, until you edit it', async () => {
+		const { db, byName } = await setup();
+		const save = (translations: { id?: number; text: string; source?: string }[]) =>
+			saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'learning1', translations });
+		const get = async () => (await findTerms(db, byName.Russian, ['кот'])).кот.translations;
+
+		await save([{ text: 'cat', source: 'wiktionary' }, { text: 'tomcat', source: 'nonsense' }]);
+		const [cat, tomcat] = await get();
+		expect([cat.source, tomcat.source]).toEqual(['wiktionary', 'you']);
+
+		await save([{ id: cat.id, text: 'cat', source: 'wiktionary' }, { id: tomcat.id, text: 'tomcat', source: 'wiktionary' }]);
+		expect((await get()).map((t) => t.source)).toEqual(['wiktionary', 'you']);
+
+		await save([{ id: (await get())[0].id, text: 'a cat', source: 'wiktionary' }]);
+		expect((await get()).map((t) => t.source)).toEqual(['you']);
+	});
+});

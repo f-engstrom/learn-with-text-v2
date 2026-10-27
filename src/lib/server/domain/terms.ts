@@ -34,6 +34,14 @@ export interface TermView {
 export interface TranslationInput {
 	id?: number;
 	text: string;
+	/** Who added a new Translation (e.g. picked from the Wiktionary panel); you by default. */
+	source?: string;
+}
+
+export const SOURCES: readonly Source[] = ['you', 'wiktionary', 'tutor'];
+
+export function isSource(value: string | undefined): value is Source {
+	return value !== undefined && (SOURCES as readonly string[]).includes(value);
 }
 
 export interface SaveTerm {
@@ -57,7 +65,8 @@ export function isStatus(value: string): value is Status {
 /**
  * Creates the Term for `text`, or updates the one with the same Normalised form.
  * If given, `translations` replace the Translations, in order. One that keeps an existing
- * Translation's id and text keeps its Source; anything new or edited is from you.
+ * Translation's id and text keeps its Source, and an edited one is from you. A new one has the
+ * Source it was submitted with, or you.
  */
 export async function saveTerm(db: Kysely<Database>, input: SaveTerm): Promise<number> {
 	const language = await getLanguage(db, input.languageId);
@@ -70,7 +79,7 @@ export async function saveTerm(db: Kysely<Database>, input: SaveTerm): Promise<n
 	if (parent && parent.normalised === normalised) throw new InvalidTerm("A Term can't be its own Parent.");
 	const pronunciation = input.pronunciation?.trim();
 	const translations = input.translations
-		?.map((t) => ({ id: t.id, text: t.text.trim() }))
+		?.map((t) => ({ ...t, text: t.text.trim() }))
 		.filter((t) => t.text !== '');
 
 	return db.transaction().execute(async (trx) => {
@@ -130,12 +139,9 @@ export async function saveTerm(db: Kysely<Database>, input: SaveTerm): Promise<n
 				.values(
 					translations.map((t, i) => {
 						const kept = t.id === undefined ? undefined : previous.get(t.id);
-						return {
-							term_id: id,
-							position: i + 1,
-							text: t.text,
-							source: kept && kept.text === t.text ? kept.source : 'you'
-						};
+						// An existing Translation keeps its Source until you edit it; a new one says where it came from.
+						const source = kept ? (kept.text === t.text ? kept.source : 'you') : isSource(t.source) ? t.source : 'you';
+						return { term_id: id, position: i + 1, text: t.text, source };
 					})
 				)
 				.execute();

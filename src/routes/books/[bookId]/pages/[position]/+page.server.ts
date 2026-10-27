@@ -16,6 +16,7 @@ export const actions: Actions = {
 	saveTerm: async ({ request }) => {
 		const form = await request.formData();
 		const ids = form.getAll('translationId').map(String);
+		const sources = form.getAll('translationSource').map(String);
 		try {
 			await saveTerm(database(), {
 				languageId: Number(form.get('languageId')),
@@ -26,7 +27,8 @@ export const actions: Actions = {
 				followsParent: form.get('followsParent') === 'on',
 				translations: form.getAll('translationText').map((text, i) => ({
 					id: ids[i] ? Number(ids[i]) : undefined,
-					text: String(text)
+					text: String(text),
+					source: sources[i]
 				}))
 			});
 		} catch (e) {

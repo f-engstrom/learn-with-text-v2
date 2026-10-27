@@ -10,6 +10,7 @@
 	import type { PageProps } from './$types';
 	import Dictionaries from './Dictionaries.svelte';
 	import TermForm from './TermForm.svelte';
+	import WiktionaryPanel from './WiktionaryPanel.svelte';
 
 	/** A Word, or a matched Multi-word Term, on the Page. */
 	type Word = ReadingToken & { key: string; index: number; sentence: number };
@@ -275,6 +276,13 @@
 			{#key `${selected.key}:${JSON.stringify(term)}`}
 				<TermForm bind:this={termForm} language={data.language} text={selected.text} {term} error={form?.message} />
 			{/key}
+			<WiktionaryPanel
+				language={data.language}
+				termKey={selected.key}
+				text={selected.text}
+				translations={term?.translations.map((t) => t.text) ?? []}
+				onadd={(definition) => termForm?.addTranslation(definition, 'wiktionary')}
+			/>
 			<Dictionaries dictionaries={data.dictionaries} term={selected.key} bind:chosen={dictionary} />
 			<button type="button" class="close" onclick={() => (open = false)}>Close</button>
 		</aside>
