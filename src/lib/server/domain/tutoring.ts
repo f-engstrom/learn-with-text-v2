@@ -69,6 +69,36 @@ export async function adjustLearning(
 	return { from: term.status, to };
 }
 
+/**
+ * Links a Term to its Parent, usually its dictionary form (набережной → набережная), creating the
+ * Parent at the Term's Status if it has no Term yet. The Term keeps its Status, Translations and
+ * Follows Parent choice. A Term that Follows its Parent isn't moved to another one: the two would
+ * share a Status, which could change a Term the learner marked Known.
+ */
+export async function linkParent(
+	db: Kysely<Database>,
+	input: { languageId: number; text: string; parent: string }
+): Promise<{ term: string; parent: string; previousParent?: string; createdParent: boolean }> {
+	const language = await getLanguage(db, input.languageId);
+	if (!language) throw new InvalidTerm('Unknown Language.');
+	const key = termKey(input.text, language);
+	const parentKey = termKey(input.parent, language);
+	const found = await findTerms(db, language.id, [key, parentKey]);
+	const term = found[key];
+	if (!term) throw new InvalidTerm(`“${input.text}” is Unknown; save a Gloss first to give it a Term.`);
+	if (term.followsParent && term.parent && term.parent.id !== found[parentKey]?.id) {
+		throw new InvalidTerm(`“${term.text}” follows its Parent “${term.parent.text}”; the learner changes that in the Reader.`);
+	}
+	await saveTerm(db, { languageId: language.id, text: term.text, status: term.status, parent: input.parent });
+	const parent = (await findTerms(db, language.id, [parentKey]))[parentKey];
+	return {
+		term: term.text,
+		parent: parent?.text ?? input.parent,
+		...(term.parent && term.parent.id !== parent?.id ? { previousParent: term.parent.text } : {}),
+		createdParent: !found[parentKey]
+	};
+}
+
 function describe(status: Status | 'unknown'): string {
 	return { unknown: 'Unknown', known: 'Known', ignored: 'Ignored' }[status as string] ?? `at Learning ${status.slice(-1)}`;
 }

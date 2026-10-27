@@ -57,6 +57,7 @@ describe('Reader MCP server', () => {
 			get_suggestions: true,
 			save_gloss: false,
 			adjust_learning: false,
+			set_parent: false,
 			set_bookmark: false,
 			mark_page_read: false,
 			import_book: false
@@ -139,6 +140,17 @@ describe('Reader MCP server', () => {
 		expect(await call('adjust_learning', { language: 'ru', text: 'кот', direction: 'up' })).toEqual({ from: 'learning1', to: 'learning2' });
 		expect(await call('adjust_learning', { language: 'ru', text: 'спит', direction: 'down' })).toEqual({
 			error: '“спит” is Known; the Tutor only adjusts Learning 1–4.'
+		});
+	});
+
+	it('links a glossed form to its dictionary form, which get_sentences then shows', async () => {
+		const { call, bookId } = await connect();
+		await call('save_gloss', { language: 'ru', text: 'дня', gloss: 'of the day' });
+		expect(await call('set_parent', { language: 'ru', text: 'дня', parent: 'день' })).toEqual({ term: 'дня', parent: 'день', createdParent: true });
+		const word = (await call('get_sentences', { book_id: bookId, count: 1 })).sentences[0].words[1];
+		expect(word).toEqual({ text: 'дня', status: 'learning1', translations: ['of the day (tutor)'], parent: 'день', followsParent: false });
+		expect(await call('set_parent', { language: 'ru', text: 'мышь', parent: 'мышь' })).toEqual({
+			error: '“мышь” is Unknown; save a Gloss first to give it a Term.'
 		});
 	});
 

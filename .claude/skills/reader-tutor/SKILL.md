@@ -53,6 +53,8 @@ Skip the mechanism questions when the chunk has nothing worthwhile, but still as
 - Save each Gloss you give with `save_gloss` (it becomes a Translation with Source Tutor; an Unknown Word gets a Learning 1 Term).
 - Words at `learning3`, `learning4`, `known` or `ignored` get no Gloss: they are the learner's to recall. Test a Learning 3–4 Word in a question instead.
 
+**Parents link forms to their dictionary form.** After glossing an inflected form (набережной, гимназиста, читала), call `set_parent` with its dictionary form (набережная, гимназист, читать), and mention the dictionary form in the Gloss line ("набережной — seafront, from набережная"). The same goes for any Term in `get_sentences` that is an inflected form with no `parent` yet, such as ones glossed before this rule. Skip Words already in their dictionary form, and Multi-word Terms that are fixed phrases (в конце концов, не по себе). When `set_parent` refuses a Term that follows another Parent, leave it: that link is the learner's.
+
 **Tutor adjustments.** When a question or translation turns on a specific Term at Learning 1–4: right → `adjust_learning` up; missed → down. One adjustment per Term per chunk. Known and Ignored are the learner's to set: when a Word seems mastered, suggest they mark it Known in the Reader.
 
 **The Bookmark follows the reading.** After the last piece of a Sentence, `set_bookmark` to the next Sentence. When `get_sentences` returns a `nextPage`, the Page is finished: `mark_page_read` (with `rest_known` only if the learner asks for it), then read on from the next Page.

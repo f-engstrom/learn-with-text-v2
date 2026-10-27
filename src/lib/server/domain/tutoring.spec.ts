@@ -3,7 +3,7 @@ import { openDatabase } from '../db/open';
 import { migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
 import { findTerms, InvalidTerm, saveTerm } from './terms';
-import { adjustLearning, saveGloss } from './tutoring';
+import { adjustLearning, linkParent, saveGloss } from './tutoring';
 
 async function setup() {
 	const db = openDatabase(':memory:');
@@ -68,5 +68,58 @@ describe('adjustLearning', () => {
 		await saveTerm(db, { languageId: ru, text: 'читала', status: 'learning2', parent: 'читать', followsParent: true });
 		await adjustLearning(db, { languageId: ru, text: 'читала', direction: 'up' });
 		expect((await get('читать')).status).toBe('learning3');
+	});
+});
+
+describe('linkParent', () => {
+	it('links a Term to its dictionary form, creating it at the Term’s Status, and keeps the rest of the Term', async () => {
+		const { db, ru, get } = await setup();
+		await saveGloss(db, { languageId: ru, text: 'набережной', gloss: 'seafront' });
+		expect(await linkParent(db, { languageId: ru, text: 'Набережной', parent: 'набережная' })).toEqual({
+			term: 'набережной',
+			parent: 'набережная',
+			createdParent: true
+		});
+		expect(await get('набережной')).toMatchObject({
+			status: 'learning1',
+			parent: { text: 'набережная', status: 'learning1' },
+			followsParent: false,
+			translations: [{ text: 'seafront', source: 'tutor' }]
+		});
+		expect((await get('набережная')).translations).toEqual([]);
+	});
+
+	it('uses an existing Parent without changing its Status, and says which one it replaced', async () => {
+		const { db, ru, get } = await setup();
+		await saveTerm(db, { languageId: ru, text: 'читать', status: 'known' });
+		await saveTerm(db, { languageId: ru, text: 'читала', status: 'learning2', parent: 'читаться' });
+		expect(await linkParent(db, { languageId: ru, text: 'читала', parent: 'Чита́ть' })).toEqual({
+			term: 'читала',
+			parent: 'читать',
+			previousParent: 'читаться',
+			createdParent: false
+		});
+		expect(await get('читала')).toMatchObject({ status: 'learning2', parent: { text: 'читать' }, followsParent: false });
+		expect((await get('читать')).status).toBe('known');
+	});
+
+	it('leaves a Term that Follows its Parent where it is', async () => {
+		const { db, ru, get } = await setup();
+		await saveTerm(db, { languageId: ru, text: 'читать', status: 'known' });
+		await saveTerm(db, { languageId: ru, text: 'читала', status: 'learning2', parent: 'читаться', followsParent: true });
+		await expect(linkParent(db, { languageId: ru, text: 'читала', parent: 'читать' })).rejects.toThrow(
+			'“читала” follows its Parent “читаться”; the learner changes that in the Reader.'
+		);
+		expect((await get('читать')).status).toBe('known');
+		// Linking it to the Parent it already has is fine.
+		await expect(linkParent(db, { languageId: ru, text: 'читала', parent: 'читаться' })).resolves.toMatchObject({ createdParent: false });
+	});
+
+	it('refuses an Unknown Word, a Term as its own Parent, and loops', async () => {
+		const { db, ru } = await setup();
+		await expect(linkParent(db, { languageId: ru, text: 'дом', parent: 'дом' })).rejects.toThrow('is Unknown');
+		await saveTerm(db, { languageId: ru, text: 'дома', status: 'learning1', parent: 'дом' });
+		await expect(linkParent(db, { languageId: ru, text: 'дома', parent: 'Дома' })).rejects.toThrow("can't be its own Parent");
+		await expect(linkParent(db, { languageId: ru, text: 'дом', parent: 'дома' })).rejects.toThrow('is itself a form of');
 	});
 });

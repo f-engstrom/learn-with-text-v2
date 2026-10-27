@@ -10,7 +10,7 @@ import { termKey } from '../domain/parsing';
 import { getBookmark, InvalidBookmark, markPageRead, setBookmark } from '../domain/reading';
 import { findSuggestions, getFitRange, importArticle, type SuggestionSources } from '../domain/suggestions';
 import { findTerms, InvalidTerm, type TermView } from '../domain/terms';
-import { adjustLearning, saveGloss } from '../domain/tutoring';
+import { adjustLearning, linkParent, saveGloss } from '../domain/tutoring';
 import { fetchArticle, InvalidAddress, type WebArticle } from '../domain/webpages';
 
 /**
@@ -29,7 +29,7 @@ export function createReaderServer(
 				'The Reader holds Books (split into Pages and Sentences), each with a Bookmark, and Terms: what the learner knows about a Word or phrase. ' +
 				'A Word with no Term is Unknown. A Term has a Status (learning1–4, known, ignored), ordered Translations each with a Source (you, wiktionary, tutor), an optional Pronunciation and Parent. ' +
 				'Start with list_books, then get_sentences to read from the Bookmark. ' +
-				'While tutoring: save_gloss for a meaning you give (only Unknown Words and Learning 1–2 Terms), adjust_learning after the learner answers about a Term, ' +
+				'While tutoring: save_gloss for a meaning you give (only Unknown Words and Learning 1–2 Terms), set_parent to link an inflected form to its dictionary form, adjust_learning after the learner answers about a Term, ' +
 				'set_bookmark as you move through the text, and mark_page_read at the end of a Page. Only the learner sets Known or Ignored.'
 		}
 	);
@@ -202,6 +202,29 @@ export function createReaderServer(
 				const language = await findLanguage(db, name);
 				if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
 				return json(await adjustLearning(db, { languageId: language.id, text, direction }));
+			})
+	);
+
+	server.registerTool(
+		'set_parent',
+		{
+			title: 'Set a Parent',
+			description:
+				'Links a Term to its Parent, usually its dictionary form (набережной → набережная, читала → читать). ' +
+				'A missing Parent gets a Term at the same Status. The Term keeps its Status and Translations. ' +
+				'Refused for an Unknown Word (save a Gloss first) and for a Term that follows a different Parent.',
+			inputSchema: {
+				language: z.string().describe('Language name or code.'),
+				text: z.string().min(1).describe('The Term, as it appears in the text.'),
+				parent: z.string().min(1).describe('Its dictionary form.')
+			},
+			annotations: { ...writes, idempotentHint: true }
+		},
+		async ({ language: name, text, parent }) =>
+			guard(async () => {
+				const language = await findLanguage(db, name);
+				if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
+				return json(await linkParent(db, { languageId: language.id, text, parent }));
 			})
 	);
 
