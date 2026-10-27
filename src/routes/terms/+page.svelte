@@ -1,0 +1,260 @@
+<script lang="ts">
+	import { deserialize, enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
+	import TermForm from '#lib/components/TermForm.svelte';
+	import { actionUrl } from '#lib/actions.ts';
+	import type { Source, Status } from '#lib/server/domain/terms.ts';
+	import type { PageProps } from './$types';
+
+	let { data, form }: PageProps = $props();
+
+	const statusLabels: Record<Status, string> = {
+		learning1: 'Learning 1',
+		learning2: 'Learning 2',
+		learning3: 'Learning 3',
+		learning4: 'Learning 4',
+		known: 'Known',
+		ignored: 'Ignored'
+	};
+	const sourceLabels: Record<Source, string> = { you: 'You', wiktionary: 'Wiktionary', tutor: 'Tutor' };
+
+	/** The Term whose form is open below its row. */
+	let editing = $state<number | undefined>();
+	let error = $state<string | undefined>();
+
+	const languageOf = (id: number) => data.languages.find((l) => l.id === id)!;
+	const dirOf = (id: number): 'rtl' | 'ltr' => (languageOf(id).rightToLeft ? 'rtl' : 'ltr');
+	let first = $derived(data.total === 0 ? 0 : (data.page - 1) * data.pageSize + 1);
+	let last = $derived(Math.min(data.page * data.pageSize, data.total));
+
+	function pageUrl(n: number) {
+		const params = new URLSearchParams(page.url.search);
+		params.set('page', String(n));
+		return `?${params}`;
+	}
+
+	async function setStatus(term: { languageId: number; text: string }, status: string) {
+		const body = new FormData();
+		body.set('languageId', String(term.languageId));
+		body.set('text', term.text);
+		body.set('status', status);
+		const response = await fetch('?/setStatus', { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
+		const result = deserialize(await response.text());
+		error = result.type === 'failure' ? String(result.data?.message) : undefined;
+		await invalidateAll();
+	}
+</script>
+
+<svelte:head>
+	<title>Terms · Reader</title>
+</svelte:head>
+
+<p><a href="/">← Books</a></p>
+<h1>Terms</h1>
+
+<form method="GET" class="filters" data-sveltekit-keepfocus data-sveltekit-replacestate>
+	<label>
+		Language
+		<select name="language" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+			<option value="">All</option>
+			{#each data.languages as language (language.id)}
+				<option value={language.id} selected={data.filter.language === language.id}>{language.name}</option>
+			{/each}
+		</select>
+	</label>
+	<label>
+		Status
+		<select name="status" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+			<option value="">Any</option>
+			<option value="learning" selected={data.filter.status === 'learning'}>Learning 1–4</option>
+			{#each Object.entries(statusLabels) as [value, label] (value)}
+				<option {value} selected={data.filter.status === value}>{label}</option>
+			{/each}
+		</select>
+	</label>
+	<label>
+		Translation Source
+		<select name="source" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+			<option value="">Any</option>
+			{#each Object.entries(sourceLabels) as [value, label] (value)}
+				<option {value} selected={data.filter.source === value}>{label}</option>
+			{/each}
+		</select>
+	</label>
+	<label>
+		Search
+		<input type="search" name="q" value={data.filter.q} placeholder="Term or Translation" />
+	</label>
+	<button>Filter</button>
+</form>
+
+<p class="summary">
+	{#if data.total === 0}
+		No Terms match.
+	{:else}
+		{first}–{last} of {data.total} {data.total === 1 ? 'Term' : 'Terms'}
+		{#if data.page > 1}<a href={pageUrl(data.page - 1)}>← Newer</a>{/if}
+		{#if last < data.total}<a href={pageUrl(data.page + 1)}>Older →</a>{/if}
+	{/if}
+</p>
+{#if error ?? form?.message}
+	<p class="error" role="alert">{error ?? form?.message}</p>
+{/if}
+
+{#if data.terms.length > 0}
+	<div class="scroll">
+	<table class="terms">
+		<thead>
+			<tr>
+				<th scope="col">Term</th>
+				{#if !data.filter.language}<th scope="col">Language</th>{/if}
+				<th scope="col">Status</th>
+				<th scope="col">Translations</th>
+				<th scope="col">Parent</th>
+				<th scope="col"><span class="visually-hidden">Actions</span></th>
+			</tr>
+		</thead>
+		<tbody>
+			{#each data.terms as term (term.id)}
+				<tr class:open={editing === term.id}>
+					<td>
+						<span class="term" lang={languageOf(term.languageId).code} dir={dirOf(term.languageId)}>{term.text}</span>
+						{#if term.pronunciation}<small class="pronunciation">{term.pronunciation}</small>{/if}
+					</td>
+					{#if !data.filter.language}<td>{languageOf(term.languageId).name}</td>{/if}
+					<td>
+						<select
+							class="status {term.status}"
+							aria-label="Status of {term.text}"
+							value={term.status}
+							onchange={(e) => setStatus(term, e.currentTarget.value)}
+						>
+							{#each Object.entries(statusLabels) as [value, label] (value)}
+								<option {value}>{label}</option>
+							{/each}
+						</select>
+					</td>
+					<td>
+						{#each term.translations as translation, i (translation.id)}{#if i > 0}; {/if}{translation.text}{#if translation.source !== 'you'}
+								<small class="source">{sourceLabels[translation.source]}</small>{/if}{/each}
+					</td>
+					<td>
+						{#if term.parent}<span lang={languageOf(term.languageId).code} dir={dirOf(term.languageId)}>{term.parent.text}</span>{/if}
+						{#if term.children > 0}<small class="children">{term.children} {term.children === 1 ? 'form' : 'forms'}</small>{/if}
+					</td>
+					<td class="actions">
+						<button type="button" onclick={() => (editing = editing === term.id ? undefined : term.id)}
+							>{editing === term.id ? 'Close' : 'Edit'}</button
+						>
+						<form
+							method="POST"
+							action={actionUrl('deleteTerm', page.url.search)}
+							use:enhance={({ cancel }) => {
+								if (!confirm(`Delete the Term “${term.text}”? Its Words become Unknown again.`)) cancel();
+							}}
+						>
+							<input type="hidden" name="id" value={term.id} />
+							<button class="delete">Delete</button>
+						</form>
+					</td>
+				</tr>
+				{#if editing === term.id}
+					<tr class="editor">
+						<td colspan="6">
+							{#key JSON.stringify(term)}
+								<TermForm language={languageOf(term.languageId)} text={term.text} {term} error={form?.message} />
+							{/key}
+						</td>
+					</tr>
+				{/if}
+			{/each}
+		</tbody>
+	</table>
+	</div>
+{/if}
+
+<style>
+	.filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		align-items: end;
+	}
+	.filters label {
+		display: grid;
+		gap: 0.25rem;
+	}
+	.summary a {
+		margin-inline-start: 0.75rem;
+	}
+	.terms {
+		border-collapse: collapse;
+		width: 100%;
+		max-width: 64rem;
+	}
+	.terms th,
+	.terms td {
+		padding: 0.4rem 0.75rem 0.4rem 0;
+		border-bottom: 1px solid #e3e3e3;
+		text-align: start;
+		vertical-align: top;
+	}
+	.term {
+		font-size: 1.1rem;
+	}
+	.pronunciation,
+	.children {
+		display: block;
+		color: #555;
+	}
+	.source {
+		padding: 0 0.3rem;
+		border-radius: 0.25rem;
+		background: #eee;
+	}
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+	}
+	/* On a narrow window the table scrolls, not the page. */
+	.scroll {
+		overflow-x: auto;
+	}
+	.delete {
+		color: #b00020;
+	}
+	tr.open td {
+		border-bottom: none;
+	}
+	.editor td {
+		padding: 0.5rem 1rem 1rem;
+		background: #fafafa;
+	}
+	.editor :global(form) {
+		max-width: 28rem;
+	}
+	.status.learning1 {
+		background: #f8b7a0;
+	}
+	.status.learning2 {
+		background: #f9cf9d;
+	}
+	.status.learning3 {
+		background: #f6e3a1;
+	}
+	.status.learning4 {
+		background: #e3ecb3;
+	}
+	.error {
+		color: #b00020;
+	}
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+	}
+</style>

@@ -3,7 +3,7 @@ import { openDatabase } from '../db/open';
 import { migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
 import { createBook, getPage } from './books';
-import { deleteTerm, findTerms, InvalidTerm, saveTerm } from './terms';
+import { deleteTerm, findTerms, InvalidTerm, listTerms, saveTerm } from './terms';
 
 async function setup() {
 	const db = openDatabase(':memory:');
@@ -300,5 +300,51 @@ describe('Translation Sources', () => {
 
 		await save([{ id: (await get())[0].id, text: 'a cat', source: 'wiktionary' }]);
 		expect((await get()).map((t) => t.source)).toEqual(['you']);
+	});
+});
+
+describe('listTerms', () => {
+	async function stocked() {
+		const { db, byName } = await setup();
+		const save = (languageId: number, text: string, status: string, more: Partial<Parameters<typeof saveTerm>[1]> = {}) =>
+			saveTerm(db, { languageId, text, status, ...more });
+		await save(byName.Russian, 'кот', 'learning1', { translations: [{ text: 'cat', source: 'wiktionary' }] });
+		await save(byName.Russian, 'читала', 'learning3', { parent: 'читать', translations: [{ text: 'read (she)' }] });
+		await save(byName.Russian, 'в течение', 'known', { translations: [{ text: 'during', source: 'tutor' }] });
+		await save(byName.Chinese, '喜欢', 'learning2', { translations: [{ text: 'to like', source: 'tutor' }] });
+		return { db, byName };
+	}
+	const texts = (r: Awaited<ReturnType<typeof listTerms>>) => r.terms.map((t) => t.text);
+
+	it('lists every Term, newest first, with its Language, Parent and number of Children', async () => {
+		const { db, byName } = await stocked();
+		const all = await listTerms(db);
+		expect(all.total).toBe(5);
+		expect(texts(all)).toEqual(['喜欢', 'в течение', 'читать', 'читала', 'кот']);
+		expect(all.terms.find((t) => t.text === 'читала')).toMatchObject({ languageId: byName.Russian, parent: { text: 'читать' }, children: 0 });
+		expect(all.terms.find((t) => t.text === 'читать')).toMatchObject({ children: 1, translations: [] });
+	});
+
+	it('filters by Language, Status (or any Learning level) and Translation Source', async () => {
+		const { db, byName } = await stocked();
+		expect(texts(await listTerms(db, { languageId: byName.Chinese }))).toEqual(['喜欢']);
+		expect(texts(await listTerms(db, { status: 'known' }))).toEqual(['в течение']);
+		expect(texts(await listTerms(db, { languageId: byName.Russian, status: 'learning' }))).toEqual(['читать', 'читала', 'кот']);
+		expect(texts(await listTerms(db, { source: 'tutor' }))).toEqual(['喜欢', 'в течение']);
+		expect(await listTerms(db, { source: 'tutor', languageId: byName.Bosnian })).toEqual({ terms: [], total: 0 });
+	});
+
+	it('searches Terms and Translations, in any case, taking % and _ literally', async () => {
+		const { db } = await stocked();
+		expect(texts(await listTerms(db, { search: 'ЧИТ' }))).toEqual(['читать', 'читала']);
+		expect(texts(await listTerms(db, { search: 'Like' }))).toEqual(['喜欢']);
+		expect(texts(await listTerms(db, { search: '%' }))).toEqual([]);
+	});
+
+	it('pages through the results', async () => {
+		const { db } = await stocked();
+		const page = await listTerms(db, { limit: 2, offset: 2 });
+		expect(page.total).toBe(5);
+		expect(texts(page)).toEqual(['читать', 'читала']);
 	});
 });

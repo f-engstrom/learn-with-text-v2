@@ -9,7 +9,7 @@
 	import type { Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
 	import Dictionaries from './Dictionaries.svelte';
-	import TermForm from './TermForm.svelte';
+	import TermForm from '#lib/components/TermForm.svelte';
 	import WiktionaryPanel from './WiktionaryPanel.svelte';
 
 	/** A Word, or a matched Multi-word Term, on the Page. */

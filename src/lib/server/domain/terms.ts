@@ -1,4 +1,4 @@
-import type { Kysely, Transaction } from 'kysely';
+import { sql, type Kysely, type SelectQueryBuilder, type Transaction } from 'kysely';
 import type { Database, SourceValue, StatusValue } from '../db/schema';
 import { getLanguage, type Language } from './languages';
 import { MAX_TERM_WORDS } from './multiword';
@@ -256,11 +256,88 @@ export async function findTerms(
 	normalisedForms: string[]
 ): Promise<Record<string, TermView>> {
 	if (normalisedForms.length === 0) return {};
-	const terms = await db
+	const rows = await selectTerms(db)
+		.where('term.language_id', '=', languageId)
+		.where('term.normalised', 'in', [...new Set(normalisedForms)])
+		.execute();
+	return Object.fromEntries((await toViews(db, rows)).map((t) => [t.normalised, t.view]));
+}
+
+/** A Term in the Term list: its view plus its Language and how many Terms have it as Parent. */
+export interface TermListItem extends TermView {
+	languageId: number;
+	children: number;
+}
+
+export interface TermFilter {
+	languageId?: number;
+	/** A Status, or 'learning' for any of Learning 1–4. */
+	status?: Status | 'learning';
+	/** Only Terms with at least one Translation from this Source. */
+	source?: Source;
+	/** Text the Term or one of its Translations contains, in any case. */
+	search?: string;
+	limit?: number;
+	offset?: number;
+}
+
+export const TERM_PAGE_SIZE = 50;
+
+/** Terms matching a filter, newest first, with how many match in all. */
+export async function listTerms(db: Kysely<Database>, filter: TermFilter = {}): Promise<{ terms: TermListItem[]; total: number }> {
+	const search = filter.search?.trim().toLocaleLowerCase();
+	const filtered = <Q extends SelectQueryBuilder<any, any, any>>(query: Q): Q => {
+		let q = query as SelectQueryBuilder<any, any, any>;
+		if (filter.languageId !== undefined) q = q.where('term.language_id', '=', filter.languageId);
+		if (filter.status === 'learning') q = q.where('term.status', 'in', ['learning1', 'learning2', 'learning3', 'learning4']);
+		else if (filter.status !== undefined) q = q.where('term.status', '=', filter.status);
+		if (filter.source !== undefined) {
+			const source = filter.source;
+			q = q.where((eb) =>
+				eb.exists(eb.selectFrom('translation').whereRef('translation.term_id', '=', 'term.id').where('translation.source', '=', source).select('translation.id'))
+			);
+		}
+		if (search) {
+			const pattern = `%${search.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+			q = q.where((eb) =>
+				eb.or([
+					eb(sql`lower(term.text)`, 'like', sql`${pattern} escape '\\'`),
+					eb('term.normalised', 'like', sql`${pattern} escape '\\'`),
+					eb.exists(
+						eb
+							.selectFrom('translation')
+							.whereRef('translation.term_id', '=', 'term.id')
+							.where(sql`lower(translation.text)`, 'like', sql`${pattern} escape '\\'`)
+							.select('translation.id')
+					)
+				])
+			);
+		}
+		return q as Q;
+	};
+
+	const { total } = await filtered(db.selectFrom('term').select((eb) => eb.fn.countAll<number>().as('total'))).executeTakeFirstOrThrow();
+	const rows = await filtered(selectTerms(db))
+		.select((eb) => eb.selectFrom('term as child').whereRef('child.parent_id', '=', 'term.id').select(eb.fn.countAll<number>().as('n')).as('children'))
+		.orderBy('term.created_at', 'desc')
+		.orderBy('term.id', 'desc')
+		.limit(filter.limit ?? TERM_PAGE_SIZE)
+		.offset(filter.offset ?? 0)
+		.execute();
+	const views = await toViews(db, rows);
+	return {
+		total: Number(total),
+		terms: views.map(({ view }, i) => ({ ...view, languageId: rows[i].language_id, children: Number(rows[i].children) }))
+	};
+}
+
+function selectTerms(db: Kysely<Database>) {
+	return db
 		.selectFrom('term')
 		.leftJoin('term as parent', 'parent.id', 'term.parent_id')
 		.select([
 			'term.id',
+			'term.language_id',
 			'term.text',
 			'term.normalised',
 			'term.status',
@@ -269,41 +346,41 @@ export async function findTerms(
 			'parent.id as parentId',
 			'parent.text as parentText',
 			'parent.status as parentStatus'
-		])
-		.where('term.language_id', '=', languageId)
-		.where('term.normalised', 'in', [...new Set(normalisedForms)])
-		.execute();
-	if (terms.length === 0) return {};
+		]);
+}
 
+type TermRow = Awaited<ReturnType<ReturnType<typeof selectTerms>['execute']>>[number];
+
+/** Term rows as views, with their Translations in order. */
+async function toViews(db: Kysely<Database>, rows: TermRow[]): Promise<{ normalised: string; view: TermView }[]> {
+	if (rows.length === 0) return [];
 	const translations = await db
 		.selectFrom('translation')
 		.select(['id', 'term_id', 'text', 'source'])
 		.where(
 			'term_id',
 			'in',
-			terms.map((t) => t.id)
+			rows.map((t) => t.id)
 		)
 		.orderBy('term_id')
 		.orderBy('position')
 		.execute();
 
-	return Object.fromEntries(
-		terms.map((t) => [
-			t.normalised,
-			{
-				id: t.id,
-				text: t.text,
-				status: t.status,
-				pronunciation: t.pronunciation,
-				parent:
-					t.parentId === null || t.parentText === null || t.parentStatus === null
-						? undefined
-						: { id: t.parentId, text: t.parentText, status: t.parentStatus },
-				followsParent: t.follows_parent === 1,
-				translations: translations
-					.filter((tr) => tr.term_id === t.id)
-					.map((tr) => ({ id: tr.id, text: tr.text, source: tr.source }))
-			}
-		])
-	);
+	return rows.map((t) => ({
+		normalised: t.normalised,
+		view: {
+			id: t.id,
+			text: t.text,
+			status: t.status,
+			pronunciation: t.pronunciation,
+			parent:
+				t.parentId === null || t.parentText === null || t.parentStatus === null
+					? undefined
+					: { id: t.parentId, text: t.parentText, status: t.parentStatus },
+			followsParent: t.follows_parent === 1,
+			translations: translations
+				.filter((tr) => tr.term_id === t.id)
+				.map((tr) => ({ id: tr.id, text: tr.text, source: tr.source }))
+		}
+	}));
 }

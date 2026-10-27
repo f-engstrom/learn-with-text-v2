@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { page } from '$app/state';
 	import { tick } from 'svelte';
+	import { actionUrl } from '#lib/actions.ts';
 	import type { Language } from '#lib/server/domain/languages.ts';
 	import type { Source, TermView } from '#lib/server/domain/terms.ts';
 
@@ -93,7 +95,7 @@
 {/if}
 <p><small>{term ? 'Term' : 'Unknown'}</small></p>
 
-<form method="POST" action="?/saveTerm" use:enhance bind:this={formElement}>
+<form method="POST" action={actionUrl('saveTerm', page.url.search)} use:enhance bind:this={formElement}>
 	<input type="hidden" name="languageId" value={language.id} />
 	<input type="hidden" name="text" value={term?.text ?? text} />
 
@@ -168,7 +170,7 @@
 </form>
 
 {#if term}
-	<form method="POST" action="?/deleteTerm" use:enhance>
+	<form method="POST" action={actionUrl('deleteTerm', page.url.search)} use:enhance>
 		<input type="hidden" name="id" value={term.id} />
 		<button type="submit" class="delete">Delete Term</button>
 	</form>

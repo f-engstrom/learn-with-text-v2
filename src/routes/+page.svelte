@@ -13,7 +13,7 @@
 <h1>Reader</h1>
 
 <h2>Books</h2>
-<p><a href="/books/new">New Book</a></p>
+<p><a href="/books/new">New Book</a> · <a href="/terms">Terms</a></p>
 <p class="find">
 	Find something to read:
 	{#each data.languages as language, i (language.id)}{#if i > 0}{' · '}{/if}<a href="/languages/{language.id}/suggestions"
