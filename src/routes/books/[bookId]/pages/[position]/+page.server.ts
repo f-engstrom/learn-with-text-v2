@@ -21,6 +21,8 @@ export const actions: Actions = {
 				text: String(form.get('text') ?? ''),
 				status: String(form.get('status') ?? ''),
 				pronunciation: String(form.get('pronunciation') ?? ''),
+				parent: String(form.get('parent') ?? ''),
+				followsParent: form.get('followsParent') === 'on',
 				translations: form.getAll('translationText').map((text, i) => ({
 					id: ids[i] ? Number(ids[i]) : undefined,
 					text: String(text)

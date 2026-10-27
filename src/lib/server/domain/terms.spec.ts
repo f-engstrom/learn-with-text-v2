@@ -220,3 +220,66 @@ describe('Multi-word Terms', () => {
 		await expect(saveTerm(db, { languageId: byName.Russian, text: 'а б в г д е ж з', status: 'known' })).rejects.toThrow(InvalidTerm);
 	});
 });
+
+describe('Parents', () => {
+	const ru = async () => {
+		const { db, byName } = await setup();
+		const save = (text: string, status: string, more: Partial<Parameters<typeof saveTerm>[1]> = {}) =>
+			saveTerm(db, { languageId: byName.Russian, text, status, ...more });
+		const get = async (text: string) => (await findTerms(db, byName.Russian, [text]))[text];
+		return { db, byName, save, get };
+	};
+
+	it('creates a missing Parent with the Status of its Child', async () => {
+		const { save, get } = await ru();
+		await save('читала', 'learning2', { parent: 'Чита́ть' });
+		expect(await get('читать')).toMatchObject({ text: 'чита́ть', status: 'learning2', parent: undefined });
+		expect(await get('читала')).toMatchObject({ parent: { text: 'чита́ть', status: 'learning2' }, followsParent: false });
+	});
+
+	it('uses the existing Term as Parent, and keeps or removes it', async () => {
+		const { db, save, get } = await ru();
+		const parentId = await save('читать', 'known');
+		await save('читала', 'learning1', { parent: 'читать' });
+		expect((await get('читала')).parent?.id).toBe(parentId);
+		expect((await get('читать')).status).toBe('known');
+		await save('читала', 'learning2');
+		expect((await get('читала')).parent?.id).toBe(parentId);
+		await save('читала', 'learning2', { parent: ' ' });
+		expect((await get('читала')).parent).toBeUndefined();
+		expect(await db.selectFrom('term').select('id').execute()).toHaveLength(2);
+	});
+
+	it('without Follows Parent, Statuses stay separate', async () => {
+		const { save, get } = await ru();
+		await save('читала', 'learning1', { parent: 'читать' });
+		await save('читать', 'known');
+		expect((await get('читала')).status).toBe('learning1');
+	});
+
+	it('with Follows Parent, a Term and its Parent share one Status, whichever changes', async () => {
+		const { save, get } = await ru();
+		await save('читать', 'known');
+		await save('читала', 'learning3', { parent: 'читать', followsParent: true });
+		expect((await get('читать')).status).toBe('learning3');
+		await save('читать', 'learning4');
+		expect((await get('читала')).status).toBe('learning4');
+		await save('читаю', 'learning1', { parent: 'читать', followsParent: true });
+		expect([(await get('читать')).status, (await get('читала')).status]).toEqual(['learning1', 'learning1']);
+	});
+
+	it('rejects a Term as its own Parent, or a loop', async () => {
+		const { save } = await ru();
+		await expect(save('читать', 'known', { parent: 'Чита́ть' })).rejects.toThrow(InvalidTerm);
+		await save('читала', 'learning1', { parent: 'читать' });
+		await expect(save('читать', 'known', { parent: 'читала' })).rejects.toThrow('“читала” is itself a form of “читать”.');
+	});
+
+	it('deleting a Parent leaves its Children without one', async () => {
+		const { db, save, get } = await ru();
+		const parentId = await save('читать', 'known');
+		await save('читала', 'learning1', { parent: 'читать', followsParent: true });
+		await deleteTerm(db, parentId);
+		expect(await get('читала')).toMatchObject({ parent: undefined, followsParent: false, status: 'learning1' });
+	});
+});

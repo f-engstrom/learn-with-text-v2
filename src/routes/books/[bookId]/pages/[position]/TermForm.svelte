@@ -36,6 +36,9 @@
 	if (rows.length === 0) rows.push({ text: '', source: 'you' });
 
 	let dir: 'rtl' | 'ltr' = $derived(language.rightToLeft ? 'rtl' : 'ltr');
+	const saved = () => ({ parent: term?.parent?.text ?? '', followsParent: term?.followsParent ?? false });
+	let parent = $state(saved().parent);
+	let followsParent = $state(saved().followsParent);
 
 	function move(from: number, to: number) {
 		const [row] = rows.splice(from, 1);
@@ -90,6 +93,18 @@
 			placeholder={language.code === 'zh' && !term ? 'Pinyin is filled in when you save' : ''}
 			autocomplete="off"
 		/>
+	</label>
+
+	<label>
+		Parent
+		<input name="parent" bind:value={parent} lang={language.code} {dir} placeholder="e.g. its dictionary form" autocomplete="off" />
+	</label>
+	{#if term?.parent && term.parent.text === parent.trim()}
+		<p class="parent-status"><small>Parent's Status: {statusLabels[term.parent.status]}</small></p>
+	{/if}
+	<label class="follows">
+		<input type="checkbox" name="followsParent" bind:checked={followsParent} disabled={parent.trim() === ''} />
+		Follows Parent (shares its Status)
 	</label>
 
 	{#if error}
@@ -180,6 +195,15 @@
 	}
 	.error {
 		color: #b00020;
+	}
+	.follows {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+	}
+	.parent-status {
+		margin: -0.5rem 0 0;
+		color: #555;
 	}
 	.delete,
 	.add {

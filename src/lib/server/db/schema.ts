@@ -50,6 +50,10 @@ export interface TermTable {
 	status: StatusValue;
 	/** Optional reading aid, e.g. pinyin; '' when there is none. */
 	pronunciation: Generated<string>;
+	/** The Term this one is a form of, in the same Language. */
+	parent_id: number | null;
+	/** 1 when this Term shares its Parent's Status. */
+	follows_parent: Generated<number>;
 	created_at: string;
 }
 
