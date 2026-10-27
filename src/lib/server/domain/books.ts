@@ -6,6 +6,7 @@ import { normalise, parserFor, type Parser, type Token } from './parsing';
 import { findTerms, type TermView } from './terms';
 
 export const PAGE_WORD_TARGET = 250;
+export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
 export class InvalidBook extends Error {}
 
@@ -19,6 +20,12 @@ export interface BookSummary {
 	id: number;
 	title: string;
 	languageName: string;
+	pageCount: number;
+	/** How many Pages are Read. */
+	readCount: number;
+	bookmark: Bookmark;
+	/** Share of the Book's distinct Words that are Unknown, from 0 to 1. */
+	unknownShare: number;
 }
 
 /**
@@ -119,17 +126,77 @@ export async function createBook(db: Kysely<Database>, input: NewBook): Promise<
 				.map((s, j) => ({ page_id: page.id, position: j + 1, text: s.tokens.map((t) => t.text).join('') }));
 			await trx.insertInto('sentence').values(sentences).execute();
 		}
+
+		const words = new Set(
+			pages.flatMap((text) =>
+				parser
+					.parse(text)
+					.flatMap((p) => p.sentences.flatMap((s) => s.tokens.filter((t) => t.isWord).map((t) => normalise(t.text, language))))
+			)
+		);
+		await trx
+			.insertInto('book_word')
+			.values([...words].map((normalised) => ({ book_id: book.id, normalised })))
+			.execute();
 		return book.id;
 	});
 }
 
+/** Every Book, newest first, with its Pages, Bookmark and Unknown share. */
 export async function listBooks(db: Kysely<Database>): Promise<BookSummary[]> {
-	return db
+	const rows = await db
 		.selectFrom('book')
 		.innerJoin('language', 'language.id', 'book.language_id')
-		.select(['book.id', 'book.title', 'language.name as languageName'])
+		.select(['book.id', 'book.title', 'language.name as languageName', 'book.bookmark_page', 'book.bookmark_sentence'])
+		.select((eb) => [
+			eb.selectFrom('page').whereRef('page.book_id', '=', 'book.id').select(eb.fn.countAll<number>().as('n')).as('pageCount'),
+			eb
+				.selectFrom('page')
+				.whereRef('page.book_id', '=', 'book.id')
+				.where('page.read_at', 'is not', null)
+				.select(eb.fn.countAll<number>().as('n'))
+				.as('readCount'),
+			eb.selectFrom('book_word').whereRef('book_word.book_id', '=', 'book.id').select(eb.fn.countAll<number>().as('n')).as('words'),
+			// Unknown means no Term (ADR 0001).
+			eb
+				.selectFrom('book_word')
+				.whereRef('book_word.book_id', '=', 'book.id')
+				.where((w) =>
+					w.not(
+						w.exists(
+							w
+								.selectFrom('term')
+								.whereRef('term.language_id', '=', 'book.language_id')
+								.whereRef('term.normalised', '=', 'book_word.normalised')
+								.select('term.id')
+						)
+					)
+				)
+				.select(eb.fn.countAll<number>().as('n'))
+				.as('unknown')
+		])
 		.orderBy('book.created_at', 'desc')
+		.orderBy('book.id', 'desc')
 		.execute();
+	return rows.map((r) => ({
+		id: r.id,
+		title: r.title,
+		languageName: r.languageName,
+		pageCount: Number(r.pageCount),
+		readCount: Number(r.readCount),
+		bookmark: { page: r.bookmark_page, sentence: r.bookmark_sentence },
+		unknownShare: Number(r.words) === 0 ? 0 : Number(r.unknown) / Number(r.words)
+	}));
+}
+
+/** Decodes an uploaded text file, which must be UTF-8. A byte-order mark is dropped. */
+export function textFromFile(bytes: Uint8Array): string {
+	if (bytes.length > MAX_FILE_BYTES) throw new InvalidBook('The file is larger than 5 MB.');
+	try {
+		return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+	} catch {
+		throw new InvalidBook("The file isn't UTF-8 text.");
+	}
 }
 
 export async function getPage(db: Kysely<Database>, bookId: number, position: number): Promise<PageView | undefined> {

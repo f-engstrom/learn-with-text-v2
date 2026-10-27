@@ -11,7 +11,7 @@
 <p><a href="/">← Books</a></p>
 <h1>New Book</h1>
 
-<form method="POST" class="new-book">
+<form method="POST" class="new-book" enctype="multipart/form-data">
 	{#if form?.message}
 		<p class="error" role="alert">{form.message}</p>
 	{/if}
@@ -27,14 +27,20 @@
 
 	<label>
 		Title
-		<input name="title" required value={form?.values.title ?? ''} />
+		<input name="title" value={form?.values.title ?? ''} />
 	</label>
+	<small>Leave it empty to use the file's name.</small>
 
 	<label>
 		Text
-		<textarea name="text" rows="16" required value={form?.values.text ?? ''}></textarea>
+		<textarea name="text" rows="16" value={form?.values.text ?? ''}></textarea>
 	</label>
-	<small>A line containing only <code>---</code> starts a new Page.</small>
+
+	<label>
+		Or a text file
+		<input type="file" name="file" accept=".txt,text/plain" />
+	</label>
+	<small>UTF-8 text, up to 5 MB. A line containing only <code>---</code> starts a new Page.</small>
 
 	<button type="submit">Create Book</button>
 </form>

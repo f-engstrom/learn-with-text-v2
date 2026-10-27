@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { openDatabase } from '../db/open';
 import { migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
-import { createBook, getPage, InvalidBook, listBooks, splitIntoPages } from './books';
+import { createBook, getPage, InvalidBook, listBooks, MAX_FILE_BYTES, splitIntoPages, textFromFile } from './books';
+import { markPageRead } from './reading';
+import { saveTerm } from './terms';
 import { parserFor } from './parsing';
 
 const bosnian = parserFor({ code: 'bs' });
@@ -55,7 +57,9 @@ describe('createBook', () => {
 			{ position: 2, text: 'Он спал.' },
 			{ position: 1, text: 'Конец.' }
 		]);
-		expect(await listBooks(db)).toEqual([{ id, title: 'Сказка', languageName: 'Russian' }]);
+		expect(await listBooks(db)).toEqual([
+			{ id, title: 'Сказка', languageName: 'Russian', pageCount: 2, readCount: 0, bookmark: { page: 1, sentence: 1 }, unknownShare: 1 }
+		]);
 	});
 
 	it('returns nothing for a Page that does not exist', async () => {
@@ -77,5 +81,46 @@ describe('createBook', () => {
 	it('rejects an unknown Language', async () => {
 		const { db } = await setup();
 		await expect(createBook(db, { languageId: 999, title: 'X', text: 'Jedan.' })).rejects.toThrow(InvalidBook);
+	});
+});
+
+describe('listBooks', () => {
+	it("gives each Book's Unknown share of distinct Words, which drops as you mark them", async () => {
+		const { db, byName } = await setup();
+		// Distinct Words: кот, спит, и, мышь (Кот and кот are one; 2024 is not a Word).
+		const id = await createBook(db, { languageId: byName.Russian, title: 'Кот', text: 'Кот спит. Кот и мышь спят в 2024.' });
+		const share = async () => (await listBooks(db)).find((b) => b.id === id)!.unknownShare;
+		const words = (await db.selectFrom('book_word').select('normalised').where('book_id', '=', id).execute()).map((w) => w.normalised);
+		expect(words.toSorted()).toEqual(['в', 'и', 'кот', 'мышь', 'спит', 'спят'].toSorted());
+		expect(await share()).toBe(1);
+		await saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'learning1' });
+		await saveTerm(db, { languageId: byName.Russian, text: 'и', status: 'ignored' });
+		expect(await share()).toBeCloseTo(4 / 6);
+		await saveTerm(db, { languageId: byName.Chinese, text: 'мышь', status: 'known' });
+		expect(await share()).toBeCloseTo(4 / 6);
+	});
+
+	it('counts Read Pages and shows the Bookmark, newest Book first', async () => {
+		const { db, byName } = await setup();
+		await createBook(db, { languageId: byName.Bosnian, title: 'Prva', text: 'Jedan.' });
+		const id = await createBook(db, { languageId: byName.Russian, title: 'Вторая', text: 'Раз.\n---\nДва.\n---\nТри.' });
+		await markPageRead(db, id, 1, { restKnown: true });
+		const [newest, oldest] = await listBooks(db);
+		expect(newest).toMatchObject({ title: 'Вторая', pageCount: 3, readCount: 1, bookmark: { page: 2, sentence: 1 } });
+		expect(newest.unknownShare).toBeCloseTo(2 / 3);
+		expect(oldest.title).toBe('Prva');
+	});
+});
+
+describe('textFromFile', () => {
+	const bytes = (text: string) => new TextEncoder().encode(text);
+
+	it('decodes UTF-8 and drops a byte-order mark', () => {
+		expect(textFromFile(bytes('\uFEFFКот спит.'))).toBe('Кот спит.');
+	});
+
+	it('rejects text that is not UTF-8, and files that are too large', () => {
+		expect(() => textFromFile(new Uint8Array([0xca, 0xee, 0xf2]))).toThrow(InvalidBook);
+		expect(() => textFromFile(new Uint8Array(MAX_FILE_BYTES + 1))).toThrow('larger than 5 MB');
 	});
 });

@@ -82,6 +82,12 @@ export interface DictionaryTable {
 	display: DictionaryDisplay;
 }
 
+/** A Book's distinct Words, by Normalised form. */
+export interface BookWordTable {
+	book_id: number;
+	normalised: string;
+}
+
 export interface Database {
 	language: LanguageTable;
 	book: BookTable;
@@ -90,4 +96,5 @@ export interface Database {
 	term: TermTable;
 	translation: TranslationTable;
 	dictionary: DictionaryTable;
+	book_word: BookWordTable;
 }
