@@ -215,6 +215,24 @@
 		else delete document.documentElement.dataset.calm;
 	});
 
+	/** Shifts the zen tooltip sideways so it stays on screen under a Word near either edge. */
+	function keepInView(node: HTMLElement, _text: string) {
+		// A margin, not a transform: a transformed box still widens the page from where it was laid out.
+		const side = getComputedStyle(node).direction === 'rtl' ? 'marginRight' : 'marginLeft';
+		const place = () => {
+			node.style[side] = '';
+			const box = node.getBoundingClientRect();
+			const margin = 8;
+			const width = document.documentElement.clientWidth;
+			let shift = 0;
+			if (box.right > width - margin) shift = width - margin - box.right;
+			if (box.left + shift < margin) shift = margin - box.left;
+			node.style[side] = `${side === 'marginRight' ? -shift : shift}px`;
+		};
+		place();
+		return { update: place };
+	}
+
 	/** Brings everything back, and fades it again after three idle seconds while zen mode is on. */
 	function wake() {
 		idle = false;
@@ -554,7 +572,7 @@
 									onmousedown={(e) => e.shiftKey && e.preventDefault()}
 									onclick={(e) => choose(word, e.shiftKey)}
 									onkeydown={(e) => !practising && (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), choose(word, false))}
-									>{word.text}{#if gloss && range?.[0] === word.index}<span class="gloss" aria-hidden="true">{gloss}</span>{/if}</span
+									>{word.text}{#if gloss && range?.[0] === word.index}<span class="gloss" aria-hidden="true" use:keepInView={gloss}>{gloss}</span>{/if}</span
 								>{:else}{token.text}{/if}
 						{/each}
 					</span>
@@ -778,7 +796,7 @@
 		inset-inline-start: 0;
 		z-index: 1;
 		width: max-content;
-		max-width: 18rem;
+		max-width: min(18rem, calc(100vw - 1rem));
 		padding: 0.2rem 0.55rem;
 		border: 1px solid var(--border);
 		border-radius: var(--radius);

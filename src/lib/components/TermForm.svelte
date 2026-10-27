@@ -83,6 +83,23 @@
 		formElement.requestSubmit();
 	}
 
+	/** A Translation box grows to show all of a long Translation instead of cutting it off. */
+	function grow(node: HTMLTextAreaElement, _text: string) {
+		const fit = () => {
+			node.style.height = 'auto';
+			node.style.height = `${node.scrollHeight}px`;
+		};
+		fit();
+		return { update: fit };
+	}
+
+	/** Enter saves, as it did when Translations were one-line inputs; a Translation stays one line. */
+	function saveOnEnter(e: KeyboardEvent) {
+		if (e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
+		e.preventDefault();
+		formElement?.requestSubmit();
+	}
+
 	function move(from: number, to: number) {
 		const [row] = rows.splice(from, 1);
 		rows.splice(to, 0, row);
@@ -118,13 +135,16 @@
 				<li>
 					<input type="hidden" name="translationId" value={row.id ?? ''} />
 					<input type="hidden" name="translationSource" value={row.source} />
-					<input
+					<textarea
 						name="translationText"
+						rows="1"
 						bind:value={row.text}
+						use:grow={row.text}
 						oninput={() => (row.source = 'you')}
+						onkeydown={saveOnEnter}
 						aria-label="Translation {i + 1}"
 						autocomplete="off"
-					/>
+					></textarea>
 					{#if sourceLabels[row.source]}<small class="source">{sourceLabels[row.source]}</small>{/if}
 					<button type="button" aria-label="Move up" disabled={i === 0} onclick={() => move(i, i - 1)}>↑</button>
 					<button type="button" aria-label="Move down" disabled={i === rows.length - 1} onclick={() => move(i, i + 1)}
@@ -254,12 +274,18 @@
 	.translations li {
 		display: flex;
 		gap: 0.25rem;
-		align-items: center;
+		align-items: flex-start;
 	}
-	/* The text box takes the room the buttons leave, down to nothing on a phone. */
-	.translations li input[name='translationText'] {
+	/* The text box takes the room the buttons leave, down to nothing on a phone, and wraps a long Translation. */
+	.translations li textarea {
 		flex: 1 1 8rem;
 		min-width: 0;
+		resize: none;
+		overflow: hidden;
+		line-height: 1.4;
+	}
+	.translations li .source {
+		align-self: center;
 	}
 	.translations li button {
 		flex: none;
