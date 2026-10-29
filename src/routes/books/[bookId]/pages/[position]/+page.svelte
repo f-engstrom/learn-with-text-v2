@@ -1011,7 +1011,7 @@
 	.sentence.highlighted,
 	.in-passage,
 	.word.multi.in-passage {
-		text-decoration: underline color-mix(in srgb, var(--accent) 55%, transparent) 0.11em;
+		text-decoration: underline var(--accent) 0.16em;
 		text-underline-offset: 0.35em;
 		text-decoration-skip-ink: none;
 	}
