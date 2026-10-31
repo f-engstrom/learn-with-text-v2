@@ -18,6 +18,8 @@ import * as m0015 from './migrations/0015-tutor-assessment';
 import * as m0016 from './migrations/0016-highlight-passage';
 import * as m0017 from './migrations/0017-progress';
 import * as m0018 from './migrations/0018-tutor-question';
+import * as m0019 from './migrations/0019-terms-version';
+import * as m0020 from './migrations/0020-tutor-question-glosses';
 
 // Listed statically (not read from disk) so they survive bundling by Vite and the MCP entry point.
 const migrations: Record<string, Migration> = {
@@ -38,7 +40,9 @@ const migrations: Record<string, Migration> = {
 	'0015-tutor-assessment': m0015,
 	'0016-highlight-passage': m0016,
 	'0017-progress': m0017,
-	'0018-tutor-question': m0018
+	'0018-tutor-question': m0018,
+	'0019-terms-version': m0019,
+	'0020-tutor-question-glosses': m0020
 };
 
 export async function migrateToLatest(db: Kysely<any>): Promise<void> {

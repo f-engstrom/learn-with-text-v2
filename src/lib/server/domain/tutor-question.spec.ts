@@ -34,6 +34,16 @@ describe('Tutor’s question', () => {
 		expect(asked).toMatchObject({ feedback: '✓ Right.', questions: [which, translate] });
 	});
 
+	it('carries Glosses for the Words in the chunk, short ones only', async () => {
+		const { db, bookId } = await setup();
+		const glosses = [{ text: 'спит', gloss: 'sleeps (from спать)' }];
+		expect((await askLearner(db, bookId, { glosses, questions: [translate] })).glosses).toEqual(glosses);
+		expect((await getTutorQuestion(db, bookId))?.glosses).toEqual(glosses);
+		await expect(askLearner(db, bookId, { glosses: [{ text: 'спит', gloss: 'x'.repeat(200) }], questions: [translate] })).rejects.toThrow(
+			InvalidTutorQuestion
+		);
+	});
+
 	it('takes one to four questions, each with a prompt and two to four options or none', async () => {
 		const { db, bookId } = await setup();
 		await expect(askLearner(db, bookId, { questions: [] })).rejects.toThrow(InvalidTutorQuestion);

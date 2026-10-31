@@ -3,7 +3,7 @@ import { openDatabase } from '../db/open';
 import { migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
 import { createBook, getPage } from './books';
-import { deleteTerm, findTerms, InvalidTerm, listTerms, saveTerm } from './terms';
+import { deleteTerm, findTerms, InvalidTerm, listTerms, saveTerm, termsVersion } from './terms';
 
 async function setup() {
 	const db = openDatabase(':memory:');
@@ -346,5 +346,25 @@ describe('listTerms', () => {
 		const page = await listTerms(db, { limit: 2, offset: 2 });
 		expect(page.total).toBe(5);
 		expect(texts(page)).toEqual(['читать', 'читала']);
+	});
+});
+
+describe('termsVersion', () => {
+	it('moves on whenever a Term in the Language, its Translations or its Reviews change, whoever writes them', async () => {
+		const { db, byName } = await setup();
+		const versions = [await termsVersion(db, byName.Russian)];
+		const step = async (change: () => Promise<unknown>) => {
+			await change();
+			versions.push(await termsVersion(db, byName.Russian));
+		};
+		const id = await saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'learning1' });
+		versions.push(await termsVersion(db, byName.Russian));
+		await step(() => db.insertInto('translation').values({ term_id: id, position: 1, text: 'cat', source: 'tutor' }).execute());
+		await step(() => db.insertInto('review').values({ term_id: id, grade: 'got', source: 'tutor', reviewed_at: new Date().toISOString() }).execute());
+		await step(() => saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'learning2' }));
+		await step(() => deleteTerm(db, id));
+		expect(new Set(versions).size).toBe(versions.length);
+		await saveTerm(db, { languageId: byName.Chinese, text: '猫', status: 'learning1' });
+		expect(await termsVersion(db, byName.Russian)).toBe(versions.at(-1));
 	});
 });

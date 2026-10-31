@@ -376,13 +376,21 @@
 		fetch('?/dismissTutor', { method: 'POST', body: new FormData(), headers: { 'x-sveltekit-action': 'true' } });
 	}
 
+	let refreshingTerms = false;
 	onMount(() => {
 		const poll = setInterval(async () => {
 			if (document.hidden) return;
-			const latest: { highlight: Highlight | null; question: TutorQuestion | null } = await fetch(`/books/${data.book.id}/tutor`)
-				.then((r) => (r.ok ? r.json() : { highlight, question }))
-				.catch(() => ({ highlight, question }));
+			const latest: { highlight: Highlight | null; question: TutorQuestion | null; termsVersion: number } = await fetch(
+				`/books/${data.book.id}/tutor`
+			)
+				.then((r) => (r.ok ? r.json() : { highlight, question, termsVersion: data.termsVersion }))
+				.catch(() => ({ highlight, question, termsVersion: data.termsVersion }));
 			showQuestion(latest.question);
+			// The Tutor saved a Gloss or changed a Term: the Page's Statuses and Translations follow.
+			if (latest.termsVersion !== data.termsVersion && !refreshingTerms) {
+				refreshingTerms = true;
+				invalidateAll().finally(() => (refreshingTerms = false));
+			}
 			if (latest.highlight?.at === highlight?.at) return;
 			highlight = latest.highlight;
 			// A new Highlight on this Page comes into view; the cursor and Bookmark stay put.
@@ -686,17 +694,24 @@
 			{#if question?.feedback}<p class="feedback">{question.feedback}</p>{/if}
 			{#if highlight}
 				{#if highlight.note}<p class="note-text">{highlight.note}</p>{/if}
-				{#if highlightHere}
+				{#if highlightHere && highlight.text}
+					<button type="button" class="passage" lang={data.language.code} {dir} title="Show it in the text" onclick={showHighlight}
+						>{highlight.text}</button
+					>
+				{:else if highlightHere}
 					<button type="button" onclick={showHighlight}
-						>{highlight.text
-							? `“${highlight.text.length > 40 ? `${highlight.text.slice(0, 40)}…` : highlight.text}”`
-							: highlight.first === highlight.last
-								? `Sentence ${highlight.first}`
-								: `Sentences ${highlight.first}–${highlight.last}`}</button
+						>{highlight.first === highlight.last ? `Sentence ${highlight.first}` : `Sentences ${highlight.first}–${highlight.last}`}</button
 					>
 				{:else}
 					<a class="button" href="/books/{data.book.id}/pages/{highlight.page}">On Page {highlight.page} →</a>
 				{/if}
+			{/if}
+			{#if question?.glosses && !question.answer}
+				<ul class="glosses">
+					{#each question.glosses as g (g.text)}
+						<li><span lang={data.language.code} {dir}>{g.text}</span> {g.gloss}</li>
+					{/each}
+				</ul>
 			{/if}
 			{#if question?.answer}
 				<p class="sent">
@@ -1178,7 +1193,41 @@
 		color: var(--muted);
 	}
 	.feedback {
+		justify-self: stretch;
+		padding-bottom: 0.6rem;
+		border-bottom: 1px solid var(--border);
 		white-space: pre-line;
+		font-size: 0.95rem;
+	}
+	.passage {
+		padding: 0.1rem 0 0.1rem 0.7rem;
+		border: none;
+		border-inline-start: 2px solid var(--border);
+		border-radius: 0;
+		background: none;
+		box-shadow: none;
+		color: var(--text);
+		font-family: var(--font-text);
+		font-size: 1.1rem;
+		line-height: 1.5;
+		text-align: start;
+	}
+	.passage:hover {
+		border-inline-start-color: var(--accent);
+	}
+	.glosses {
+		display: grid;
+		gap: 0.2rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		font-size: 0.95rem;
+	}
+	.glosses span {
+		margin-inline-end: 0.35rem;
+		font-family: var(--font-text);
+		font-size: 1.05rem;
+		font-weight: 600;
 	}
 	.questions {
 		display: grid;
@@ -1195,7 +1244,7 @@
 	.questions legend {
 		padding: 0;
 		margin-bottom: 0.4rem;
-		font-weight: 600;
+		white-space: pre-line;
 	}
 	.questions textarea {
 		width: 100%;

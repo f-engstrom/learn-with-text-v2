@@ -5,6 +5,8 @@ export interface LanguageTable {
 	name: string;
 	/** BCP 47 code, used for segmenting and lowercasing. */
 	code: string;
+	/** Moves on with every change to the Language's Terms, Translations or Reviews (by trigger). */
+	terms_version: Generated<number>;
 	right_to_left: number;
 	/** JSON object mapping characters to their replacement ('' removes them). */
 	character_map: string;
@@ -205,6 +207,8 @@ export interface Database {
 export interface TutorQuestionTable {
 	book_id: number;
 	feedback: string | null;
+	/** JSON: Glosses for the chunk, each a Word or phrase and its short meaning; null if none. */
+	glosses: string | null;
 	/** JSON: the questions, each a prompt with optional options. */
 	questions: string;
 	asked_at: string;

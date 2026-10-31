@@ -10,12 +10,19 @@ export interface Question {
 	options?: string[];
 }
 
+/** A short meaning for a Word or phrase in the chunk, shown with the question (and saved with save_gloss). */
+export interface QuestionGloss {
+	text: string;
+	gloss: string;
+}
+
 /** The learner's answer to every question, in order, or their own question to the Tutor instead. */
 export type Answer = { answers: string[] } | { ask: string };
 
 /** The Tutor's question in the reading screen (ADR 0006), with feedback on the last answer. One per Book. */
 export interface TutorQuestion {
 	feedback?: string;
+	glosses?: QuestionGloss[];
 	questions: Question[];
 	/** When it was asked; it identifies the question, so a late answer to a replaced one is refused. */
 	askedAt: string;
@@ -32,15 +39,24 @@ export type Awaited =
 export const feedbackLength = 600;
 const promptLength = 300;
 const optionLength = 120;
+const glossLength = 120;
 
 /** Asks the learner, replacing any question the Book had (answered, dismissed or not). */
 export async function askLearner(
 	db: Kysely<Database>,
 	bookId: number,
-	input: { feedback?: string; questions: Question[] }
+	input: { feedback?: string; glosses?: QuestionGloss[]; questions: Question[] }
 ): Promise<TutorQuestion> {
 	const feedback = input.feedback?.trim() || undefined;
 	if (feedback && feedback.length > feedbackLength) throw new InvalidTutorQuestion(`Feedback is at most ${feedbackLength} characters.`);
+	const glosses = (input.glosses ?? []).map(({ text, gloss }) => {
+		const g = { text: text.trim(), gloss: gloss.trim() };
+		if (!g.text || !g.gloss || g.text.length > glossLength || g.gloss.length > glossLength) {
+			throw new InvalidTutorQuestion(`Each Gloss is a Word or phrase and a short meaning, each at most ${glossLength} characters.`);
+		}
+		return g;
+	});
+	if (glosses.length > 12) throw new InvalidTutorQuestion('Give at most 12 Glosses with a question.');
 	if (input.questions.length < 1 || input.questions.length > 4) throw new InvalidTutorQuestion('Ask one to four questions at a time.');
 	const questions = input.questions.map(({ prompt, options }) => {
 		const p = prompt.trim();
@@ -54,6 +70,7 @@ export async function askLearner(
 	});
 	const row = {
 		feedback: feedback ?? null,
+		glosses: glosses.length ? JSON.stringify(glosses) : null,
 		questions: JSON.stringify(questions),
 		asked_at: new Date().toISOString(),
 		answer: null,
@@ -65,7 +82,7 @@ export async function askLearner(
 		.values({ book_id: bookId, ...row })
 		.onConflict((oc) => oc.column('book_id').doUpdateSet(row))
 		.execute();
-	return { ...(feedback ? { feedback } : {}), questions, askedAt: row.asked_at };
+	return { ...(feedback ? { feedback } : {}), ...(glosses.length ? { glosses } : {}), questions, askedAt: row.asked_at };
 }
 
 /** The Book's question, unless there is none or the learner dismissed it. */
@@ -74,6 +91,7 @@ export async function getTutorQuestion(db: Kysely<Database>, bookId: number): Pr
 	if (!row || row.dismissed_at) return undefined;
 	return {
 		...(row.feedback ? { feedback: row.feedback } : {}),
+		...(row.glosses ? { glosses: JSON.parse(row.glosses) } : {}),
 		questions: JSON.parse(row.questions),
 		askedAt: row.asked_at,
 		...(row.answer ? { answer: JSON.parse(row.answer) } : {})

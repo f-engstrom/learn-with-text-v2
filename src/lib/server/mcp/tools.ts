@@ -476,13 +476,22 @@ export function createReaderServer(
 			title: 'Ask in the reading screen',
 			description:
 				'Puts your question in the learner’s reading screen, beside the Highlight, and waits for their answer. ' +
-				'Give feedback on their last answer with it. One to four questions: one without options is typed (a translation, an open question), ' +
+				'Give feedback on their last answer with it, and the chunk’s Glosses as a list. The Highlight’s passage shows in the card, so a prompt need not repeat it ("Translate the highlighted clause."). One to four questions: one without options is typed (a translation, an open question), ' +
 				'one with two to four options is picked (they may type their own instead). It replaces the Book’s previous question. ' +
 				'Returns status "answered" with answers (one per question, in order) or ask (their own question for you, instead of answering), ' +
 				'"dismissed" (they put the Tutor aside: stop and wait for them in chat), or "waiting" (still thinking: call wait_for_answer).',
 			inputSchema: {
 				book_id: z.number().int(),
-				feedback: z.string().max(feedbackLength).optional().describe('On their last answer: ✓ / almost / not quite, and the correct reading, in a few lines.'),
+				feedback: z
+					.string()
+					.max(feedbackLength)
+					.optional()
+					.describe('On their last answer: ✓ / almost / not quite, and the correct reading, in a few lines. Line breaks are kept.'),
+				glosses: z
+					.array(z.object({ text: z.string().min(1).max(120), gloss: z.string().min(1).max(120) }))
+					.max(12)
+					.optional()
+					.describe('The Glosses for this chunk, shown as a list; save each with save_gloss too.'),
 				questions: z
 					.array(z.object({ prompt: z.string().min(1).max(300), options: z.array(z.string().min(1).max(120)).optional() }))
 					.min(1)
@@ -491,9 +500,9 @@ export function createReaderServer(
 			},
 			annotations: writes
 		},
-		async ({ book_id, feedback, questions, wait_seconds }) =>
+		async ({ book_id, feedback, glosses, questions, wait_seconds }) =>
 			guard(async () => {
-				await askLearner(db, book_id, { feedback, questions });
+				await askLearner(db, book_id, { feedback, glosses, questions });
 				return heard(book_id, wait_seconds);
 			})
 	);

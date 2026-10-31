@@ -468,3 +468,9 @@ async function toViews(db: Kysely<Database>, rows: TermRow[]): Promise<{ normali
 		}
 	}));
 }
+
+/** A number that moves on whenever the Language's Terms, Translations or Reviews change, from any process. */
+export async function termsVersion(db: Kysely<Database>, languageId: number): Promise<number> {
+	const row = await db.selectFrom('language').select('terms_version').where('id', '=', languageId).executeTakeFirst();
+	return row?.terms_version ?? 0;
+}

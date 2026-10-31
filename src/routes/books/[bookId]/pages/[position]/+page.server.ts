@@ -4,6 +4,7 @@ import { getPage } from '#lib/server/domain/books.ts';
 import { listDictionaries } from '#lib/server/domain/dictionaries.ts';
 import { daySoFar } from '#lib/server/domain/progress.ts';
 import { getHighlight, InvalidBookmark, markPageRead, setBookmark } from '#lib/server/domain/reading.ts';
+import { termsVersion } from '#lib/server/domain/terms.ts';
 import { answerTutor, dismissTutor, getTutorQuestion, InvalidTutorQuestion, type Answer } from '#lib/server/domain/tutor-question.ts';
 import { deleteTermAction, reviewAction, saveTermAction, setStatusAction } from '#lib/server/term-actions.ts';
 import type { Actions, PageServerLoad } from './$types';
@@ -16,6 +17,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		dictionaries: await listDictionaries(database(), page.language.id),
 		highlight: (await getHighlight(database(), page.book.id)) ?? null,
 		question: (await getTutorQuestion(database(), page.book.id)) ?? null,
+		termsVersion: await termsVersion(database(), page.language.id),
 		// Just after Mark as read, which sends you here with ?read.
 		daySoFar: url.searchParams.has('read') ? await daySoFar(database(), page.language.id) : null
 	};
