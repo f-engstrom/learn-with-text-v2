@@ -367,6 +367,12 @@
 		if (result.type === 'failure') error = String(result.data?.message ?? 'Could not send your answer.');
 		else question = { ...question, answer };
 	}
+	/** Enter sends a typed answer and Shift+Enter starts a new line; Enter that ends IME composition (e.g. Cyrillic) doesn't send. */
+	function submitOnEnter(e: KeyboardEvent & { currentTarget: HTMLTextAreaElement }) {
+		if (e.key !== 'Enter' || e.shiftKey || e.isComposing || e.keyCode === 229) return;
+		e.preventDefault();
+		e.currentTarget.form?.requestSubmit();
+	}
 	const answered = $derived(question !== null && drafts.length === question.questions.length && drafts.every((d) => d.trim()));
 
 	/** Puts the Tutor aside: its question and Highlight leave the screen until it asks again. */
@@ -691,6 +697,12 @@
 		<div class="highlight-note card" role="status">
 			<p class="from">From the Tutor</p>
 			<button type="button" class="tutor-close" aria-label="Dismiss the Tutor" title="Dismiss until the Tutor asks again" onclick={dismissTutor}>✕</button>
+			{#if question?.answer}
+				<p class="sent">
+					<span class="waiting">Sent, waiting for the Tutor…</span>
+					<span class="yours">{'ask' in question.answer ? `You asked: ${question.answer.ask}` : question.answer.answers.join(' · ')}</span>
+				</p>
+			{:else}
 			{#if question?.feedback}<p class="feedback">{question.feedback}</p>{/if}
 			{#if highlight}
 				{#if highlight.note}<p class="note-text">{highlight.note}</p>{/if}
@@ -706,19 +718,14 @@
 					<a class="button" href="/books/{data.book.id}/pages/{highlight.page}">On Page {highlight.page} →</a>
 				{/if}
 			{/if}
-			{#if question?.glosses && !question.answer}
+			{#if question?.glosses}
 				<ul class="glosses">
 					{#each question.glosses as g (g.text)}
 						<li><span lang={data.language.code} {dir}>{g.text}</span> {g.gloss}</li>
 					{/each}
 				</ul>
 			{/if}
-			{#if question?.answer}
-				<p class="sent">
-					{'ask' in question.answer ? `You asked: ${question.answer.ask}` : question.answer.answers.join(' · ')}
-					<span>Sent. The Tutor is reading it.</span>
-				</p>
-			{:else if question}
+			{#if question}
 				<form
 					class="questions"
 					onsubmit={(e) => {
@@ -742,7 +749,7 @@
 										rows="2"
 										lang={data.language.code}
 										bind:value={drafts[i]}
-										onkeydown={(e) => e.key === 'Enter' && (e.metaKey || e.ctrlKey) && (e.currentTarget.form?.requestSubmit())}
+										onkeydown={submitOnEnter}
 									></textarea>
 								{/if}
 							</fieldset>
@@ -759,7 +766,7 @@
 								rows="2"
 								autofocus
 								bind:value={ownQuestion}
-								onkeydown={(e) => e.key === 'Enter' && (e.metaKey || e.ctrlKey) && (e.currentTarget.form?.requestSubmit())}
+								onkeydown={submitOnEnter}
 							></textarea>
 						</fieldset>
 						<div class="actions">
@@ -768,6 +775,7 @@
 						</div>
 					{/if}
 				</form>
+			{/if}
 			{/if}
 		</div>
 	{/if}
@@ -1279,9 +1287,13 @@
 		display: grid;
 		gap: 0.2rem;
 	}
-	.sent span {
+	.sent .waiting {
+		color: var(--muted);
+	}
+	.sent .yours {
 		color: var(--muted);
 		font-size: 0.85rem;
+		font-style: italic;
 	}
 	.highlight-note .from {
 		color: var(--muted);
