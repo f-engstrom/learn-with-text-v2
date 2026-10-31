@@ -163,6 +163,7 @@ export async function clearHighlight(db: Kysely<Database>, bookId: number): Prom
 export interface MarkRead {
 	/** Also make every Unknown Word on the Page Known. */
 	restKnown?: boolean;
+	now?: Date;
 }
 
 /**
@@ -173,7 +174,7 @@ export async function markPageRead(
 	db: Kysely<Database>,
 	bookId: number,
 	position: number,
-	{ restKnown = false }: MarkRead = {}
+	{ restKnown = false, now = new Date() }: MarkRead = {}
 ): Promise<number | undefined> {
 	const page = await getPage(db, bookId, position);
 	if (!page) throw new InvalidBookmark('No such Page.');
@@ -191,7 +192,7 @@ export async function markPageRead(
 	}
 
 	await db.transaction().execute(async (trx) => {
-		const now = new Date().toISOString();
+		const at = now.toISOString();
 		if (unknown.size > 0) {
 			await trx
 				.insertInto('term')
@@ -202,20 +203,20 @@ export async function markPageRead(
 						normalised,
 						status: 'known' as const,
 						pronunciation: suggestPronunciation(text, language),
-						created_at: now
+						created_at: at
 					}))
 				)
 				// A Term saved meanwhile (e.g. by the Tutor) keeps its Status.
 				.onConflict((oc) => oc.columns(['language_id', 'normalised']).doNothing())
 				.execute();
 		}
-		await trx.updateTable('page').set({ read_at: now }).where('book_id', '=', bookId).where('position', '=', position).execute();
+		await trx.updateTable('page').set({ read_at: at }).where('book_id', '=', bookId).where('position', '=', position).execute();
 		// A Highlight on a Page you've finished has done its job.
 		await trx.updateTable('book').set(noHighlight).where('id', '=', bookId).where('highlight_page', '=', position).execute();
 		if (next !== undefined) {
 			await trx
 				.updateTable('book')
-				.set({ bookmark_page: next, bookmark_sentence: 1, bookmark_word: null, bookmarked_at: now })
+				.set({ bookmark_page: next, bookmark_sentence: 1, bookmark_word: null, bookmarked_at: at })
 				.where('id', '=', bookId)
 				.execute();
 		}

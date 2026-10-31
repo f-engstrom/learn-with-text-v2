@@ -46,6 +46,8 @@ export interface PageTable {
 	text: string;
 	/** When the Page was marked Read; null while it isn't. */
 	read_at: string | null;
+	/** How many Words the Page has, for Words read. */
+	words: Generated<number>;
 }
 
 export interface SentenceTable {
@@ -63,6 +65,18 @@ export interface FrequencyTable {
 	language_id: number;
 	normalised: string;
 	rank: number;
+}
+
+/** One change in the Status history (ADR 0005), written by triggers on `term`. */
+export interface StatusChangeTable {
+	id: Generated<number>;
+	term_id: number;
+	language_id: number;
+	/** null when the Term was created. */
+	from_status: StatusValue | null;
+	/** null when the Term was deleted. */
+	to_status: StatusValue | null;
+	changed_at: string;
 }
 
 export type GradeValue = 'missed' | 'hard' | 'got';
@@ -174,6 +188,7 @@ export interface Database {
 	page: PageTable;
 	sentence: SentenceTable;
 	term: TermTable;
+	status_change: StatusChangeTable;
 	translation: TranslationTable;
 	review: ReviewTable;
 	frequency: FrequencyTable;
@@ -183,4 +198,19 @@ export interface Database {
 	book_word: BookWordTable;
 	topic: TopicTable;
 	feed: FeedTable;
+	tutor_question: TutorQuestionTable;
+}
+
+/** The Tutor's question in the reading screen; one per Book, replaced by the next. */
+export interface TutorQuestionTable {
+	book_id: number;
+	feedback: string | null;
+	/** JSON: the questions, each a prompt with optional options. */
+	questions: string;
+	asked_at: string;
+	/** JSON: the learner's answers, or their own question instead; null until they answer. */
+	answer: string | null;
+	answered_at: string | null;
+	/** When the learner dismissed it; it no longer shows. */
+	dismissed_at: string | null;
 }

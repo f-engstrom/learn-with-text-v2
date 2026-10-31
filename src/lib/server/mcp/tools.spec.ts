@@ -8,6 +8,7 @@ import { listLanguages } from '../domain/languages';
 import { setBookmark } from '../domain/reading';
 import type { SuggestionSources } from '../domain/suggestions';
 import { listTerms, saveTerm } from '../domain/terms';
+import { answerTutor, getTutorQuestion } from '../domain/tutor-question';
 import { createReaderServer, wikipediaTitle } from './tools';
 
 const words = (n: number) => Array.from({ length: n }, () => 'кот').join(' ') + '.';
@@ -61,15 +62,28 @@ describe('Reader MCP server', () => {
 			set_transfer: false,
 			get_due_terms: true,
 			list_your_languages: true,
+			get_progress: true,
 			set_your_language: false,
 			remove_your_language: false,
 			set_parent: false,
 			set_bookmark: false,
 			set_highlight: false,
 			clear_highlight: false,
+			ask_learner: false,
+			wait_for_answer: true,
+			withdraw_question: false,
 			mark_page_read: false,
 			import_book: false
 		});
+	});
+
+	it('gives progress per Language', async () => {
+		const { call, bookId } = await connect();
+		await call('mark_page_read', { book_id: bookId, page: 1 });
+		const [russian] = await call('get_progress');
+		expect(russian.language.code).toBe('ru');
+		expect(russian.wordsRead).toBeGreaterThan(0);
+		expect(russian.milestone).toEqual({ next: 10_000 });
 	});
 
 	it('lists Books with their Bookmark and Unknown share', async () => {
@@ -240,6 +254,28 @@ describe('Reader MCP server', () => {
 		expect(await call('set_bookmark', { book_id: bookId, page: 1, sentence: 3, word: 'видит' })).toEqual({ bookmark: { page: 1, sentence: 3, word: 'видит' } });
 		expect(await call('set_bookmark', { book_id: bookId, page: 1, sentence: 3, word: 'бежит' })).toEqual({ error: '“бежит” isn\'t in Sentence 3 of Page 1.' });
 		expect((await call('where_am_i')).word).toMatchObject({ text: 'видит' });
+	});
+
+	it('asks the learner in the reading screen and hears back their answer', async () => {
+		const { db, call, bookId } = await connect();
+		const asked = await call('ask_learner', {
+			book_id: bookId,
+			feedback: '✓ Right.',
+			questions: [{ prompt: 'Translate «Мышь бежит».' }, { prompt: 'Which case is «мышь»?', options: ['Nominative', 'Accusative'] }],
+			wait_seconds: 0
+		});
+		expect(asked).toEqual({ status: 'waiting' });
+		const { askedAt } = (await getTutorQuestion(db, bookId))!;
+		await answerTutor(db, bookId, askedAt, { answers: ['The mouse runs', 'Nominative'] });
+		expect(await call('wait_for_answer', { book_id: bookId, wait_seconds: 1 })).toEqual({
+			status: 'answered',
+			answers: ['The mouse runs', 'Nominative']
+		});
+		expect(await call('ask_learner', { book_id: bookId, questions: [{ prompt: 'Pick', options: ['One'] }] })).toEqual({
+			error: 'A question with options has two to four, each at most 120 characters; leave them out for a typed answer.'
+		});
+		expect(await call('withdraw_question', { book_id: bookId })).toEqual({ status: 'none' });
+		expect(await call('wait_for_answer', { book_id: bookId, wait_seconds: 1 })).toEqual({ status: 'none' });
 	});
 
 	it('highlights Sentences for the reading screen, and shows the Highlight back', async () => {

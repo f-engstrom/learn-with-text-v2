@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { deserialize, enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { invalidateAll, replaceState } from '$app/navigation';
+	import { page } from '$app/state';
 	import { onMount, tick, untrack } from 'svelte';
 	import { moveCursor } from '#lib/reading/cursor.ts';
 	import { commandFor } from '#lib/reading/keys.ts';
 	import { termKey } from '#lib/normalise.ts';
 	import type { ReadingToken } from '#lib/server/domain/books.ts';
 	import type { Highlight } from '#lib/server/domain/reading.ts';
+	import type { Answer, TutorQuestion } from '#lib/server/domain/tutor-question.ts';
+	import type { DaySoFar } from '#lib/server/domain/progress.ts';
 	import type { Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
 	import Dictionaries from './Dictionaries.svelte';
@@ -24,6 +27,34 @@
 	type Selection = Pick<Word, 'key' | 'text' | 'sentence'>;
 
 	let { data, form }: PageProps = $props();
+
+	/** The day so far, just after Mark as read: on the next Page, or here on the last one. */
+	let daySoFar = $derived((form as { daySoFar?: DaySoFar } | null)?.daySoFar ?? data.daySoFar);
+	let daySoFarDismissed = $state(false);
+	$effect(() => {
+		daySoFar;
+		daySoFarDismissed = false;
+	});
+	let daySoFarParts = $derived.by(() => {
+		if (!daySoFar) return [];
+		const n = new Intl.NumberFormat();
+		const count = (value: number, one: string, many: string) => `${n.format(value)} ${value === 1 ? one : many}`;
+		return [
+			`${count(daySoFar.wordsRead, 'Word', 'Words')} read`,
+			daySoFar.newTerms > 0 && count(daySoFar.newTerms, 'new Term', 'new Terms'),
+			daySoFar.nowKnown > 0 && `${n.format(daySoFar.nowKnown)} now Known`,
+			daySoFar.reviews > 0 && count(daySoFar.reviews, 'Review', 'Reviews')
+		].filter(Boolean);
+	});
+	function dismissDaySoFar() {
+		daySoFarDismissed = true;
+		// A reload shouldn't bring it back.
+		if (page.url.searchParams.has('read')) {
+			const url = new URL(page.url.href);
+			url.searchParams.delete('read');
+			replaceState(url, page.state);
+		}
+	}
 
 	let words = $derived(
 		data.paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.tokens.filter((t): t is Word => t.key !== undefined)))
@@ -307,16 +338,55 @@
 	const inPassage = (sentence: (typeof sentences)[number], t: number) => passage.has(`${sentenceNumbers.get(sentence)}:${t}`);
 	let highlightElement = $state<HTMLElement>();
 
+	/** The Tutor's question, kept current by the same polling, and what you have written so far. */
+	let question = $state<TutorQuestion | null>(null);
+	let drafts = $state<string[]>([]);
+	let ownQuestion = $state('');
+	let asking = $state(false);
+	$effect(() => {
+		const latest = data.question;
+		untrack(() => showQuestion(latest));
+	});
+	function showQuestion(latest: TutorQuestion | null) {
+		// A new question starts with empty answers; the same one keeps what you're writing.
+		if (latest?.askedAt !== question?.askedAt) {
+			drafts = latest?.questions.map(() => '') ?? [];
+			ownQuestion = '';
+			asking = false;
+		}
+		question = latest;
+	}
+
+	async function answerTutor(answer: Answer) {
+		if (!question) return;
+		const body = new FormData();
+		body.set('askedAt', question.askedAt);
+		body.set('answer', JSON.stringify(answer));
+		const response = await fetch('?/answer', { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
+		const result = deserialize(await response.text());
+		if (result.type === 'failure') error = String(result.data?.message ?? 'Could not send your answer.');
+		else question = { ...question, answer };
+	}
+	const answered = $derived(question !== null && drafts.length === question.questions.length && drafts.every((d) => d.trim()));
+
+	/** Puts the Tutor aside: its question and Highlight leave the screen until it asks again. */
+	function dismissTutor() {
+		highlight = null;
+		question = null;
+		fetch('?/dismissTutor', { method: 'POST', body: new FormData(), headers: { 'x-sveltekit-action': 'true' } });
+	}
+
 	onMount(() => {
 		const poll = setInterval(async () => {
 			if (document.hidden) return;
-			const latest: Highlight | null = await fetch(`/books/${data.book.id}/highlight`)
-				.then((r) => (r.ok ? r.json() : highlight))
-				.catch(() => highlight);
-			if (latest?.at === highlight?.at) return;
-			highlight = latest;
+			const latest: { highlight: Highlight | null; question: TutorQuestion | null } = await fetch(`/books/${data.book.id}/tutor`)
+				.then((r) => (r.ok ? r.json() : { highlight, question }))
+				.catch(() => ({ highlight, question }));
+			showQuestion(latest.question);
+			if (latest.highlight?.at === highlight?.at) return;
+			highlight = latest.highlight;
 			// A new Highlight on this Page comes into view; the cursor and Bookmark stay put.
-			if (latest?.page === data.position) {
+			if (latest.highlight?.page === data.position) {
 				await tick();
 				highlightElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 			}
@@ -596,26 +666,93 @@
 		</span>
 	</header>
 	{@render pages()}
+	{#if daySoFar && !daySoFarDismissed}
+		<p class="day-so-far" role="status">
+			<span><strong>Today</strong> · {daySoFarParts.join(' · ')}</span>
+			<a href="/progress">Progress</a>
+			<button type="button" class="close" aria-label="Dismiss" onclick={dismissDaySoFar}>✕</button>
+		</p>
+	{/if}
 	{#if error}
 		<p class="error" role="alert">{error}</p>
 	{/if}
 </div>
 
 <div class="reader" class:zen class:sheet-open={open && !!selected && !practising}>
-	{#if highlight}
+	{#if highlight || question}
 		<div class="highlight-note card" role="status">
 			<p class="from">From the Tutor</p>
-			{#if highlight.note}<p class="note-text">{highlight.note}</p>{/if}
-			{#if highlightHere}
-				<button type="button" onclick={showHighlight}
-					>{highlight.text
-						? `“${highlight.text.length > 40 ? `${highlight.text.slice(0, 40)}…` : highlight.text}”`
-						: highlight.first === highlight.last
-							? `Sentence ${highlight.first}`
-							: `Sentences ${highlight.first}–${highlight.last}`}</button
+			<button type="button" class="tutor-close" aria-label="Dismiss the Tutor" title="Dismiss until the Tutor asks again" onclick={dismissTutor}>✕</button>
+			{#if question?.feedback}<p class="feedback">{question.feedback}</p>{/if}
+			{#if highlight}
+				{#if highlight.note}<p class="note-text">{highlight.note}</p>{/if}
+				{#if highlightHere}
+					<button type="button" onclick={showHighlight}
+						>{highlight.text
+							? `“${highlight.text.length > 40 ? `${highlight.text.slice(0, 40)}…` : highlight.text}”`
+							: highlight.first === highlight.last
+								? `Sentence ${highlight.first}`
+								: `Sentences ${highlight.first}–${highlight.last}`}</button
+					>
+				{:else}
+					<a class="button" href="/books/{data.book.id}/pages/{highlight.page}">On Page {highlight.page} →</a>
+				{/if}
+			{/if}
+			{#if question?.answer}
+				<p class="sent">
+					{'ask' in question.answer ? `You asked: ${question.answer.ask}` : question.answer.answers.join(' · ')}
+					<span>Sent. The Tutor is reading it.</span>
+				</p>
+			{:else if question}
+				<form
+					class="questions"
+					onsubmit={(e) => {
+						e.preventDefault();
+						if (asking) answerTutor({ ask: ownQuestion });
+						else if (answered) answerTutor({ answers: drafts });
+					}}
 				>
-			{:else}
-				<a class="button" href="/books/{data.book.id}/pages/{highlight.page}">On Page {highlight.page} →</a>
+					{#if !asking}
+						{#each question.questions as q, i (i)}
+							<fieldset>
+								<legend>{q.prompt}</legend>
+								{#if q.options}
+									<div class="options">
+										{#each q.options as option (option)}
+											<button type="button" aria-pressed={drafts[i] === option} onclick={() => (drafts[i] = option)}>{option}</button>
+										{/each}
+									</div>
+								{:else}
+									<textarea
+										rows="2"
+										lang={data.language.code}
+										bind:value={drafts[i]}
+										onkeydown={(e) => e.key === 'Enter' && (e.metaKey || e.ctrlKey) && (e.currentTarget.form?.requestSubmit())}
+									></textarea>
+								{/if}
+							</fieldset>
+						{/each}
+						<div class="actions">
+							<button type="submit" class="primary" disabled={!answered}>Send</button>
+							<button type="button" class="link" onclick={() => (asking = true)}>Ask the Tutor something first</button>
+						</div>
+					{:else}
+						<fieldset>
+							<legend>Your question for the Tutor</legend>
+							<!-- svelte-ignore a11y_autofocus -->
+							<textarea
+								rows="2"
+								autofocus
+								bind:value={ownQuestion}
+								onkeydown={(e) => e.key === 'Enter' && (e.metaKey || e.ctrlKey) && (e.currentTarget.form?.requestSubmit())}
+							></textarea>
+						</fieldset>
+						<div class="actions">
+							<button type="submit" class="primary" disabled={!ownQuestion.trim()}>Ask</button>
+							<button type="button" class="link" onclick={() => (asking = false)}>Back to the question</button>
+						</div>
+					{/if}
+				</form>
 			{/if}
 		</div>
 	{/if}
@@ -1027,6 +1164,76 @@
 	.highlight-note p {
 		margin: 0;
 	}
+	.highlight-note {
+		position: relative;
+	}
+	.tutor-close {
+		position: absolute;
+		top: 0.5rem;
+		inset-inline-end: 0.5rem;
+		padding: 0.15rem 0.45rem;
+		border: none;
+		background: none;
+		box-shadow: none;
+		color: var(--muted);
+	}
+	.feedback {
+		white-space: pre-line;
+	}
+	.questions {
+		display: grid;
+		gap: 0.75rem;
+		justify-self: stretch;
+	}
+	.questions fieldset {
+		display: grid;
+		gap: 0.4rem;
+		margin: 0;
+		padding: 0;
+		border: none;
+	}
+	.questions legend {
+		padding: 0;
+		margin-bottom: 0.4rem;
+		font-weight: 600;
+	}
+	.questions textarea {
+		width: 100%;
+		font: inherit;
+		resize: vertical;
+	}
+	.options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+	.options button[aria-pressed='true'] {
+		background: var(--accent-soft);
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+	.questions .actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem;
+	}
+	.link {
+		padding: 0;
+		border: none;
+		background: none;
+		box-shadow: none;
+		color: var(--accent);
+		text-decoration: underline;
+	}
+	.sent {
+		display: grid;
+		gap: 0.2rem;
+	}
+	.sent span {
+		color: var(--muted);
+		font-size: 0.85rem;
+	}
 	.highlight-note .from {
 		color: var(--muted);
 		font-size: 0.8rem;
@@ -1150,6 +1357,33 @@
 		margin-top: 1rem;
 		padding-top: 1.5rem;
 		border-top: 1px solid var(--border);
+	}
+	.day-so-far {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.25rem 1rem;
+		margin: 0.75rem 0 0;
+		padding: 0.5rem 0.5rem 0.5rem 0.9rem;
+		border: 1px solid var(--border);
+		border-inline-start: 4px solid var(--ok);
+		border-radius: var(--radius);
+		background: var(--surface);
+		color: var(--muted);
+		font-size: 0.92rem;
+	}
+	.day-so-far strong {
+		color: var(--text);
+	}
+	.day-so-far span {
+		flex: 1;
+	}
+	.day-so-far .close {
+		padding: 0.15rem 0.45rem;
+		border: none;
+		background: none;
+		box-shadow: none;
+		color: var(--muted);
 	}
 	.mark-read {
 		display: flex;

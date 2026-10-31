@@ -3,7 +3,7 @@ import type { Database } from '../db/schema';
 import { frequencyBands, type FrequencyBand } from './frequency';
 import { getLanguage, type Language } from './languages';
 import { candidateSpans, chooseSpans } from './multiword';
-import { normalise, parserFor, type Parser, type Token } from './parsing';
+import { countWords, normalise, parserFor, type Parser, type Token } from './parsing';
 import { findTerms, type TermView } from './terms';
 
 export const PAGE_WORD_TARGET = 250;
@@ -131,7 +131,7 @@ export async function createBook(db: Kysely<Database>, input: NewBook): Promise<
 		for (const [i, text] of pages.entries()) {
 			const page = await trx
 				.insertInto('page')
-				.values({ book_id: book.id, position: i + 1, text })
+				.values({ book_id: book.id, position: i + 1, text, words: countWords(parser.parse(text)) })
 				.returning('id')
 				.executeTakeFirstOrThrow();
 			const sentences = parser

@@ -16,6 +16,8 @@ import * as m0013 from './migrations/0013-practice';
 import * as m0014 from './migrations/0014-frequency';
 import * as m0015 from './migrations/0015-tutor-assessment';
 import * as m0016 from './migrations/0016-highlight-passage';
+import * as m0017 from './migrations/0017-progress';
+import * as m0018 from './migrations/0018-tutor-question';
 
 // Listed statically (not read from disk) so they survive bundling by Vite and the MCP entry point.
 const migrations: Record<string, Migration> = {
@@ -34,11 +36,22 @@ const migrations: Record<string, Migration> = {
 	'0013-practice': m0013,
 	'0014-frequency': m0014,
 	'0015-tutor-assessment': m0015,
-	'0016-highlight-passage': m0016
+	'0016-highlight-passage': m0016,
+	'0017-progress': m0017,
+	'0018-tutor-question': m0018
 };
 
 export async function migrateToLatest(db: Kysely<any>): Promise<void> {
-	const migrator = new Migrator({ db, provider: { getMigrations: async () => migrations } });
-	const { error } = await migrator.migrateToLatest();
+	const { error } = await migrator(db).migrateToLatest();
 	if (error) throw error;
+}
+
+/** Migrates up or down to a named migration, e.g. to test one on data saved before it. */
+export async function migrateTo(db: Kysely<any>, name: string): Promise<void> {
+	const { error } = await migrator(db).migrateTo(name);
+	if (error) throw error;
+}
+
+function migrator(db: Kysely<any>): Migrator {
+	return new Migrator({ db, provider: { getMigrations: async () => migrations } });
 }

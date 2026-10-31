@@ -113,6 +113,10 @@ An external lookup source configured for a Language, shown alongside the Page. Y
 Claude running this project's reading-tutor skill, which reads and changes the Reader through its MCP tools. It owns teaching notes (level, chunk size, weak spots, patterns learned); the Reader owns Books, Bookmarks and Terms.
 _Avoid_: AI, assistant, bot
 
+**Tutor's question**:
+What the Tutor asks you in the reading screen, beside its Highlight: one to four questions, each typed or a pick among two to four options, with feedback on your last answer. You answer every question, or ask the Tutor something of your own instead. A Book has at most one; the next replaces it. Dismissing it puts the Tutor aside: the question and the Highlight leave the screen until the Tutor asks again.
+_Avoid_: Prompt, quiz, card
+
 **Gloss**:
 A short meaning the Tutor offers for a Word during a session. It is offered only for Unknown Words and Learning 1–2 Terms, and is saved as a Translation with Source Tutor.
 
@@ -156,3 +160,33 @@ Going through Due Terms on a Page with the cursor, in a subset you choose (by pr
 
 **Wiktionary panel**:
 The built-in lookup that shows English Wiktionary definitions for the selected Word or Multi-word Term, each of which can be added as a Translation with one click.
+
+### Progress
+
+**Words read**:
+The Words on the Pages you've marked Read, each Page counted once, on the day it was last marked Read.
+_Avoid_: Reading volume, word count
+
+**Milestone**:
+A Words read total in a Language worth marking (10,000, 25,000, 50,000, 100,000 and on to 3 million), chosen because a few hundred thousand Words read meets the common Words often enough to learn them.
+_Avoid_: Achievement, badge, level
+
+**Status history**:
+Every change of a Term's Status, from its creation to its deletion, whoever made it. Terms saved before the history began count from the day they were saved, at their present Status.
+_Avoid_: Log, audit trail
+
+**Known Terms**:
+How many Terms in a Language are Known, now or at the end of a past day (from the Status history).
+_Avoid_: Known words (a Term may be a phrase), vocabulary size
+
+**Reading day**:
+A day on which you marked a Page Read, made a Review or saved a Term in a Language. Days without one are simply not Reading days; nothing counts them as missed.
+_Avoid_: Streak, active day
+
+**Due forecast**:
+How many Terms come Due on each of the next fourteen days, with everything already Due counted today.
+_Avoid_: Workload, backlog
+
+**The day so far**:
+What today added in a Language: Words read, new Terms (saved at Learning 1–4), Terms now Known, and Reviews. Shown after you mark a Page Read.
+_Avoid_: Session summary, daily report

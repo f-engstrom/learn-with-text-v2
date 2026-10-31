@@ -9,6 +9,7 @@
 	const sections = [
 		{ href: '/', label: 'Books', matches: (path: string) => path === '/' || path.startsWith('/books') || path.startsWith('/languages') },
 		{ href: '/terms', label: 'Terms', matches: (path: string) => path.startsWith('/terms') },
+		{ href: '/progress', label: 'Progress', matches: (path: string) => path.startsWith('/progress') },
 		{ href: '/topics', label: 'Topics', matches: (path: string) => path.startsWith('/topics') },
 		{ href: '/feeds', label: 'Feeds', matches: (path: string) => path.startsWith('/feeds') },
 		{ href: '/you', label: 'You', matches: (path: string) => path.startsWith('/you') }

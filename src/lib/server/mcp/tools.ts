@@ -23,6 +23,8 @@ import { findSuggestions, getFitRange, importArticle, type SuggestionSources } f
 import { findTerms, InvalidTerm, listTerms, type TermView } from '../domain/terms';
 import { assessTerm, linkParent, saveGloss, setTransfer } from '../domain/tutoring';
 import { InvalidReview } from '../domain/practice';
+import { getProgress } from '../domain/progress';
+import { askLearner, awaitAnswer, feedbackLength, InvalidTutorQuestion, withdrawQuestion } from '../domain/tutor-question';
 import { InvalidYourLanguage, listYourLanguages, removeYourLanguage, setYourLanguage, YOUR_LANGUAGE_LEVELS } from '../domain/your-languages';
 import { byPriority, type DueWord } from '../../practice';
 import { fetchArticle, InvalidAddress, type WebArticle } from '../domain/webpages';
@@ -45,8 +47,8 @@ export function createReaderServer(
 				'Start with list_books, then get_sentences to read from the Bookmark; where_am_i says where the learner is right now when they read on their own. ' +
 				'While tutoring: save_gloss for a meaning you give (only Unknown Words and Learning 1–2 Terms), set_parent to link an inflected form to its dictionary form, ' +
 				'assess_term after the learner answers about a Term (it moves your own assessment, never their Status, and counts as a Review), set_transfer when you judge how hard a Term is to carry over from their languages (list_your_languages), ' +
-				'set_bookmark as you move through the text, set_highlight to point the learner at Sentences in their reading screen, and mark_page_read at the end of a Page. ' +
-				'get_due_terms lists Terms due for practice, by priority, for warm-ups and quizzes. Only the learner sets a Status.'
+				'set_bookmark as you move through the text, set_highlight to point the learner at Sentences in their reading screen, ask_learner to put your question there and wait for their answer, and mark_page_read at the end of a Page. ' +
+				'get_due_terms lists Terms due for practice, by priority, for warm-ups and quizzes. get_progress shows Words read, Milestones and Known Terms. Only the learner sets a Status.'
 		}
 	);
 	const readOnly = { readOnlyHint: true, openWorldHint: false } as const;
@@ -339,6 +341,17 @@ export function createReaderServer(
 	);
 
 	server.registerTool(
+		'get_progress',
+		{
+			title: 'Get progress',
+			description:
+				"Per Language: Words read (Words on Pages marked Read) with the last Milestone passed and the next, Reading days this week, Words read per week, Known Terms now and over time, and the Due forecast for the next 14 days. Mention a new Milestone gladly; never point out days without reading.",
+			annotations: readOnly
+		},
+		async () => json(await getProgress(db))
+	);
+
+	server.registerTool(
 		'set_your_language',
 		{
 			title: 'Set one of Your languages',
@@ -448,6 +461,68 @@ export function createReaderServer(
 		}
 	);
 
+	const waitSeconds = z
+		.number()
+		.int()
+		.min(0)
+		.max(600)
+		.optional()
+		.describe('How long to wait for the answer, in seconds (default 120). On "waiting", call wait_for_answer.');
+	const heard = (book_id: number, wait_seconds = 120) => awaitAnswer(db, book_id, { timeoutMs: wait_seconds * 1000 }).then(json);
+
+	server.registerTool(
+		'ask_learner',
+		{
+			title: 'Ask in the reading screen',
+			description:
+				'Puts your question in the learner’s reading screen, beside the Highlight, and waits for their answer. ' +
+				'Give feedback on their last answer with it. One to four questions: one without options is typed (a translation, an open question), ' +
+				'one with two to four options is picked (they may type their own instead). It replaces the Book’s previous question. ' +
+				'Returns status "answered" with answers (one per question, in order) or ask (their own question for you, instead of answering), ' +
+				'"dismissed" (they put the Tutor aside: stop and wait for them in chat), or "waiting" (still thinking: call wait_for_answer).',
+			inputSchema: {
+				book_id: z.number().int(),
+				feedback: z.string().max(feedbackLength).optional().describe('On their last answer: ✓ / almost / not quite, and the correct reading, in a few lines.'),
+				questions: z
+					.array(z.object({ prompt: z.string().min(1).max(300), options: z.array(z.string().min(1).max(120)).optional() }))
+					.min(1)
+					.max(4),
+				wait_seconds: waitSeconds
+			},
+			annotations: writes
+		},
+		async ({ book_id, feedback, questions, wait_seconds }) =>
+			guard(async () => {
+				await askLearner(db, book_id, { feedback, questions });
+				return heard(book_id, wait_seconds);
+			})
+	);
+
+	server.registerTool(
+		'wait_for_answer',
+		{
+			title: 'Wait for the answer',
+			description: 'Waits again for the learner to answer the Book’s question in the reading screen, after ask_learner said "waiting". Same statuses, or "none" with no question.',
+			inputSchema: { book_id: z.number().int(), wait_seconds: waitSeconds },
+			annotations: readOnly
+		},
+		async ({ book_id, wait_seconds }) => heard(book_id, wait_seconds)
+	);
+
+	server.registerTool(
+		'withdraw_question',
+		{
+			title: 'Withdraw the question',
+			description: 'Takes your question out of the reading screen, e.g. when you stop or carry on in chat.',
+			inputSchema: { book_id: z.number().int() },
+			annotations: { ...writes, idempotentHint: true }
+		},
+		async ({ book_id }) => {
+			await withdrawQuestion(db, book_id);
+			return json({ status: 'none' });
+		}
+	);
+
 	server.registerTool(
 		'mark_page_read',
 		{
@@ -527,7 +602,7 @@ async function guard(run: () => Promise<CallToolResult>): Promise<CallToolResult
 	try {
 		return await run();
 	} catch (e) {
-		if (e instanceof InvalidTerm || e instanceof InvalidBookmark || e instanceof InvalidHighlight || e instanceof InvalidReview || e instanceof InvalidYourLanguage || e instanceof InvalidBook || e instanceof InvalidAddress) {
+		if (e instanceof InvalidTerm || e instanceof InvalidBookmark || e instanceof InvalidHighlight || e instanceof InvalidTutorQuestion || e instanceof InvalidReview || e instanceof InvalidYourLanguage || e instanceof InvalidBook || e instanceof InvalidAddress) {
 			return failure(e.message);
 		}
 		throw e;
