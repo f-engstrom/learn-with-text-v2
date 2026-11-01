@@ -25,7 +25,7 @@
 		ignored: 'Ignored'
 	} as const;
 
-	const sourceLabels: Record<Source, string> = { you: '', wiktionary: 'Wiktionary', tutor: 'Tutor' };
+	const sourceLabels: Record<Source, string> = { you: '', wiktionary: 'Wiktionary', tutor: 'Tutor', azure: 'Azure' };
 
 	interface Row {
 		id?: number;

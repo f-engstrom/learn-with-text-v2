@@ -139,7 +139,7 @@ export interface YourLanguageTable {
 	added_at: string;
 }
 
-export type SourceValue = 'you' | 'wiktionary' | 'tutor';
+export type SourceValue = 'you' | 'wiktionary' | 'tutor' | 'azure';
 
 export interface TranslationTable {
 	id: Generated<number>;

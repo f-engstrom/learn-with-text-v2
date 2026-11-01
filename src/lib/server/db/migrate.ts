@@ -20,6 +20,7 @@ import * as m0017 from './migrations/0017-progress';
 import * as m0018 from './migrations/0018-tutor-question';
 import * as m0019 from './migrations/0019-terms-version';
 import * as m0020 from './migrations/0020-tutor-question-glosses';
+import * as m0021 from './migrations/0021-azure-source';
 
 // Listed statically (not read from disk) so they survive bundling by Vite and the MCP entry point.
 const migrations: Record<string, Migration> = {
@@ -42,7 +43,8 @@ const migrations: Record<string, Migration> = {
 	'0017-progress': m0017,
 	'0018-tutor-question': m0018,
 	'0019-terms-version': m0019,
-	'0020-tutor-question-glosses': m0020
+	'0020-tutor-question-glosses': m0020,
+	'0021-azure-source': m0021
 };
 
 export async function migrateToLatest(db: Kysely<any>): Promise<void> {

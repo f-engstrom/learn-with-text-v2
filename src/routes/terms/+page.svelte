@@ -18,7 +18,7 @@
 		known: 'Known',
 		ignored: 'Ignored'
 	};
-	const sourceLabels: Record<Source, string> = { you: 'You', wiktionary: 'Wiktionary', tutor: 'Tutor' };
+	const sourceLabels: Record<Source, string> = { you: 'You', wiktionary: 'Wiktionary', tutor: 'Tutor', azure: 'Azure' };
 
 	/** The Term whose form is open below its row. */
 	let editing = $state<number | undefined>();

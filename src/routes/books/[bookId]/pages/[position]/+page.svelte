@@ -20,6 +20,7 @@
 	import { passageParts } from '#lib/reading/passage.ts';
 	import { frequencyLabels, levelLabels, practiceQueue, suggestedStatus, transferLabel, type DueWord, type Subset } from '#lib/practice.ts';
 	import WiktionaryPanel from './WiktionaryPanel.svelte';
+	import AzurePanel from './AzurePanel.svelte';
 
 	/** A Word, or a matched Multi-word Term, on the Page. */
 	type Word = ReadingToken & { key: string; index: number; sentence: number };
@@ -891,6 +892,13 @@
 					text={selected.text}
 					translations={term?.translations.map((t) => t.text) ?? []}
 					onadd={(definition) => termForm?.addTranslation(definition, 'wiktionary')}
+				/>
+				<AzurePanel
+					language={data.language}
+					termKey={selected.key}
+					text={selected.text}
+					translations={term?.translations.map((t) => t.text) ?? []}
+					onadd={(translation) => termForm?.addTranslation(translation, 'azure')}
 				/>
 				<Dictionaries dictionaries={data.dictionaries} term={selected.key} bind:chosen={dictionary} />
 			</div>

@@ -56,7 +56,7 @@ export interface TranslationInput {
 	source?: string;
 }
 
-export const SOURCES: readonly Source[] = ['you', 'wiktionary', 'tutor'];
+export const SOURCES: readonly Source[] = ['you', 'wiktionary', 'tutor', 'azure'];
 
 export function isSource(value: string | undefined): value is Source {
 	return value !== undefined && (SOURCES as readonly string[]).includes(value);
