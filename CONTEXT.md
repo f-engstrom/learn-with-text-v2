@@ -32,6 +32,9 @@ _Avoid_: Selection (that's yours), focus, annotation
 One word-like piece of a Page as produced by its Language's splitting rules. Punctuation, spaces and numbers are not Words.
 _Avoid_: Token (except when talking about the parser)
 
+**Character part**:
+One or more characters within a Chinese Word, picked in the Term form when the segmenter joined characters you want as their own Term (我 in 我的). Its Term shows where it stands as a Word on its own; the Word it came from still reads as one Word.
+
 **Normalised form**:
 The form of a Word or phrase used for matching: lowercased with the Language's normalisation rules applied (e.g. Russian stress marks removed). Reading always shows the original text.
 

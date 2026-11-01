@@ -62,6 +62,16 @@ describe('createBook', () => {
 		]);
 	});
 
+	it('loads the Terms for characters within a Chinese Word', async () => {
+		const { db, byName } = await setup();
+		const id = await createBook(db, { languageId: byName.Chinese, title: '书', text: '这是我的书。' });
+		await saveTerm(db, { languageId: byName.Chinese, text: '我', status: 'known' });
+
+		const page = await getPage(db, id, 1);
+		expect(page?.paragraphs[0].sentences[0].tokens.map((t) => t.text)).toContain('我的');
+		expect(page?.terms['我']?.status).toBe('known');
+	});
+
 	it('returns nothing for a Page that does not exist', async () => {
 		const { db, byName } = await setup();
 		const id = await createBook(db, { languageId: byName.Bosnian, title: 'Knjiga', text: 'Jedan.' });

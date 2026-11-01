@@ -3,7 +3,7 @@ import type { Database } from '../db/schema';
 import { frequencyBands, type FrequencyBand } from './frequency';
 import { getLanguage, type Language } from './languages';
 import { candidateSpans, chooseSpans } from './multiword';
-import { countWords, normalise, parserFor, type Parser, type Token } from './parsing';
+import { countWords, normalise, parserFor, partKeys, type Parser, type Token } from './parsing';
 import { findTerms, type TermView } from './terms';
 
 export const PAGE_WORD_TARGET = 250;
@@ -254,10 +254,12 @@ export async function getPage(db: Kysely<Database>, bookId: number, position: nu
 	if (!language) return undefined;
 	const parsed = parserFor(language).parse(row.text);
 	const spans = parsed.map((p) => p.sentences.map((s) => candidateSpans(s.tokens, language)));
-	const keys = [
+	const wordKeys = [
 		...parsed.flatMap((p) => p.sentences.flatMap((s) => s.tokens.filter((t) => t.isWord).map((t) => normalise(t.text, language)))),
 		...spans.flat(2).map((s) => s.key)
 	];
+	// Characters within a Word can be Terms of their own, so the Term form can show them.
+	const keys = [...new Set([...wordKeys, ...wordKeys.flatMap(partKeys)])];
 	const terms = await findTerms(db, language.id, keys);
 
 	let index = 0;

@@ -1,6 +1,6 @@
 import type { Language } from './languages';
 
-export { normalise, termKey } from '../../normalise';
+export { characterParts, normalise, partKeys, termKey } from '../../normalise';
 
 /** A piece of text: a Word, or the punctuation and spaces between Words. */
 export interface Token {

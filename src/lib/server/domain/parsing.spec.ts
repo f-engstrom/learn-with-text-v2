@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalise, parserFor } from './parsing';
+import { characterParts, normalise, parserFor, partKeys } from './parsing';
 
 const russian = { code: 'ru', characterMap: { '́': '', '̀': '' } };
 const farsi = { code: 'fa', characterMap: { 'ي': 'ی', 'ك': 'ک' } };
@@ -73,5 +73,18 @@ describe('normalise', () => {
 
 	it('treats decomposed and composed text the same', () => {
 		expect(normalise('Č'.normalize('NFD'), bosnian)).toBe('č');
+	});
+});
+
+describe('characterParts', () => {
+	it('splits a Word of two or more Chinese characters into its characters', () => {
+		expect(characterParts('我的')).toEqual(['我', '的']);
+		expect(partKeys('图书馆')).toEqual(['图', '图书', '书', '书馆', '馆']);
+	});
+
+	it('leaves other Words whole', () => {
+		expect(characterParts('我')).toBeUndefined();
+		expect(characterParts('кот')).toBeUndefined();
+		expect(partKeys('кот')).toEqual([]);
 	});
 });

@@ -5,7 +5,7 @@
 	import { onMount, tick, untrack } from 'svelte';
 	import { moveCursor } from '#lib/reading/cursor.ts';
 	import { commandFor } from '#lib/reading/keys.ts';
-	import { termKey } from '#lib/normalise.ts';
+	import { characterParts, termKey } from '#lib/normalise.ts';
 	import type { ReadingToken } from '#lib/server/domain/books.ts';
 	import type { Highlight } from '#lib/server/domain/reading.ts';
 	import type { Answer, TutorQuestion } from '#lib/server/domain/tutor-question.ts';
@@ -68,9 +68,21 @@
 	let range = $derived(
 		current === undefined ? undefined : ([Math.min(anchor ?? current, current), Math.max(anchor ?? current, current)] as const)
 	);
+	/** The characters of the one selected Word, if it is written in characters you can pick from. */
+	let characters = $derived(range && range[0] === range[1] ? characterParts(words[range[0]].text) : undefined);
+	/** Characters you picked within Word `word` in the Term panel, from `anchor` to `focus`. */
+	let part = $state<{ word: number; anchor: number; focus: number }>();
+	let picked = $derived.by(() => {
+		if (!characters || !part || part.word !== range?.[0]) return undefined;
+		return [Math.min(part.anchor, part.focus), Math.max(part.anchor, part.focus)] as const;
+	});
 	let selected: Selection | undefined = $derived.by(() => {
 		if (!range) return undefined;
 		const [first, last] = range;
+		if (first === last && characters && picked) {
+			const text = characters.slice(picked[0], picked[1] + 1).join('');
+			return { text, key: termKey(text, data.language), sentence: words[first].sentence };
+		}
 		if (first === last) return words[first];
 		const text = phraseText(first, last) ?? '';
 		return { text, key: termKey(text, data.language), sentence: words[first].sentence };
@@ -450,6 +462,7 @@
 		untrack(() => {
 			if (anchor !== undefined && current !== undefined) current = Math.min(anchor, current);
 			anchor = undefined;
+			part = undefined;
 			if (current !== undefined && current >= words.length) current = words.length - 1;
 		});
 	});
@@ -600,6 +613,12 @@
 		pasteTranslation(e.clipboardData?.getData('text/plain') ?? '');
 	}
 
+	/** Picks a character of the selected Word for the Term form; Shift-click picks a run of them. */
+	function pickCharacter(index: number, shift: boolean) {
+		if (!range) return;
+		part = { word: range[0], anchor: shift && part?.word === range[0] ? part.anchor : index, focus: index };
+	}
+
 	function choose(word: Word, shift: boolean) {
 		const again = current === word.index && !shift;
 		if (shift && current !== undefined) extendTo(word.index);
@@ -629,6 +648,8 @@
 		<dd>Previous or next Sentence</dd>
 		<dt><kbd>Shift</kbd> + <kbd>←</kbd> <kbd>→</kbd></dt>
 		<dd>Select a phrase (or Shift-click)</dd>
+		<dt>Characters</dt>
+		<dd>In the Term form, pick part of a Chinese Word</dd>
 		<dt><kbd>1</kbd>–<kbd>4</kbd></dt>
 		<dd>Learning 1–4</dd>
 		<dt><kbd>K</kbd> <kbd>I</kbd></dt>
@@ -826,6 +847,22 @@
 		{:else if open && selected}
 			<div class="term-panel card">
 				<button type="button" class="close" aria-label="Close the Term form" onclick={() => (open = false)}>✕</button>
+				{#if characters && range}
+					<div class="parts" role="group" aria-label="The whole Word or some of its characters">
+						<button type="button" class="part {statusOf(words[range[0]].key)}" aria-pressed={!picked} onclick={() => (part = undefined)}
+							>{words[range[0]].text}</button
+						>
+						{#each characters as character, i (i)}
+							<button
+								type="button"
+								class="part {statusOf(termKey(character, data.language))}"
+								aria-pressed={picked !== undefined && i >= picked[0] && i <= picked[1]}
+								onmousedown={(e) => e.shiftKey && e.preventDefault()}
+								onclick={(e) => pickCharacter(i, e.shiftKey)}>{character}</button
+							>
+						{/each}
+					</div>
+				{/if}
 				{#key `${selected.key}:${JSON.stringify(term)}`}
 					<TermForm bind:this={termForm} language={data.language} text={selected.text} {term} error={form?.message} />
 				{/key}
@@ -1314,6 +1351,25 @@
 		grid-template-columns: minmax(0, 1fr);
 		gap: 1rem;
 		box-sizing: border-box;
+	}
+	/* Leaves room for the close button. */
+	.parts {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin-inline-end: 2.5rem;
+	}
+	.part {
+		background: var(--status, transparent);
+		padding: 0.15rem 0.5rem;
+		font-size: 1.15rem;
+	}
+	.part:first-child {
+		margin-inline-end: 0.5rem;
+	}
+	.part[aria-pressed='true'] {
+		outline: 2px solid var(--accent);
+		outline-offset: 1px;
 	}
 	.facts {
 		display: grid;

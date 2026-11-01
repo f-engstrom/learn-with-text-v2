@@ -21,3 +21,27 @@ export function normalise(text: string, language: Rules): string {
 export function termKey(text: string, language: Rules): string {
 	return normalise(text.trim().replace(/\s+/gu, ' '), language);
 }
+
+const han = /^\p{Script=Han}$/u;
+
+/**
+ * The characters of a Word written in Chinese characters, if it has more than one: the segmenter can
+ * join characters you want as Terms of their own (我的 → 我), so any run of them can be selected.
+ */
+export function characterParts(text: string): string[] | undefined {
+	const characters = [...text];
+	return characters.length > 1 && characters.every((c) => han.test(c)) ? characters : undefined;
+}
+
+/** Every run of characters within a Word's `characterParts`, shorter than the Word itself. */
+export function partKeys(key: string): string[] {
+	const characters = characterParts(key);
+	if (!characters) return [];
+	const parts: string[] = [];
+	for (let start = 0; start < characters.length; start++) {
+		for (let end = start + 1; end <= characters.length; end++) {
+			if (end - start < characters.length) parts.push(characters.slice(start, end).join(''));
+		}
+	}
+	return parts;
+}
