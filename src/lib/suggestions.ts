@@ -16,6 +16,8 @@ export interface Suggestion {
 	topic?: string;
 	/** The Feed it came from, by name; none for Wikipedia. */
 	feed?: string;
+	/** Who wrote it, for a Classic. */
+	author?: string;
 	unknownShare: number;
 	pageCount: number;
 }

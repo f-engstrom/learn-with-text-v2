@@ -44,6 +44,10 @@
 		No Feeds for {data.language.name}.
 	{/if}
 	<a href="/feeds">Edit Feeds</a>
+	{#if data.classics > 0}
+		<br />
+		And short classics from Wikisource.
+	{/if}
 </p>
 
 <fieldset class="fit card">
@@ -58,7 +62,7 @@
 {/if}
 
 {#await data.suggestions}
-	<p class="note">Looking on Wikipedia and in the Feeds…</p>
+	<p class="note">Looking on Wikipedia, Wikisource and in the Feeds…</p>
 {:then result}
 	{#if 'failed' in result}
 		<p class="error" role="alert">{result.failed}</p>
@@ -72,6 +76,7 @@
 						<a href={suggestion.url} target="_blank" rel="noreferrer" lang={data.language.code} {dir}>{suggestion.title}</a>
 						{#if suggestion.topic}<small class="tag">{suggestion.topic}</small>{/if}
 						{#if suggestion.feed}<small class="tag feed">{suggestion.feed}</small>{/if}
+						{#if suggestion.author}<small class="tag classic" lang={data.language.code} {dir}>{suggestion.author}</small>{/if}
 					</div>
 					<div class="facts">
 						<span class="share" title="Share of its distinct Words that are Unknown">{percent.format(suggestion.unknownShare)} Unknown</span>
@@ -88,7 +93,7 @@
 							};
 						}}
 					>
-						<input type="hidden" name="kind" value={suggestion.feed ? 'feed' : 'wikipedia'} />
+						<input type="hidden" name="kind" value={suggestion.feed ? 'feed' : suggestion.author ? 'classic' : 'wikipedia'} />
 						<input type="hidden" name="title" value={suggestion.title} />
 						<input type="hidden" name="url" value={suggestion.url} />
 						<button class="primary" disabled={picking !== undefined}>{picking === suggestion.url ? 'Importing…' : 'Read this'}</button>
@@ -166,6 +171,9 @@
 	.tag.feed {
 		background: var(--accent-soft);
 		color: var(--accent);
+	}
+	.tag.classic {
+		font-style: italic;
 	}
 	@media (max-width: 40rem) {
 		.suggestions li {

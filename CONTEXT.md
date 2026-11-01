@@ -89,7 +89,7 @@ The fraction of a Book's (or a Suggestion's) distinct Words that are Unknown.
 _Avoid_: Unknown percent, difficulty
 
 **Suggestion**:
-A text the Reader found for you to read in a Language, from Wikipedia or a Feed, shown with its Unknown share and length. Picking a Suggestion imports it as a Book. A text you already have as a Book is never suggested again.
+A text the Reader found for you to read in a Language, from Wikipedia, a Feed or its Classics, shown with its Unknown share and length. Picking a Suggestion imports it as a Book. A text you already have as a Book is never suggested again.
 _Avoid_: Recommendation, candidate, article
 
 **Fit range**:
@@ -103,6 +103,10 @@ _Avoid_: Interest, tag, category
 **Feed**:
 A news feed (RSS or Atom) configured for a Language, which Suggestions can come from. Some are built in; you can add and remove them.
 _Avoid_: Source (that's who added a Translation), channel
+
+**Classic**:
+A short, well-known public-domain work (a story, fable or essay) built into the Reader for a Language and read from Wikisource, which Suggestions can come from. It is shown with its author and imported whole, without Wikisource's notes.
+_Avoid_: Book (that's what it becomes once picked), literature, work
 
 **Dictionary**:
 An external lookup source configured for a Language, shown alongside the Page. You copy from it and paste as a Translation.

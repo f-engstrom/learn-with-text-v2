@@ -5,6 +5,7 @@ import { createBook, findBookByUrl, PAGE_WORD_TARGET, splitIntoPages } from './b
 import type { Language } from './languages';
 import { countWords, normalise, parserFor, type Parser } from './parsing';
 import { listFeeds, type FeedReader } from './feeds';
+import { CLASSICS, classicUrl, findClassic, isTitleLine, type Classic, type WikisourceSource } from './classics';
 import { listTopics } from './topics';
 import type { WebArticle } from './webpages';
 
@@ -38,7 +39,7 @@ export interface Candidate extends Suggestion {
 
 /** Section headings where an article's reading text ends: references, links, "see also". */
 const END_MATTER =
-	/^(references|notes|see also|external links|further reading|sources|примечания|литература|ссылки|см\. также|источники|reference|izvori|literatura|vanjski linkovi|vanjske veze|također pogledajte|vidi još|bilješke|منابع|پانویس|جستارهای وابسته|پیوند به بیرون|یادداشت‌ها|参考文献|参考资料|外部链接|外部連結|参见|參見|注释|註釋)$/i;
+	/^(references|notes|see also|external links|further reading|sources|примечания|литература|ссылки|см\. также|источники|reference|izvor|izvori|literatura|vanjski linkovi|vanjske veze|također pogledajte|vidi još|bilješke|منابع|پانویس|جستارهای وابسته|پیوند به بیرون|یادداشت‌ها|参考文献|参考资料|外部链接|外部連結|参见|參見|注释|註釋)$/i;
 
 /**
  * Cuts an article to at most about three Pages: the lead, then further sections while it is under
@@ -101,28 +102,32 @@ export async function setFitRange(db: Kysely<Database>, languageId: number, rang
 	return { min, max };
 }
 
-/** Where Suggestions come from: Wikipedia, and the Language's Feeds when given. */
+/** Where Suggestions come from: Wikipedia, and the Language's Feeds and Classics when given. */
 export interface SuggestionSources {
 	wikipedia: WikipediaSource;
 	feeds?: FeedReader;
+	wikisource?: WikisourceSource;
 }
 
 /** How many recent items to try from each Feed, and from all Feeds together. */
 export const ITEMS_PER_FEED = 3;
 export const FEED_SUGGESTION_COUNT = 8;
+/** How many Classics to try each time; Find others picks others. */
+export const CLASSIC_SUGGESTION_COUNT = 6;
 
 /**
  * Looks for things to read in a Language: Wikipedia articles for your Topics (or random ones if
- * you have none) and recent items from its Feeds. Articles you already have as a Book and stubs
- * are left out. Not ranked; see rankSuggestions.
+ * you have none), recent items from its Feeds and some of its Classics. Texts you already have as
+ * a Book and stubs are left out. Not ranked; see rankSuggestions.
  */
 export async function findSuggestions(db: Kysely<Database>, sources: SuggestionSources, language: Language): Promise<Candidate[]> {
 	const failures: unknown[] = [];
-	const [fromWikipedia, fromFeeds] = await Promise.all([
+	const [fromWikipedia, fromFeeds, fromClassics] = await Promise.all([
 		wikipediaCandidates(db, sources.wikipedia, language, failures),
-		sources.feeds ? feedCandidates(db, sources.feeds, language, failures) : []
+		sources.feeds ? feedCandidates(db, sources.feeds, language, failures) : [],
+		sources.wikisource ? classicCandidates(db, sources.wikisource, language, failures) : []
 	]);
-	const candidates = [...fromWikipedia, ...fromFeeds];
+	const candidates = [...fromWikipedia, ...fromFeeds, ...fromClassics];
 	// Some failures are fine; a search that found nothing because every request failed is not.
 	if (candidates.length === 0 && failures.length > 0) throw failures[0];
 	return withoutBooks(db, candidates);
@@ -195,10 +200,36 @@ async function feedCandidates(db: Kysely<Database>, reader: FeedReader, language
 	return candidates;
 }
 
+async function classicCandidates(db: Kysely<Database>, source: WikisourceSource, language: Language, failures: unknown[]) {
+	const unread = await withoutBooks(db, (CLASSICS[language.code] ?? []).map((c) => ({ ...c, url: classicUrl(c) })));
+	const candidates: Candidate[] = [];
+	await eachLimited(shuffle(unread).slice(0, CLASSIC_SUGGESTION_COUNT), 2, async (classic) => {
+		let text: string | undefined;
+		try {
+			text = await source.text(classic);
+		} catch (e) {
+			failures.push(e);
+			return;
+		}
+		if (text === undefined) return;
+		// A Classic is kept whole, up to its notes.
+		const candidate = await toCandidate(db, language, { title: classic.title, url: classic.url, author: classic.author }, wholeWork(classic, text, language));
+		if (candidate) candidates.push(candidate);
+	});
+	return candidates;
+}
+
+/** A Classic's text without its title line and the notes and references after it. */
+function wholeWork(classic: Classic, text: string, language: Language): string {
+	const lines = cutArticle(text, parserFor(language), Infinity).split('\n');
+	if (lines.length > 1 && isTitleLine(lines[0], classic.title)) lines.shift();
+	return lines.join('\n');
+}
+
 async function toCandidate(
 	db: Kysely<Database>,
 	language: Language,
-	about: Pick<Suggestion, 'title' | 'url' | 'topic' | 'feed'>,
+	about: Pick<Suggestion, 'title' | 'url' | 'topic' | 'feed' | 'author'>,
 	text: string
 ): Promise<Candidate | undefined> {
 	const parser = parserFor(language);
@@ -250,6 +281,22 @@ export async function importFeedItem(
 	const article = await reader.article(url);
 	if (!article) return undefined;
 	return createBook(db, { languageId: language.id, title: article.title, text: article.text, url });
+}
+
+/** Imports a Classic, by its web address, as a Book that keeps the address; one you already have is reused. */
+export async function importClassic(
+	db: Kysely<Database>,
+	source: WikisourceSource,
+	language: Language,
+	url: string
+): Promise<number | undefined> {
+	const classic = findClassic(language.code, url);
+	if (!classic) return undefined;
+	const existing = await findBookByUrl(db, url);
+	if (existing !== undefined) return existing;
+	const text = await source.text(classic);
+	if (text === undefined) return undefined;
+	return createBook(db, { languageId: language.id, title: classic.title, text: wholeWork(classic, text, language), url });
 }
 
 function shuffle<T>(items: T[]): T[] {

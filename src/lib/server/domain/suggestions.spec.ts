@@ -7,11 +7,13 @@ import { listLanguages } from './languages';
 import { countWords, parserFor } from './parsing';
 import { saveTerm } from './terms';
 import { addTopic, InvalidTopic, listTopics, removeTopic } from './topics';
+import { CLASSICS, classicUrl, type WikisourceSource } from './classics';
 import {
 	cutArticle,
 	findSuggestions,
 	getFitRange,
 	importArticle,
+	importClassic,
 	MIN_WORDS,
 	setFitRange,
 	unknownShareOf,
@@ -155,6 +157,36 @@ describe('findSuggestions', () => {
 		expect((await listBooks(db)).find((b) => b.id === id)?.title).toBe('Кот');
 		expect((await findSuggestions(db, { wikipedia: source }, russian)).map((f) => f.title)).toEqual(['Мышь']);
 		expect(await importArticle(db, source, russian, 'Кот')).toBe(id);
+	});
+});
+
+describe('Classics in findSuggestions', () => {
+	const noWikipedia = fake({});
+	const wikisource: WikisourceSource = {
+		text: async (classic) => [classic.title, words(100), '== Примечания ==', 'Сноска.'].join('\n')
+	};
+
+	it("suggests some of the Language's Classics, by author, whole and without their title line and notes", async () => {
+		const { db, russian } = await setup();
+		const found = await findSuggestions(db, { wikipedia: noWikipedia, wikisource }, russian);
+		expect(found.length).toBeGreaterThan(0);
+		for (const suggestion of found) {
+			const classic = CLASSICS.ru.find((c) => classicUrl(c) === suggestion.url)!;
+			expect(suggestion).toEqual(expect.objectContaining({ title: classic.title, author: classic.author, text: words(100) }));
+		}
+	});
+
+	it('imports a Classic once, and never suggests it again', async () => {
+		const { db, russian } = await setup();
+		const url = classicUrl(CLASSICS.ru[0]);
+		const id = await importClassic(db, wikisource, russian, url);
+		expect((await listBooks(db)).find((b) => b.id === id)).toEqual(expect.objectContaining({ title: CLASSICS.ru[0].title }));
+		expect(await importClassic(db, wikisource, russian, url)).toBe(id);
+		expect(await importClassic(db, wikisource, russian, 'https://ru.wikisource.org/wiki/Not_a_Classic')).toBeUndefined();
+		for (let i = 0; i < 5; i++) {
+			const found = await findSuggestions(db, { wikipedia: noWikipedia, wikisource }, russian);
+			expect(found.map((f) => f.url)).not.toContain(url);
+		}
 	});
 });
 

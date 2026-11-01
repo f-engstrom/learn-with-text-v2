@@ -7,6 +7,7 @@ import { openDatabase } from '../db/open';
 import { migrateToLatest } from '../db/migrate';
 import { feedsFromWeb } from '../domain/feeds';
 import { wikipediaFromWeb } from '../domain/suggestions';
+import { wikisourceFromWeb } from '../domain/classics';
 import { createReaderServer } from './tools';
 
 // Relative to the project, not to wherever Claude was started, like the web app's default.
@@ -16,4 +17,4 @@ const db = openDatabase(isAbsolute(configured) ? configured : resolve(projectRoo
 await migrateToLatest(db);
 
 // stdout carries the protocol, so nothing else may print there.
-await createReaderServer(db, { wikipedia: wikipediaFromWeb(), feeds: feedsFromWeb() }).connect(new StdioServerTransport());
+await createReaderServer(db, { wikipedia: wikipediaFromWeb(), feeds: feedsFromWeb(), wikisource: wikisourceFromWeb() }).connect(new StdioServerTransport());

@@ -19,7 +19,8 @@ import {
 	setBookmark,
 	setHighlight
 } from '../domain/reading';
-import { findSuggestions, getFitRange, importArticle, type SuggestionSources } from '../domain/suggestions';
+import { findSuggestions, getFitRange, importArticle, importClassic, type SuggestionSources } from '../domain/suggestions';
+import { findClassic } from '../domain/classics';
 import { findTerms, InvalidTerm, listTerms, type TermView } from '../domain/terms';
 import { assessTerm, linkParent, saveGloss, setTransfer } from '../domain/tutoring';
 import { InvalidReview } from '../domain/practice';
@@ -211,7 +212,7 @@ export function createReaderServer(
 		{
 			title: 'Get Suggestions',
 			description:
-				"Things to read in a Language, from Wikipedia (for the learner's Topics) and the Language's news Feeds, best first: inside the learner's Fit range of Unknown share, then on a Topic, then one to three Pages long. Reads the web, so it takes a few seconds.",
+				"Things to read in a Language, from Wikipedia (for the learner's Topics), the Language's news Feeds and short public-domain Classics from Wikisource (with an author), best first: inside the learner's Fit range of Unknown share, then on a Topic, then one to three Pages long. Reads the web, so it takes a few seconds.",
 			inputSchema: { language: z.string().describe('Language name or code.') },
 			annotations: { readOnlyHint: true, openWorldHint: true }
 		},
@@ -579,6 +580,12 @@ export function createReaderServer(
 					const bookId = await importArticle(db, sources.wikipedia, language, wikipedia);
 					if (bookId === undefined) return failure(`Wikipedia has no article "${wikipedia}".`);
 					return json({ bookId, title: wikipedia });
+				}
+				// So does a Classic, without Wikisource's notes.
+				if (url !== undefined && sources.wikisource && findClassic(language.code, url)) {
+					const bookId = await importClassic(db, sources.wikisource, language, url);
+					if (bookId === undefined) return failure("Wikisource doesn't have that text any more.");
+					return json({ bookId, title: findClassic(language.code, url)!.title });
 				}
 				if (url !== undefined) {
 					const article = await readArticle(url);

@@ -3,13 +3,14 @@ import { database } from '#lib/server/database.ts';
 import { InvalidBook } from '#lib/server/domain/books.ts';
 import { getLanguage } from '#lib/server/domain/languages.ts';
 import { feedsFromWeb, listFeeds } from '#lib/server/domain/feeds.ts';
-import { findSuggestions, getFitRange, importArticle, importFeedItem, setFitRange, wikipediaFromWeb } from '#lib/server/domain/suggestions.ts';
+import { findSuggestions, getFitRange, importArticle, importClassic, importFeedItem, setFitRange, wikipediaFromWeb } from '#lib/server/domain/suggestions.ts';
+import { CLASSICS, wikisourceFromWeb } from '#lib/server/domain/classics.ts';
 import { listTopics } from '#lib/server/domain/topics.ts';
 import type { Suggestion } from '#lib/suggestions.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 // One each per server, so an article you pick is already in memory.
-const sources = { wikipedia: wikipediaFromWeb(), feeds: feedsFromWeb() };
+const sources = { wikipedia: wikipediaFromWeb(), feeds: feedsFromWeb(), wikisource: wikisourceFromWeb() };
 
 export const load: PageServerLoad = async ({ params }) => {
 	const db = database();
@@ -20,7 +21,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		(found) => ({ found: found.map(({ text, ...suggestion }): Suggestion => suggestion) }),
 		(e) => {
 			console.error('Finding Suggestions failed', e);
-			return { failed: "Couldn't reach Wikipedia or the Feeds. Try again in a moment." };
+			return { failed: "Couldn't reach Wikipedia, Wikisource or the Feeds. Try again in a moment." };
 		}
 	);
 	return {
@@ -28,6 +29,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		fitRange: await getFitRange(db, language.id),
 		topics: await listTopics(db),
 		feeds: await listFeeds(db, language.id),
+		classics: CLASSICS[language.code]?.length ?? 0,
 		suggestions
 	};
 };
@@ -47,11 +49,15 @@ export const actions: Actions = {
 		if (!language) error(404, 'Language not found');
 		const form = await request.formData();
 		let id: number | undefined;
+		const kind = form.get('kind');
+		const url = String(form.get('url') ?? '');
 		try {
 			id =
-				form.get('kind') === 'feed'
-					? await importFeedItem(db, sources.feeds, language, String(form.get('url') ?? ''))
-					: await importArticle(db, sources.wikipedia, language, String(form.get('title') ?? ''));
+				kind === 'feed'
+					? await importFeedItem(db, sources.feeds, language, url)
+					: kind === 'classic'
+						? await importClassic(db, sources.wikisource, language, url)
+						: await importArticle(db, sources.wikipedia, language, String(form.get('title') ?? ''));
 		} catch (e) {
 			if (e instanceof InvalidBook) return fail(400, { message: e.message });
 			console.error('Importing an article failed', e);
