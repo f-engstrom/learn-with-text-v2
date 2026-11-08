@@ -18,7 +18,7 @@
 	import PracticeCard from './PracticeCard.svelte';
 	import PracticePanel, { type PracticeState } from './PracticePanel.svelte';
 	import { highlightOnPage } from '#lib/reading/highlight.ts';
-	import { frequencyLabels, levelLabels, practiceQueue, suggestedStatus, transferLabel, type DueWord, type Subset } from '#lib/practice.ts';
+	import { frequencyLabels, statusLabels, practiceQueue, suggestedStatus, transferLabel, type DueWord, type Subset } from '#lib/practice.ts';
 	import WiktionaryPanel from './WiktionaryPanel.svelte';
 	import AzurePanel from './AzurePanel.svelte';
 	import TutorQuestions from './TutorQuestions.svelte';
@@ -92,7 +92,7 @@
 	let term = $derived(selected && data.terms[selected.key]);
 	let band = $derived(selected && data.frequency[selected.key]);
 	/** A Status the Tutor's assessment and Recall strength agree on, if it isn't yours. */
-	let suggestion = $derived(term && suggestedStatus(term.status, term.tutor, term.practice));
+	let suggestion = $derived(term && suggestedStatus(term.status, term.tutorAssessment, term.practice));
 	/** Statuses set by keyboard that the server hasn't confirmed yet, so the colour changes at once. */
 	let pending = $state<Record<string, Status>>({});
 	let error = $state<string | undefined>();
@@ -777,20 +777,20 @@
 					{#key `${selected.key}:${JSON.stringify(term)}`}
 						<TermForm bind:this={termForm} language={data.language} text={selected.text} {term} error={form?.message} />
 					{/key}
-					{#if band || term?.transfer || term?.tutor}
+					{#if band || term?.transfer || term?.tutorAssessment}
 						<dl class="facts">
 							{#if band}<dt>Frequency</dt><dd>{frequencyLabels[band]}</dd>{/if}
 							{#if term?.transfer}
 								<dt>Transfer</dt>
 								<dd>{transferLabel(term.transfer)}{#if term.transfer.reason}<small>{term.transfer.reason}</small>{/if}</dd>
 							{/if}
-							{#if term?.tutor}<dt>Tutor</dt><dd>{levelLabels[term.tutor]}</dd>{/if}
+							{#if term?.tutorAssessment}<dt>Tutor</dt><dd>{statusLabels[term.tutorAssessment]}</dd>{/if}
 						</dl>
 					{/if}
 					{#if selected && term && suggestion}
 						<p class="suggestion">
-							{suggestion.from} to <strong>{levelLabels[suggestion.level]}</strong>; your Status is {levelLabels[term.status]}.
-							<button type="button" onclick={() => setStatus(selected, suggestion.level)}>Set {levelLabels[suggestion.level]}</button>
+							{suggestion.from} to <strong>{statusLabels[suggestion.level]}</strong>; your Status is {statusLabels[term.status]}.
+							<button type="button" onclick={() => setStatus(selected, suggestion.level)}>Set {statusLabels[suggestion.level]}</button>
 						</p>
 					{/if}
 					{#if term?.practice}

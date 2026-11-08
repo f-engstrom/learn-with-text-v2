@@ -16,7 +16,7 @@
 
 	let { language, text, term, error }: Props = $props();
 
-	const statusLabels = {
+	const statusButtonLabels = {
 		learning1: '1',
 		learning2: '2',
 		learning3: '3',
@@ -120,7 +120,7 @@
 
 	<fieldset class="statuses">
 		<legend>Status</legend>
-		{#each Object.entries(statusLabels) as [value, label] (value)}
+		{#each Object.entries(statusButtonLabels) as [value, label] (value)}
 			<label class="status-option {value}">
 				<input type="radio" name="status" {value} checked={(term?.status ?? 'learning1') === value} />
 				{label}
@@ -178,7 +178,7 @@
 		<input name="parent" bind:value={parent} lang={language.code} {dir} placeholder="e.g. its dictionary form" autocomplete="off" />
 	</label>
 	{#if term?.parent && term.parent.text === parent.trim()}
-		<p class="parent-status"><small>Parent's Status: {statusLabels[term.parent.status]}</small></p>
+		<p class="parent-status"><small>Parent's Status: {statusButtonLabels[term.parent.status]}</small></p>
 	{/if}
 	<label class="follows">
 		<input type="checkbox" name="followsParent" bind:checked={followsParent} disabled={parent.trim() === ''} />

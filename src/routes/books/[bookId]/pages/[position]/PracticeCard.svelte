@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dueLabel, holdsLabel, levelLabels } from '#lib/practice.ts';
+	import { dueLabel, holdsLabel, statusLabels } from '#lib/practice.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import type { TermView } from '#lib/server/domain/terms.ts';
 
@@ -17,7 +17,7 @@
 	<p class="due due-{practice.overdue}">{dueLabel(practice)}</p>
 	{#if practice.recall}
 		<p class="recall">
-			Recall: <strong>{levelLabels[practice.recall.level]}</strong>
+			Recall: <strong>{statusLabels[practice.recall.level]}</strong>
 			<span class="muted">({holdsLabel(practice.recall)})</span>
 		</p>
 	{:else}

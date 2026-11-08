@@ -4,20 +4,12 @@
 	import { page } from '$app/state';
 	import TermForm from '#lib/components/TermForm.svelte';
 	import { actionUrl } from '#lib/actions.ts';
-	import { dueLabel, frequencyLabels, levelLabels, transferLabel } from '#lib/practice.ts';
+	import { dueLabel, frequencyLabels, statusLabels, transferLabel } from '#lib/practice.ts';
 	import type { Source, Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
 
-	const statusLabels: Record<Status, string> = {
-		learning1: 'Learning 1',
-		learning2: 'Learning 2',
-		learning3: 'Learning 3',
-		learning4: 'Learning 4',
-		known: 'Known',
-		ignored: 'Ignored'
-	};
 	const sourceLabels: Record<Source, string> = { you: 'You', wiktionary: 'Wiktionary', tutor: 'Tutor', azure: 'Azure' };
 
 	/** The Term whose form is open below its row. */
@@ -99,7 +91,7 @@
 			<option value="">Any</option>
 			<option value="none" selected={data.filter.recall === 'none'}>No Reviews yet</option>
 			{#each ['learning1', 'learning2', 'learning3', 'learning4', 'known'] as const as level (level)}
-				<option value={level} selected={data.filter.recall === level}>{levelLabels[level]}</option>
+				<option value={level} selected={data.filter.recall === level}>{statusLabels[level]}</option>
 			{/each}
 		</select>
 	</label>
@@ -178,9 +170,9 @@
 					<td class="practice">
 						{#if term.practice}
 							<span class="due due-{term.practice.overdue}">{dueLabel(term.practice)}</span>
-							{#if term.practice.recall}<small>Recall {levelLabels[term.practice.recall.level]}</small>{/if}
+							{#if term.practice.recall}<small>Recall {statusLabels[term.practice.recall.level]}</small>{/if}
 						{/if}
-						{#if term.tutor}<small>Tutor {levelLabels[term.tutor]}</small>{/if}
+						{#if term.tutorAssessment}<small>Tutor {statusLabels[term.tutorAssessment]}</small>{/if}
 						{#if term.transfer}<small title={term.transfer.reason}>Transfer: {transferLabel(term.transfer)}</small>{/if}
 					</td>
 					<td class="actions">

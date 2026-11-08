@@ -50,7 +50,7 @@ describe('assessTerm', () => {
 		expect(await assessTerm(db, { languageId: ru, text: 'кот', answer: 'got' })).toMatchObject({ from: 'learning4', to: 'known' });
 		expect(await assessTerm(db, { languageId: ru, text: 'кот', answer: 'got' })).toMatchObject({ to: 'known' });
 		expect(await assessTerm(db, { languageId: ru, text: 'кот', answer: 'hard' })).toMatchObject({ to: 'known' });
-		expect(await get('кот')).toMatchObject({ status: 'learning3', tutor: 'known' });
+		expect(await get('кот')).toMatchObject({ status: 'learning3', tutorAssessment: 'known' });
 		await saveTerm(db, { languageId: ru, text: 'мышь', status: 'learning1' });
 		expect(await assessTerm(db, { languageId: ru, text: 'мышь', answer: 'missed' })).toMatchObject({ to: 'learning1' });
 	});

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { levelLabels, subsetLabels, type Subset } from '#lib/practice.ts';
+	import { statusLabels, subsetLabels, type Subset } from '#lib/practice.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import type { TermView } from '#lib/server/domain/terms.ts';
 
@@ -62,7 +62,7 @@
 					</p>
 				{/if}
 				{#if term.practice?.recall}
-					<p class="muted">Recall: {levelLabels[term.practice.recall.level]}</p>
+					<p class="muted">Recall: {statusLabels[term.practice.recall.level]}</p>
 				{/if}
 			{/if}
 			<div class="grades" role="group" aria-label="How did it go?">

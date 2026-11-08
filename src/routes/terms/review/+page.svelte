@@ -3,7 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { actionUrl } from '#lib/actions.ts';
-	import { dueLabel, holdsLabel, levelLabels, wordAt } from '#lib/practice.ts';
+	import { dueLabel, holdsLabel, statusLabels, wordAt } from '#lib/practice.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import type { PageProps } from './$types';
 
@@ -131,7 +131,7 @@
 				{/if}
 				{#if term.parent}<p class="muted">From <span lang={term.language.code}>{term.parent.text}</span></p>{/if}
 				{#if term.practice?.recall}
-					<p class="muted">Recall: {levelLabels[term.practice.recall.level]} ({holdsLabel(term.practice.recall)})</p>
+					<p class="muted">Recall: {statusLabels[term.practice.recall.level]} ({holdsLabel(term.practice.recall)})</p>
 				{/if}
 			</div>
 			<div class="grades" role="group" aria-label="How did it go?">

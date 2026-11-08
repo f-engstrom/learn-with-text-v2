@@ -635,7 +635,7 @@ function termView(term: TermView) {
 		translations: term.translations.map((t) => (t.source === 'you' ? t.text : `${t.text} (${t.source})`)),
 		...(term.pronunciation ? { pronunciation: term.pronunciation } : {}),
 		...(term.parent ? { parent: term.parent.text, followsParent: term.followsParent } : {}),
-		...(term.tutor ? { yourAssessment: term.tutor } : {}),
+		...(term.tutorAssessment ? { tutorAssessment: term.tutorAssessment } : {}),
 		...(term.transfer ? { transfer: term.transfer } : {}),
 		...(term.frequency ? { frequency: term.frequency } : {}),
 		...(term.practice

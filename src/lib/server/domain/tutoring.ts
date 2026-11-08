@@ -68,12 +68,12 @@ export async function assessTerm(
 	const term = (await findTerms(db, language.id, [key]))[key];
 	if (!term) throw new InvalidTerm(`“${input.text}” is Unknown; save a Gloss first to give it a Term.`);
 	if (term.status === 'ignored') throw new InvalidTerm(`“${term.text}” is Ignored; it isn't vocabulary to assess.`);
-	const from = term.tutor ?? term.status;
+	const from = term.tutorAssessment ?? term.status;
 	const step = input.answer === 'got' ? 1 : input.answer === 'missed' ? -1 : 0;
 	const to = ASSESSMENT[Math.min(Math.max(ASSESSMENT.indexOf(from) + step, 0), ASSESSMENT.length - 1)];
 	await db.updateTable('term').set({ tutor_level: to }).where('id', '=', term.id).execute();
 	const practice = isPractised(term.status) ? await recordReview(db, term.id, input.answer as Grade, 'tutor') : undefined;
-	return { status: term.status, ...(term.tutor ? { from: term.tutor } : {}), to, ...(practice ? { practice } : {}) };
+	return { status: term.status, ...(term.tutorAssessment ? { from: term.tutorAssessment } : {}), to, ...(practice ? { practice } : {}) };
 }
 
 /** Records the Tutor's judgement of how hard a Term is to carry over from Your languages. */

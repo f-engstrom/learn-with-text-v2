@@ -6,7 +6,8 @@ import type { Status, Transfer } from '#lib/server/domain/terms.ts';
 
 const DAY = 24 * 60 * 60 * 1000;
 
-export const levelLabels: Record<Status, string> = {
+/** Labels for the Status scale, which the Tutor's assessment and Recall strength are read on too. */
+export const statusLabels: Record<Status, string> = {
 	learning1: 'Learning 1',
 	learning2: 'Learning 2',
 	learning3: 'Learning 3',
@@ -128,14 +129,14 @@ const SETTLED = 3;
  */
 export function suggestedStatus(
 	status: Status,
-	tutor: Status | undefined,
+	tutorAssessment: Status | undefined,
 	practice: PracticeView | undefined
 ): { level: Status; from: string } | undefined {
 	if (status === 'ignored') return undefined;
 	const recall = practice?.recall && practice.reviews >= SETTLED ? practice.recall.level : undefined;
-	const views = [tutor, recall].filter((v): v is Status => v !== undefined);
+	const views = [tutorAssessment, recall].filter((v): v is Status => v !== undefined);
 	if (views.length === 0 || views.some((v) => v !== views[0]) || views[0] === status) return undefined;
-	const from = tutor && recall ? 'The Tutor and your Reviews point' : tutor ? 'The Tutor points' : 'Your Reviews point';
+	const from = tutorAssessment && recall ? 'The Tutor and your Reviews point' : tutorAssessment ? 'The Tutor points' : 'Your Reviews point';
 	return { level: views[0], from };
 }
 

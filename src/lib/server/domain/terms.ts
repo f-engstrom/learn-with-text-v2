@@ -43,7 +43,7 @@ export interface TermView {
 	/** For a one-Word Term in a Language with a frequency list. */
 	frequency?: FrequencyBand;
 	/** The Tutor's assessment, once it has asked about the Term. */
-	tutor?: Status;
+	tutorAssessment?: Status;
 	/** Once the Tutor has judged it. */
 	transfer?: Transfer;
 }
@@ -458,7 +458,7 @@ async function toViews(db: Kysely<Database>, rows: TermRow[]): Promise<{ normali
 			followsParent: t.follows_parent === 1,
 			...(practice.has(t.id) ? { practice: practice.get(t.id) } : {}),
 			...(frequency[t.language_id]?.[t.normalised] ? { frequency: frequency[t.language_id][t.normalised] } : {}),
-			...(t.tutor_level ? { tutor: t.tutor_level } : {}),
+			...(t.tutor_level ? { tutorAssessment: t.tutor_level } : {}),
 			...(t.transfer_form && t.transfer_concept
 				? { transfer: { form: t.transfer_form, concept: t.transfer_concept, ...(t.transfer_reason ? { reason: t.transfer_reason } : {}) } }
 				: {}),

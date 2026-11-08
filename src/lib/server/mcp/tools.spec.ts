@@ -165,7 +165,7 @@ describe('Reader MCP server', () => {
 			practice: { reviews: 1 }
 		});
 		expect(await call('assess_term', { language: 'ru', text: 'спит', answer: 'missed' })).toEqual({ status: 'known', to: 'learning4' });
-		expect(await call('look_up_term', { language: 'ru', text: 'кот' })).toMatchObject({ status: 'learning1', yourAssessment: 'learning2' });
+		expect(await call('look_up_term', { language: 'ru', text: 'кот' })).toMatchObject({ status: 'learning1', tutorAssessment: 'learning2' });
 	});
 
 	it('records Transfer and lists Due Terms by priority', async () => {
