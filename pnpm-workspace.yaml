@@ -1,0 +1,6 @@
+# Packages whose install scripts may run: better-sqlite3 builds its native binding.
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+
+engineStrict: true

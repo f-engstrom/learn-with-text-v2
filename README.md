@@ -5,8 +5,8 @@ A personal tool for learning languages by reading. Vocabulary is in [CONTEXT.md]
 ## Developing
 
 ```sh
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 The database is a single SQLite file at `DATABASE_PATH` (default `data/reader.db`). Migrations run when the server starts.
@@ -14,21 +14,21 @@ The database is a single SQLite file at `DATABASE_PATH` (default `data/reader.db
 To run it day to day, build it once and start the built app at http://localhost:3000:
 
 ```sh
-npm run build
-npm start
+pnpm build
+pnpm start
 ```
 
 Like `vite --host`, it serves this computer only unless you add `--host`, which also makes it reachable on your network and prints the addresses:
 
 ```sh
-npm start -- --host
+pnpm start --host
 ```
 
 `PORT` and `HOST` override the port and the address it listens on. [serve.js](serve.js) marks every request as plain http, so forms work at any address you open it by (localhost, the network address, the computer's `.local` name). The Reader has no login: anyone on the network can read and change it.
 
 ```sh
-npm test        # unit tests
-npm run check   # type check
+pnpm test        # unit tests
+pnpm check       # type check
 ```
 
 ## Practice
@@ -41,7 +41,7 @@ The Progress page shows, per Language, Words read with its Milestones, Reading d
 
 ## The Tutor's MCP server
 
-`npm run --silent mcp` starts the Reader's MCP server over stdio. It opens the same database (`DATABASE_PATH`, relative to this folder), so the web app needn't be running. Claude Code picks it up from [.mcp.json](.mcp.json) when started in this folder.
+`pnpm --silent mcp` starts the Reader's MCP server over stdio. It opens the same database (`DATABASE_PATH`, relative to this folder), so the web app needn't be running. Claude Code picks it up from [.mcp.json](.mcp.json) when started in this folder.
 
 Tools that read: `list_languages`, `list_books`, `where_am_i` (the most recently moved Bookmark, with the Word you last selected in the reading screen), `get_bookmark`, `get_sentences` (from the Bookmark, with each Word's Status), `look_up_term`, `get_suggestions`, `get_due_terms` (Due Terms by Practice priority), `get_progress` (Words read, Milestones, Known Terms and the Due forecast) and `list_your_languages`.
 

@@ -4,7 +4,7 @@ Ideas that aren't planned yet, kept so they aren't forgotten. Nothing here is de
 
 ## Reading and tutoring from a phone
 
-Today the Tutor reaches the Reader only through the stdio MCP server that Claude Code starts on this computer ([ADR 0003](adr/0003-reader-owns-progress-tutor-via-stdio-mcp.md)). From a phone, that means driving a Claude Code session on this computer with Remote Control and opening the reading screen over the local network (`npm start -- --host`). That works without new code, but it needs a session open here.
+Today the Tutor reaches the Reader only through the stdio MCP server that Claude Code starts on this computer ([ADR 0003](adr/0003-reader-owns-progress-tutor-via-stdio-mcp.md)). From a phone, that means driving a Claude Code session on this computer with Remote Control and opening the reading screen over the local network (`pnpm start --host`). That works without new code, but it needs a session open here.
 
 ### An HTTP `/mcp` endpoint in the app
 

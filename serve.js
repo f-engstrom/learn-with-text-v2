@@ -1,5 +1,5 @@
-// Serves the built app (`npm run build` first), like `vite --host`: on this computer only by
-// default, or on your network too with `--host`. Usage: `npm start` or `npm start -- --host`.
+// Serves the built app (`pnpm build` first), like `vite --host`: on this computer only by
+// default, or on your network too with `--host`. Usage: `pnpm start` or `pnpm start --host`.
 import { createServer } from 'node:http';
 import { networkInterfaces } from 'node:os';
 

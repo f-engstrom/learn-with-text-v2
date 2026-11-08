@@ -3,6 +3,7 @@
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
+	"packageManager": "pnpm@12.9.1",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -12,7 +13,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run",
+		"test": "pnpm test:unit --run",
 		"mcp": "tsx src/lib/server/mcp/main.ts"
 	},
 	"devDependencies": {
@@ -41,8 +42,5 @@
 		"ts-fsrs": "~5.4.2",
 		"tsx": "~4.23.15",
 		"zod": "~4.6.7"
-	},
-	"allowScripts": {
-		"better-sqlite3@13.0.3": true
 	}
 }

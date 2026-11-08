@@ -1,4 +1,4 @@
-// The Reader's MCP server over stdio (ADR 0003): `npm run --silent mcp`. Claude starts it; it
+// The Reader's MCP server over stdio (ADR 0003): `pnpm --silent mcp`. Claude starts it; it
 // opens the same SQLite file as the web app, which needn't be running.
 import { isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
