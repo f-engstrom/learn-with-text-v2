@@ -21,6 +21,7 @@
 	import { frequencyLabels, levelLabels, practiceQueue, suggestedStatus, transferLabel, type DueWord, type Subset } from '#lib/practice.ts';
 	import WiktionaryPanel from './WiktionaryPanel.svelte';
 	import AzurePanel from './AzurePanel.svelte';
+	import TutorQuestions from './TutorQuestions.svelte';
 
 	/** A Word, or a matched Multi-word Term, on the Page. */
 	type Word = ReadingToken & { key: string; index: number; sentence: number };
@@ -351,22 +352,14 @@
 	const inPassage = (sentence: (typeof sentences)[number], t: number) => passage.has(`${sentenceNumbers.get(sentence)}:${t}`);
 	let highlightElement = $state<HTMLElement>();
 
-	/** The Tutor's question, kept current by the same polling, and what you have written so far. */
+	/** The Tutor's question, kept current by the same polling; TutorQuestions keeps what you write, per `askedAt`. */
 	let question = $state<TutorQuestion | null>(null);
-	let drafts = $state<string[]>([]);
-	let ownQuestion = $state('');
-	let asking = $state(false);
+	let tutorQuestions = $state<TutorQuestions>();
 	$effect(() => {
 		const latest = data.question;
 		untrack(() => showQuestion(latest));
 	});
 	function showQuestion(latest: TutorQuestion | null) {
-		// A new question starts with empty answers; the same one keeps what you're writing.
-		if (latest?.askedAt !== question?.askedAt) {
-			drafts = latest?.questions.map(() => '') ?? [];
-			ownQuestion = '';
-			asking = false;
-		}
 		question = latest;
 	}
 
@@ -380,13 +373,6 @@
 		if (result.type === 'failure') error = String(result.data?.message ?? 'Could not send your answer.');
 		else question = { ...question, answer };
 	}
-	/** Enter sends a typed answer and Shift+Enter starts a new line; Enter that ends IME composition (e.g. Cyrillic) doesn't send. */
-	function submitOnEnter(e: KeyboardEvent & { currentTarget: HTMLTextAreaElement }) {
-		if (e.key !== 'Enter' || e.shiftKey || e.isComposing || e.keyCode === 229) return;
-		e.preventDefault();
-		e.currentTarget.form?.requestSubmit();
-	}
-	const answered = $derived(question !== null && drafts.length === question.questions.length && drafts.every((d) => d.trim()));
 
 	/** Puts the Tutor aside: its question and Highlight leave the screen until it asks again. */
 	function dismissTutor() {
@@ -546,6 +532,8 @@
 
 	function onkeydown(e: KeyboardEvent) {
 		if (e.defaultPrevented) return;
+		// The Tutor's card has its own keys.
+		if (e.target instanceof HTMLElement && e.target.closest('.highlight-note')) return;
 		if (!isTyping(e.target) && practiceKey(e)) {
 			e.preventDefault();
 			return;
@@ -593,6 +581,9 @@
 			case 'practice':
 				if (zen) toggleZen();
 				startPractice();
+				break;
+			case 'tutor':
+				tutorQuestions?.focus();
 				break;
 			case 'close':
 				open = false;
@@ -667,7 +658,33 @@
 		<dd>Due marks on or off</dd>
 		<dt><kbd>R</kbd></dt>
 		<dd>Practise the Due Words</dd>
+		<dt><kbd>T</kbd></dt>
+		<dd>Answer the Tutor (<kbd>1</kbd>–<kbd>4</kbd> pick, <kbd>←</kbd> <kbd>→</kbd> questions, <kbd>Esc</kbd> back)</dd>
 	</dl>
+{/snippet}
+
+{#snippet tutorContext()}
+	{#if highlight}
+		{#if highlight.note}<p class="note-text">{highlight.note}</p>{/if}
+		{#if highlightHere && highlight.text}
+			<button type="button" class="passage" lang={data.language.code} {dir} title="Show it in the text" onclick={showHighlight}
+				>{highlight.text}</button
+			>
+		{:else if highlightHere}
+			<button type="button" onclick={showHighlight}
+				>{highlight.first === highlight.last ? `Sentence ${highlight.first}` : `Sentences ${highlight.first}–${highlight.last}`}</button
+			>
+		{:else}
+			<a class="button" href="/books/{data.book.id}/pages/{highlight.page}">On Page {highlight.page} →</a>
+		{/if}
+	{/if}
+	{#if question?.glosses}
+		<ul class="glosses">
+			{#each question.glosses as g (g.text)}
+				<li><span lang={data.language.code} {dir}>{g.text}</span> {g.gloss}</li>
+			{/each}
+		</ul>
+	{/if}
 {/snippet}
 
 {#snippet pages()}
@@ -715,92 +732,6 @@
 </div>
 
 <div class="reader" class:zen class:sheet-open={open && !!selected && !practising}>
-	{#if highlight || question}
-		<div class="highlight-note card" role="status">
-			<p class="from">From the Tutor</p>
-			<button type="button" class="tutor-close" aria-label="Dismiss the Tutor" title="Dismiss until the Tutor asks again" onclick={dismissTutor}>✕</button>
-			{#if question?.answer}
-				<p class="sent">
-					<span class="waiting">Sent, waiting for the Tutor…</span>
-					<span class="yours">{'ask' in question.answer ? `You asked: ${question.answer.ask}` : question.answer.answers.join(' · ')}</span>
-				</p>
-			{:else}
-			{#if question?.feedback}<p class="feedback">{question.feedback}</p>{/if}
-			{#if highlight}
-				{#if highlight.note}<p class="note-text">{highlight.note}</p>{/if}
-				{#if highlightHere && highlight.text}
-					<button type="button" class="passage" lang={data.language.code} {dir} title="Show it in the text" onclick={showHighlight}
-						>{highlight.text}</button
-					>
-				{:else if highlightHere}
-					<button type="button" onclick={showHighlight}
-						>{highlight.first === highlight.last ? `Sentence ${highlight.first}` : `Sentences ${highlight.first}–${highlight.last}`}</button
-					>
-				{:else}
-					<a class="button" href="/books/{data.book.id}/pages/{highlight.page}">On Page {highlight.page} →</a>
-				{/if}
-			{/if}
-			{#if question?.glosses}
-				<ul class="glosses">
-					{#each question.glosses as g (g.text)}
-						<li><span lang={data.language.code} {dir}>{g.text}</span> {g.gloss}</li>
-					{/each}
-				</ul>
-			{/if}
-			{#if question}
-				<form
-					class="questions"
-					onsubmit={(e) => {
-						e.preventDefault();
-						if (asking) answerTutor({ ask: ownQuestion });
-						else if (answered) answerTutor({ answers: drafts });
-					}}
-				>
-					{#if !asking}
-						{#each question.questions as q, i (i)}
-							<fieldset>
-								<legend>{q.prompt}</legend>
-								{#if q.options}
-									<div class="options">
-										{#each q.options as option (option)}
-											<button type="button" aria-pressed={drafts[i] === option} onclick={() => (drafts[i] = option)}>{option}</button>
-										{/each}
-									</div>
-								{:else}
-									<textarea
-										rows="2"
-										lang={data.language.code}
-										bind:value={drafts[i]}
-										onkeydown={submitOnEnter}
-									></textarea>
-								{/if}
-							</fieldset>
-						{/each}
-						<div class="actions">
-							<button type="submit" class="primary" disabled={!answered}>Send</button>
-							<button type="button" class="link" onclick={() => (asking = true)}>Ask the Tutor something first</button>
-						</div>
-					{:else}
-						<fieldset>
-							<legend>Your question for the Tutor</legend>
-							<!-- svelte-ignore a11y_autofocus -->
-							<textarea
-								rows="2"
-								autofocus
-								bind:value={ownQuestion}
-								onkeydown={submitOnEnter}
-							></textarea>
-						</fieldset>
-						<div class="actions">
-							<button type="submit" class="primary" disabled={!ownQuestion.trim()}>Ask</button>
-							<button type="button" class="link" onclick={() => (asking = false)}>Back to the question</button>
-						</div>
-					{/if}
-				</form>
-			{/if}
-			{/if}
-		</div>
-	{/if}
 	<article class="page" class:zen class:practising={practising?.stage === 'run'} lang={data.language.code} {dir}>
 		{#each data.paragraphs as paragraph, p (p)}
 			<p>
@@ -833,94 +764,123 @@
 		{/each}
 	</article>
 
-	<aside class="side">
-		{#if practising}
-			<PracticePanel
-				state={practising}
-				{subsets}
-				text={practising.stage === 'run' ? words[practising.queue[practising.at]]?.text : undefined}
-				term={practising.stage === 'run' ? data.terms[words[practising.queue[practising.at]]?.key] : undefined}
-				onpick={pickSubset}
-				onreveal={() => practising?.stage === 'run' && (practising.revealed = true)}
-				ongrade={gradePractice}
-				onstop={stopPractice}
-			/>
-		{:else if open && selected}
-			<div class="term-panel card">
-				<button type="button" class="close" aria-label="Close the Term form" onclick={() => (open = false)}>✕</button>
-				{#if characters && range}
-					<div class="parts" role="group" aria-label="The whole Word or some of its characters">
-						<button type="button" class="part {statusOf(words[range[0]].key)}" aria-pressed={!picked} onclick={() => (part = undefined)}
-							>{words[range[0]].text}</button
-						>
-						{#each characters as character, i (i)}
-							<button
-								type="button"
-								class="part {statusOf(termKey(character, data.language))}"
-								aria-pressed={picked !== undefined && i >= picked[0] && i <= picked[1]}
-								onmousedown={(e) => e.shiftKey && e.preventDefault()}
-								onclick={(e) => pickCharacter(i, e.shiftKey)}>{character}</button
-							>
-						{/each}
-					</div>
-				{/if}
-				{#key `${selected.key}:${JSON.stringify(term)}`}
-					<TermForm bind:this={termForm} language={data.language} text={selected.text} {term} error={form?.message} />
-				{/key}
-				{#if band || term?.transfer || term?.tutor}
-					<dl class="facts">
-						{#if band}<dt>Frequency</dt><dd>{frequencyLabels[band]}</dd>{/if}
-						{#if term?.transfer}
-							<dt>Transfer</dt>
-							<dd>{transferLabel(term.transfer)}{#if term.transfer.reason}<small>{term.transfer.reason}</small>{/if}</dd>
-						{/if}
-						{#if term?.tutor}<dt>Tutor</dt><dd>{levelLabels[term.tutor]}</dd>{/if}
-					</dl>
-				{/if}
-				{#if selected && term && suggestion}
-					<p class="suggestion">
-						{suggestion.from} to <strong>{levelLabels[suggestion.level]}</strong>; your Status is {levelLabels[term.status]}.
-						<button type="button" onclick={() => setStatus(selected, suggestion.level)}>Set {levelLabels[suggestion.level]}</button>
+	<!-- One sticky column beside the text; on a phone it dissolves so the note sits above the Page. -->
+	<div class="rail">
+		{#if highlight || question}
+			<div class="highlight-note card" role="status">
+				<p class="from">From the Tutor{#if question && !question.answer}<kbd class="t-hint" title="Press T to answer">T</kbd>{/if}</p>
+				<button type="button" class="tutor-close" aria-label="Dismiss the Tutor" title="Dismiss until the Tutor asks again" onclick={dismissTutor}>✕</button>
+				{#if question?.answer}
+					<p class="sent">
+						<span class="waiting">Sent, waiting for the Tutor…</span>
+						<span class="yours">{'ask' in question.answer ? `You asked: ${question.answer.ask}` : question.answer.answers.join(' · ')}</span>
 					</p>
+				{:else if question}
+					{#key question.askedAt}
+						<TutorQuestions
+							bind:this={tutorQuestions}
+							{question}
+							lang={data.language.code}
+							onanswer={answerTutor}
+							onleave={() => goTo(current ?? 0)}
+						>
+							{@render tutorContext()}
+						</TutorQuestions>
+					{/key}
+				{:else}
+					{@render tutorContext()}
 				{/if}
-				{#if term?.practice}
-					<PracticeCard {term} onreview={(grade) => review(term.id, grade)} />
-				{/if}
-				<WiktionaryPanel
-					language={data.language}
-					termKey={selected.key}
-					text={selected.text}
-					translations={term?.translations.map((t) => t.text) ?? []}
-					onadd={(definition) => termForm?.addTranslation(definition, 'wiktionary')}
-				/>
-				<AzurePanel
-					language={data.language}
-					termKey={selected.key}
-					text={selected.text}
-					translations={term?.translations.map((t) => t.text) ?? []}
-					onadd={(translation) => termForm?.addTranslation(translation, 'azure')}
-				/>
-				<Dictionaries dictionaries={data.dictionaries} term={selected.key} bind:chosen={dictionary} />
-			</div>
-		{:else}
-			<div class="help card">
-				<p class="start"><span class="pointer">Click a Word, or press <kbd>→</kbd> to start.</span><span class="touch">Tap a Word to open it.</span></p>
-				<details open>
-					<summary>Keys</summary>
-					{@render keys()}
-				</details>
-				<p class="legend">
-					<span class="swatch unknown"></span> Unknown
-					<span class="swatch learning1"></span> 1
-					<span class="swatch learning2"></span> 2
-					<span class="swatch learning3"></span> 3
-					<span class="swatch learning4"></span> 4
-					<span class="swatch known"></span> Known
-					<span class="due-dot"></span> Due
-				</p>
 			</div>
 		{/if}
-	</aside>
+		<aside class="side">
+			{#if practising}
+				<PracticePanel
+					state={practising}
+					{subsets}
+					text={practising.stage === 'run' ? words[practising.queue[practising.at]]?.text : undefined}
+					term={practising.stage === 'run' ? data.terms[words[practising.queue[practising.at]]?.key] : undefined}
+					onpick={pickSubset}
+					onreveal={() => practising?.stage === 'run' && (practising.revealed = true)}
+					ongrade={gradePractice}
+					onstop={stopPractice}
+				/>
+			{:else if open && selected}
+				<div class="term-panel card">
+					<button type="button" class="close" aria-label="Close the Term form" onclick={() => (open = false)}>✕</button>
+					{#if characters && range}
+						<div class="parts" role="group" aria-label="The whole Word or some of its characters">
+							<button type="button" class="part {statusOf(words[range[0]].key)}" aria-pressed={!picked} onclick={() => (part = undefined)}
+								>{words[range[0]].text}</button
+							>
+							{#each characters as character, i (i)}
+								<button
+									type="button"
+									class="part {statusOf(termKey(character, data.language))}"
+									aria-pressed={picked !== undefined && i >= picked[0] && i <= picked[1]}
+									onmousedown={(e) => e.shiftKey && e.preventDefault()}
+									onclick={(e) => pickCharacter(i, e.shiftKey)}>{character}</button
+								>
+							{/each}
+						</div>
+					{/if}
+					{#key `${selected.key}:${JSON.stringify(term)}`}
+						<TermForm bind:this={termForm} language={data.language} text={selected.text} {term} error={form?.message} />
+					{/key}
+					{#if band || term?.transfer || term?.tutor}
+						<dl class="facts">
+							{#if band}<dt>Frequency</dt><dd>{frequencyLabels[band]}</dd>{/if}
+							{#if term?.transfer}
+								<dt>Transfer</dt>
+								<dd>{transferLabel(term.transfer)}{#if term.transfer.reason}<small>{term.transfer.reason}</small>{/if}</dd>
+							{/if}
+							{#if term?.tutor}<dt>Tutor</dt><dd>{levelLabels[term.tutor]}</dd>{/if}
+						</dl>
+					{/if}
+					{#if selected && term && suggestion}
+						<p class="suggestion">
+							{suggestion.from} to <strong>{levelLabels[suggestion.level]}</strong>; your Status is {levelLabels[term.status]}.
+							<button type="button" onclick={() => setStatus(selected, suggestion.level)}>Set {levelLabels[suggestion.level]}</button>
+						</p>
+					{/if}
+					{#if term?.practice}
+						<PracticeCard {term} onreview={(grade) => review(term.id, grade)} />
+					{/if}
+					<WiktionaryPanel
+						language={data.language}
+						termKey={selected.key}
+						text={selected.text}
+						translations={term?.translations.map((t) => t.text) ?? []}
+						onadd={(definition) => termForm?.addTranslation(definition, 'wiktionary')}
+					/>
+					<AzurePanel
+						language={data.language}
+						termKey={selected.key}
+						text={selected.text}
+						translations={term?.translations.map((t) => t.text) ?? []}
+						onadd={(translation) => termForm?.addTranslation(translation, 'azure')}
+					/>
+					<Dictionaries dictionaries={data.dictionaries} term={selected.key} bind:chosen={dictionary} />
+				</div>
+			{:else}
+				<div class="help card">
+					<p class="start"><span class="pointer">Click a Word, or press <kbd>→</kbd> to start.</span><span class="touch">Tap a Word to open it.</span></p>
+					<details open>
+						<summary>Keys</summary>
+						{@render keys()}
+					</details>
+					<p class="legend">
+						<span class="swatch unknown"></span> Unknown
+						<span class="swatch learning1"></span> 1
+						<span class="swatch learning2"></span> 2
+						<span class="swatch learning3"></span> 3
+						<span class="swatch learning4"></span> 4
+						<span class="swatch known"></span> Known
+						<span class="due-dot"></span> Due
+					</p>
+				</div>
+			{/if}
+		</aside>
+	</div>
 </div>
 
 {#if zen}
@@ -984,10 +944,7 @@
 	.reader {
 		display: grid;
 		grid-template-columns: minmax(0, 44rem) minmax(20rem, 1fr);
-		grid-template-areas:
-			'page note'
-			'page side';
-		grid-template-rows: auto 1fr;
+		grid-template-areas: 'page rail';
 		gap: 1rem 3rem;
 		align-items: start;
 		margin-top: 1.5rem;
@@ -995,11 +952,24 @@
 	.page {
 		grid-area: page;
 	}
+	.rail {
+		grid-area: rail;
+		position: sticky;
+		top: 1rem;
+		/* The note and the panel share one window's height; the Term panel scrolls within what is left. */
+		max-height: calc(100vh - 2rem);
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
 	.highlight-note {
 		grid-area: note;
+		flex-shrink: 0;
 	}
 	.side {
 		grid-area: side;
+		min-height: 0;
+		overflow-y: auto;
 	}
 	.page {
 		font-family: var(--font-text);
@@ -1101,8 +1071,7 @@
 	:global(html[data-zen] header.site),
 	.chrome.zen,
 	.end.zen,
-	.reader.zen .side,
-	.reader.zen .highlight-note {
+	.reader.zen .rail {
 		display: none;
 	}
 	.reader.zen {
@@ -1207,9 +1176,8 @@
 		color: var(--status-ignored);
 	}
 	.side {
-		position: sticky;
-		top: 1rem;
-		display: grid;
+		display: flex;
+		flex-direction: column;
 		gap: 1rem;
 	}
 	/* The Tutor's Highlight, whole Sentences or a passage: a continuous accent underline, apart from the Status colours. */
@@ -1245,13 +1213,6 @@
 		box-shadow: none;
 		color: var(--muted);
 	}
-	.feedback {
-		justify-self: stretch;
-		padding-bottom: 0.6rem;
-		border-bottom: 1px solid var(--border);
-		white-space: pre-line;
-		font-size: 0.95rem;
-	}
 	.passage {
 		padding: 0.1rem 0 0.1rem 0.7rem;
 		border: none;
@@ -1282,52 +1243,6 @@
 		font-size: 1.05rem;
 		font-weight: 600;
 	}
-	.questions {
-		display: grid;
-		gap: 0.75rem;
-		justify-self: stretch;
-	}
-	.questions fieldset {
-		display: grid;
-		gap: 0.4rem;
-		margin: 0;
-		padding: 0;
-		border: none;
-	}
-	.questions legend {
-		padding: 0;
-		margin-bottom: 0.4rem;
-		white-space: pre-line;
-	}
-	.questions textarea {
-		width: 100%;
-		font: inherit;
-		resize: vertical;
-	}
-	.options {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
-	}
-	.options button[aria-pressed='true'] {
-		background: var(--accent-soft);
-		border-color: var(--accent);
-		color: var(--accent);
-	}
-	.questions .actions {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.75rem;
-	}
-	.link {
-		padding: 0;
-		border: none;
-		background: none;
-		box-shadow: none;
-		color: var(--accent);
-		text-decoration: underline;
-	}
 	.sent {
 		display: grid;
 		gap: 0.2rem;
@@ -1350,10 +1265,25 @@
 	.note-text {
 		font-size: 1.05rem;
 	}
+	/* T answers the Tutor; the hint goes once the keyboard is in the card. */
+	.t-hint {
+		margin-inline-start: 0.5rem;
+		font-size: 0.7rem;
+		text-transform: none;
+	}
+	.highlight-note:focus-within .t-hint {
+		display: none;
+	}
+	@media (hover: none) and (pointer: coarse) {
+		.t-hint {
+			display: none;
+		}
+	}
 	.term-panel {
 		position: relative;
 		/* With a Dictionary open the panel is taller than the window, so it scrolls on its own. */
 		max-height: calc(100vh - 2rem);
+		min-height: 0;
 		overflow-y: auto;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
@@ -1548,8 +1478,11 @@
 			grid-template-rows: auto;
 			gap: 1.5rem;
 		}
+		.rail {
+			display: contents;
+		}
 		.side {
-			position: static;
+			overflow: visible;
 		}
 		.help details:not([open]) + .legend,
 		.help {

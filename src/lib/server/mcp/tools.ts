@@ -478,7 +478,7 @@ export function createReaderServer(
 			description:
 				'Puts your question in the learner’s reading screen, beside the Highlight, and waits for their answer. ' +
 				'Give feedback on their last answer with it, and the chunk’s Glosses as a list. The Highlight’s passage shows in the card, so a prompt need not repeat it ("Translate the highlighted clause."). One to four questions: one without options is typed (a translation, an open question), ' +
-				'one with two to four options is picked (they may type their own instead). It replaces the Book’s previous question. ' +
+				'one with two to four options is picked (they may type their own instead). They answer one question at a time and send at the end, which is their go-ahead, so don’t add a "ready to move on?" question. It replaces the Book’s previous question. ' +
 				'Returns status "answered" with answers (one per question, in order) or ask (their own question for you, instead of answering), ' +
 				'"dismissed" (they put the Tutor aside: stop and wait for them in chat), or "waiting" (still thinking: call wait_for_answer).',
 			inputSchema: {

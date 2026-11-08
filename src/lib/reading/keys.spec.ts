@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { commandFor, type KeyInput } from './keys';
+import { cardCommandFor, commandFor, type KeyInput } from './keys';
 
 const press = (key: string, code = '', mods: Partial<KeyInput> = {}): KeyInput => ({
 	key,
@@ -48,6 +48,11 @@ describe('commandFor', () => {
 		expect(commandFor(press('v', 'KeyV', { metaKey: true }), false)).toBeUndefined();
 	});
 
+	it('goes to the Tutor\'s question with T, on any keyboard layout', () => {
+		expect(commandFor(press('t', 'KeyT'), false)).toEqual({ kind: 'tutor' });
+		expect(commandFor(press('е', 'KeyT'), false)).toEqual({ kind: 'tutor' });
+	});
+
 	it('moves by Sentence with up and down', () => {
 		expect(commandFor(press('ArrowDown'), false)).toEqual({ kind: 'sentence', by: 1 });
 		expect(commandFor(press('ArrowUp'), true)).toEqual({ kind: 'sentence', by: -1 });
@@ -75,5 +80,35 @@ describe('commandFor', () => {
 		expect(commandFor(press('1', 'Digit1', { ctrlKey: true }), false)).toBeUndefined();
 		expect(commandFor(press('5', 'Digit5'), false)).toBeUndefined();
 		expect(commandFor(press('a', 'KeyA'), false)).toBeUndefined();
+	});
+});
+
+describe('cardCommandFor', () => {
+	it('picks an option with 1–4, on any keyboard layout', () => {
+		expect(cardCommandFor(press('1', 'Digit1'), false)).toEqual({ kind: 'pick', option: 0 });
+		expect(cardCommandFor(press('4', 'Numpad4'), false)).toEqual({ kind: 'pick', option: 3 });
+		expect(cardCommandFor(press('5', 'Digit5'), false)).toBeUndefined();
+	});
+
+	it('steps between questions with the arrows', () => {
+		expect(cardCommandFor(press('ArrowRight'), false)).toEqual({ kind: 'step', by: 1 });
+		expect(cardCommandFor(press('ArrowLeft'), false)).toEqual({ kind: 'step', by: -1 });
+	});
+
+	it('leaves the arrows and digits to a text box, where Alt+arrow steps', () => {
+		expect(cardCommandFor(press('ArrowLeft'), true)).toBeUndefined();
+		expect(cardCommandFor(press('1', 'Digit1'), true)).toBeUndefined();
+		expect(cardCommandFor(press('ArrowLeft', '', { altKey: true }), true)).toEqual({ kind: 'step', by: -1 });
+		expect(cardCommandFor(press('ArrowRight', '', { altKey: true }), false)).toEqual({ kind: 'step', by: 1 });
+	});
+
+	it('goes back to the text with Escape', () => {
+		expect(cardCommandFor(press('Escape'), true)).toEqual({ kind: 'leave' });
+	});
+
+	it('ignores other keys and modifiers', () => {
+		expect(cardCommandFor(press('ArrowRight', '', { shiftKey: true }), false)).toBeUndefined();
+		expect(cardCommandFor(press('1', 'Digit1', { metaKey: true }), false)).toBeUndefined();
+		expect(cardCommandFor(press('k', 'KeyK'), false)).toBeUndefined();
 	});
 });

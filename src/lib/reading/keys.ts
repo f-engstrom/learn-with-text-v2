@@ -15,6 +15,8 @@ export type Command =
 	| { kind: 'due' }
 	/** Start practising the Page's Due Words. */
 	| { kind: 'practice' }
+	/** Go to the Tutor's question. */
+	| { kind: 'tutor' }
 	| { kind: 'close' };
 
 export type KeyInput = Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'metaKey' | 'altKey' | 'shiftKey'>;
@@ -59,6 +61,27 @@ export function commandFor(e: KeyInput, rightToLeft: boolean): Command | undefin
 	if (e.code === 'KeyZ') return { kind: 'zen' };
 	if (e.code === 'KeyD') return { kind: 'due' };
 	if (e.code === 'KeyR') return { kind: 'practice' };
+	if (e.code === 'KeyT') return { kind: 'tutor' };
 	const status = statusKeys[e.code];
 	return status && { kind: 'status', status };
+}
+
+/** What a key does in the Tutor's card: pick an option, step between questions, or go back to the text. */
+export type CardCommand = { kind: 'pick'; option: number } | { kind: 'step'; by: 1 | -1 } | { kind: 'leave' };
+
+/**
+ * The card's command for a key press, if any. 1–4 pick an option and the arrows step between
+ * questions; in a text box the arrows move the caret, so stepping there takes Alt+arrow
+ * (which works everywhere in the card).
+ */
+export function cardCommandFor(e: KeyInput, typing: boolean): CardCommand | undefined {
+	if (e.ctrlKey || e.metaKey || e.shiftKey) return undefined;
+	if (e.key === 'Escape' && !e.altKey) return { kind: 'leave' };
+	if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+		if (typing && !e.altKey) return undefined;
+		return { kind: 'step', by: e.key === 'ArrowRight' ? 1 : -1 };
+	}
+	const digit = /^(?:Digit|Numpad)([1-4])$/.exec(e.code)?.[1];
+	if (digit && !typing && !e.altKey) return { kind: 'pick', option: Number(digit) - 1 };
+	return undefined;
 }
