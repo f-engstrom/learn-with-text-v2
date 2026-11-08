@@ -5,6 +5,7 @@
 	import { onMount, tick, untrack } from 'svelte';
 	import { commandFor } from '#lib/reading/keys.ts';
 	import { termKey } from '#lib/normalise.ts';
+	import { sendReview } from '#lib/reviews.ts';
 	import { Selection, type Selected, type Word } from '#lib/reading/selection.svelte.ts';
 	import type { Answer } from '#lib/server/domain/from-tutor.ts';
 	import { FromTutor } from '#lib/reading/from-tutor.svelte.ts';
@@ -207,13 +208,7 @@
 	}
 
 	async function review(termId: number, grade: Grade) {
-		const body = new FormData();
-		body.set('termId', String(termId));
-		body.set('grade', grade);
-		body.set('source', 'page');
-		const response = await fetch('?/review', { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
-		const result = deserialize(await response.text());
-		error = result.type === 'failure' ? String(result.data?.message) : undefined;
+		error = await sendReview(termId, grade, 'page');
 		await invalidateAll();
 	}
 

@@ -2,8 +2,7 @@ import { database } from '#lib/server/database.ts';
 import { listLanguages } from '#lib/server/domain/languages.ts';
 import { findExample } from '#lib/server/domain/practice.ts';
 import { listTerms } from '#lib/server/domain/terms.ts';
-import { reviewAction } from '#lib/server/term-actions.ts';
-import type { Actions, PageServerLoad } from './$types';
+import type { PageServerLoad } from './$types';
 
 /** The review in the Term list: the most overdue Due Term (in one Language, if chosen), with a Sentence it appears in. */
 export const load: PageServerLoad = async ({ url }) => {
@@ -21,4 +20,3 @@ export const load: PageServerLoad = async ({ url }) => {
 	};
 };
 
-export const actions: Actions = { review: reviewAction };

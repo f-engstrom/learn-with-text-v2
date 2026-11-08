@@ -1,10 +1,8 @@
 <script lang="ts">
-	import { deserialize } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { page } from '$app/state';
-	import { actionUrl } from '#lib/actions.ts';
 	import { dueLabel, holdsLabel, statusLabels, wordAt } from '#lib/practice.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
+	import { sendReview } from '#lib/reviews.ts';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -34,13 +32,7 @@
 		if (!data.term || grading) return;
 		grading = true;
 		try {
-			const body = new FormData();
-			body.set('termId', String(data.term.id));
-			body.set('grade', value);
-			body.set('source', 'list');
-			const response = await fetch(actionUrl('review', page.url.search), { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
-			const result = deserialize(await response.text());
-			error = result.type === 'failure' ? String(result.data?.message) : undefined;
+			error = await sendReview(data.term.id, value, 'list');
 			if (!error) reviewed++;
 			await invalidateAll();
 		} finally {
