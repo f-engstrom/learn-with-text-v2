@@ -56,5 +56,5 @@ The Tutor itself is the [`reader-tutor`](.claude/skills/reader-tutor/SKILL.md) s
 - `src/lib/server/mcp`: the MCP server's tools and its stdio entry point.
 - `src/lib/server/term-actions.ts`: the Term form's actions, shared by the screens that edit Terms.
 - `src/lib/*.ts`: code shared with the browser (normalising, practice wording, Suggestion ranking, Dictionary addresses).
-- `src/lib/reading`: the reading screen's logic, tested apart from the page: keys (`keys.ts`), the cursor (`cursor.ts`), where a Highlight falls on the Page (`highlight.ts`) and From the Tutor, polled, answered and dismissed (`from-tutor.svelte.ts`).
+- `src/lib/reading`: the reading screen's logic, tested apart from the page: keys (`keys.ts`), the Selection and the Bookmark following it (`selection.svelte.ts`, `cursor.ts`, `bookmark.ts`), where a Highlight falls on the Page (`highlight.ts`) and From the Tutor, polled, answered and dismissed (`from-tutor.svelte.ts`).
 - `src/routes`: the web app. The reading screen is `routes/books/[bookId]/pages/[position]`; it reaches From the Tutor at `routes/books/[bookId]/tutor`.

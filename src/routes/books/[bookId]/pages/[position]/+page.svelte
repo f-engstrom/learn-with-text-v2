@@ -3,10 +3,9 @@
 	import { invalidateAll, replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount, tick, untrack } from 'svelte';
-	import { moveCursor } from '#lib/reading/cursor.ts';
 	import { commandFor } from '#lib/reading/keys.ts';
-	import { characterParts, termKey } from '#lib/normalise.ts';
-	import type { ReadingToken } from '#lib/server/domain/books.ts';
+	import { termKey } from '#lib/normalise.ts';
+	import { Selection, type Selected, type Word } from '#lib/reading/selection.svelte.ts';
 	import type { Answer } from '#lib/server/domain/from-tutor.ts';
 	import { FromTutor } from '#lib/reading/from-tutor.svelte.ts';
 	import type { DaySoFar } from '#lib/server/domain/progress.ts';
@@ -23,10 +22,6 @@
 	import AzurePanel from './AzurePanel.svelte';
 	import TutorQuestions from './TutorQuestions.svelte';
 
-	/** A Word, or a matched Multi-word Term, on the Page. */
-	type Word = ReadingToken & { key: string; index: number; sentence: number };
-	/** What the Term form and the Status keys act on: one Word, or a phrase you selected. */
-	type Selection = Pick<Word, 'key' | 'text' | 'sentence'>;
 
 	let { data, form }: PageProps = $props();
 
@@ -58,37 +53,34 @@
 		}
 	}
 
-	let words = $derived(
-		data.paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.tokens.filter((t): t is Word => t.key !== undefined)))
-	);
-	let sentences = $derived(data.paragraphs.flatMap((p) => p.sentences));
-	/** The Word the keyboard is on, by index; the Term form shows the selection while `open`. */
-	let current = $state<number | undefined>();
-	/** Where a phrase selection starts (Shift-click or Shift+arrow); it runs to `current`. */
-	let anchor = $state<number | undefined>();
-	let open = $state(false);
-	let range = $derived(
-		current === undefined ? undefined : ([Math.min(anchor ?? current, current), Math.max(anchor ?? current, current)] as const)
-	);
-	/** The characters of the one selected Word, if it is written in characters you can pick from. */
-	let characters = $derived(range && range[0] === range[1] ? characterParts(words[range[0]].text) : undefined);
-	/** Characters you picked within Word `word` in the Term panel, from `anchor` to `focus`. */
-	let part = $state<{ word: number; anchor: number; focus: number }>();
-	let picked = $derived.by(() => {
-		if (!characters || !part || part.word !== range?.[0]) return undefined;
-		return [Math.min(part.anchor, part.focus), Math.max(part.anchor, part.focus)] as const;
-	});
-	let selected: Selection | undefined = $derived.by(() => {
-		if (!range) return undefined;
-		const [first, last] = range;
-		if (first === last && characters && picked) {
-			const text = characters.slice(picked[0], picked[1] + 1).join('');
-			return { text, key: termKey(text, data.language), sentence: words[first].sentence };
+	/** The Selection; the Bookmark follows it. The Term form shows it while `open`. */
+	const selection = new Selection(
+		untrack(() => data),
+		{
+			onMoved: async (index, how) => {
+				await tick();
+				if (how === 'resume') wordElements[index]?.scrollIntoView({ block: 'center' });
+				else wordElements[index]?.focus();
+			}
 		}
-		if (first === last) return words[first];
-		const text = phraseText(first, last) ?? '';
-		return { text, key: termKey(text, data.language), sentence: words[first].sentence };
+	);
+	$effect(() => {
+		const page = data;
+		untrack(() => {
+			if (selection.sync(page)) {
+				open = false;
+				error = undefined;
+			}
+		});
 	});
+	let words = $derived(selection.words);
+	let sentences = $derived(selection.sentences);
+	let current = $derived(selection.cursor);
+	let range = $derived(selection.range);
+	let characters = $derived(selection.characters);
+	let picked = $derived(selection.picked);
+	let selected = $derived(selection.selected);
+	let open = $state(false);
 	let term = $derived(selected && data.terms[selected.key]);
 	let band = $derived(selected && data.frequency[selected.key]);
 	/** A Status the Tutor's assessment and Recall strength agree on, if it isn't yours. */
@@ -152,7 +144,8 @@
 
 	/** Puts the cursor on a practised Word and scrolls it clear of the practice panel. */
 	async function showPractised(index: number) {
-		await goTo(index, { collapse: true });
+		selection.moveTo(index);
+		await tick();
 		wordElements[index]?.scrollIntoView({ block: 'nearest' });
 	}
 
@@ -182,7 +175,7 @@
 
 	function stopPractice() {
 		practising = undefined;
-		goTo(current);
+		selection.refocus();
 	}
 
 	/** Practice keys: digits pick a subset or grade, Space reveals, Esc stops. Returns whether it handled the key. */
@@ -363,100 +356,8 @@
 	}
 
 	const statusOf = (key: string) => pending[key] ?? data.terms[key]?.status ?? 'unknown';
-	const inPhrase = (index: number) => range !== undefined && range[0] < range[1] && index >= range[0] && index <= range[1];
 
-	/**
-	 * The text from Word `first` to Word `last`, if they are in one Sentence with only whitespace
-	 * between them, as a Multi-word Term needs.
-	 */
-	function phraseText(first: number, last: number): string | undefined {
-		if (words[first].sentence !== words[last].sentence) return undefined;
-		const tokens = sentences[words[first].sentence].tokens;
-		const between = tokens.slice(
-			tokens.findIndex((t) => t.index === first),
-			tokens.findIndex((t) => t.index === last) + 1
-		);
-		if (between.some((t) => t.key === undefined && t.text.trim() !== '')) return undefined;
-		return between.map((t) => t.text).join('');
-	}
-
-	/** Grows or shrinks the phrase selection to end at Word `to`. */
-	function extendTo(to: number) {
-		const from = anchor ?? current;
-		if (from === undefined) return goTo(to);
-		if (phraseText(Math.min(from, to), Math.max(from, to)) === undefined) {
-			error = 'A Multi-word Term stays inside one Sentence, with no punctuation between its Words.';
-			return;
-		}
-		error = undefined;
-		anchor = from;
-		goTo(to);
-	}
-
-	// Saving or deleting a Multi-word Term regroups the Words, so the selection collapses to its start.
-	let wordCount = $derived(words.length);
-	$effect(() => {
-		wordCount;
-		untrack(() => {
-			if (anchor !== undefined && current !== undefined) current = Math.min(anchor, current);
-			anchor = undefined;
-			part = undefined;
-			if (current !== undefined && current >= words.length) current = words.length - 1;
-		});
-	});
-
-	let pageKey = $derived(`${data.book.id}/${data.position}`);
-	/** The Sentence and Word the Bookmark was last saved at from this screen, as "sentence|word". */
-	let bookmarked = '';
-
-	// Opening a Page moves the Bookmark here; on the bookmarked Page the cursor resumes at its Sentence and Word.
-	$effect(() => {
-		pageKey;
-		untrack(enterPage);
-	});
-
-	// Moving the cursor into another Sentence moves the Bookmark with it.
-	$effect(() => {
-		if (selected) saveBookmark(selected.sentence + 1, selected.text);
-	});
-
-	function enterPage() {
-		open = false;
-		error = undefined;
-		anchor = undefined;
-		const { bookmark } = data.book;
-		const here = bookmark.page === data.position;
-		const sentence = here ? bookmark.sentence : 1;
-		const inSentence = words.filter((w) => w.sentence === sentence - 1);
-		// Back on the Bookmark's Word if it has one, else at the start of a later Sentence.
-		const word = here ? bookmark.word?.toLocaleLowerCase() : undefined;
-		const first = (word && inSentence.find((w) => w.text.toLocaleLowerCase() === word)) || (sentence > 1 ? inSentence[0] : undefined);
-		current = first?.index;
-		// Saved even when unchanged, so this Book becomes "where you are" for the Tutor.
-		bookmarked = '';
-		saveBookmark(sentence, first?.text);
-		if (first) tick().then(() => wordElements[first.index]?.scrollIntoView({ block: 'center' }));
-	}
-
-	/** Moves the Bookmark to a Sentence on this Page and the Word or phrase selected in it. */
-	function saveBookmark(sentence: number, word?: string) {
-		const key = `${sentence}|${word ?? ''}`;
-		if (key === bookmarked) return;
-		bookmarked = key;
-		const body = new FormData();
-		body.set('sentence', String(sentence));
-		if (word) body.set('word', word);
-		fetch('?/bookmark', { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
-	}
-
-	async function goTo(index: number | undefined, { collapse = false } = {}) {
-		if (collapse) anchor = undefined;
-		current = index;
-		await tick();
-		if (index !== undefined) wordElements[index]?.focus();
-	}
-
-	async function setStatus(word: Selection, status: Status) {
+	async function setStatus(word: Selected, status: Status) {
 		pending[word.key] = status;
 		const body = new FormData();
 		body.set('languageId', String(data.language.id));
@@ -509,10 +410,10 @@
 		switch (command.kind) {
 			case 'move':
 			case 'sentence':
-				goTo(moveCursor(words, current, command), { collapse: true });
+				selection.move(command);
 				break;
 			case 'extend':
-				if (current !== undefined) extendTo(Math.min(Math.max(current + command.by, 0), words.length - 1));
+				error = selection.move(command);
 				break;
 			case 'status':
 				if (selected) setStatus(selected, command.status);
@@ -538,7 +439,7 @@
 				break;
 			case 'close':
 				open = false;
-				goTo(current);
+				selection.refocus();
 				break;
 		}
 	}
@@ -556,16 +457,9 @@
 		pasteTranslation(e.clipboardData?.getData('text/plain') ?? '');
 	}
 
-	/** Picks a character of the selected Word for the Term form; Shift-click picks a run of them. */
-	function pickCharacter(index: number, shift: boolean) {
-		if (!range) return;
-		part = { word: range[0], anchor: shift && part?.word === range[0] ? part.anchor : index, focus: index };
-	}
-
 	function choose(word: Word, shift: boolean) {
-		const again = current === word.index && !shift;
-		if (shift && current !== undefined) extendTo(word.index);
-		else goTo(word.index, { collapse: true });
+		const { again, error: refused } = selection.choose(word.index, shift);
+		if (shift) error = refused;
 		// In zen mode a tap shows the Word's Translations; tapping it again hides them.
 		if (zen) {
 			glossShown = !(again && glossShown);
@@ -698,7 +592,7 @@
 									tabindex={word.index === (current ?? 0) ? 0 : -1}
 									class="word {statusOf(word.key)}"
 									class:current={current === word.index}
-									class:phrase={inPhrase(word.index)}
+									class:phrase={selection.inPhrase(word.index)}
 									class:multi={(word.words ?? 1) > 1}
 									class:in-passage={inPassage(sentence, t)}
 									data-due={overdueOf(word.key) || undefined}
@@ -733,7 +627,7 @@
 							{question}
 							lang={data.language.code}
 							onanswer={answerTutor}
-							onleave={() => goTo(current ?? 0)}
+							onleave={() => (current === undefined ? selection.moveTo(0) : selection.refocus())}
 						>
 							{@render tutorContext()}
 						</TutorQuestions>
@@ -760,7 +654,7 @@
 					<button type="button" class="close" aria-label="Close the Term form" onclick={() => (open = false)}>✕</button>
 					{#if characters && range}
 						<div class="parts" role="group" aria-label="The whole Word or some of its characters">
-							<button type="button" class="part {statusOf(words[range[0]].key)}" aria-pressed={!picked} onclick={() => (part = undefined)}
+							<button type="button" class="part {statusOf(words[range[0]].key)}" aria-pressed={!picked} onclick={() => selection.wholeWord()}
 								>{words[range[0]].text}</button
 							>
 							{#each characters as character, i (i)}
@@ -769,7 +663,7 @@
 									class="part {statusOf(termKey(character, data.language))}"
 									aria-pressed={picked !== undefined && i >= picked[0] && i <= picked[1]}
 									onmousedown={(e) => e.shiftKey && e.preventDefault()}
-									onclick={(e) => pickCharacter(i, e.shiftKey)}>{character}</button
+									onclick={(e) => selection.pickCharacter(i, e.shiftKey)}>{character}</button
 								>
 							{/each}
 						</div>

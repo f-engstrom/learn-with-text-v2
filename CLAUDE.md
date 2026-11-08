@@ -12,7 +12,8 @@ Domain rules sit in `src/lib/server/domain`, which the web app and the Tutor's M
 | Normalised form, Character part | `lib/normalise.ts` (shared with the browser) |
 | Book, Page, importing text or a file | `domain/books.ts` |
 | Import from a web address | `domain/webpages.ts`; Wikipedia, Feeds and Classics in `domain/suggestions.ts`, `feeds.ts`, `classics.ts` |
-| Bookmark, Highlight, Read | `domain/reading.ts` |
+| Bookmark, Highlight, Read | `domain/reading.ts`; the Bookmark's Word in `lib/reading/bookmark.ts` |
+| Selection (cursor, phrase, Character part), the Bookmark following it | `lib/reading/selection.svelte.ts` |
 | Term, Translation, Source, Parent, Follows Parent, Status | `domain/terms.ts` (`saveTerm` does it all in one call) |
 | Multi-word Term | `domain/multiword.ts` |
 | Gloss, Tutor adjustment, Tutor's assessment, Transfer | `domain/tutoring.ts` |
@@ -25,7 +26,7 @@ Domain rules sit in `src/lib/server/domain`, which the web app and the Tutor's M
 | Your languages | `domain/your-languages.ts` |
 | Words read, Milestone, Status history, The day so far | `domain/progress.ts` |
 
-The reading screen is `routes/books/[bookId]/pages/[position]/+page.svelte`. Its logic moves out into `lib/reading/` (keys, cursor, Highlight on the Page, From the Tutor) as it is touched; that is where its tests go.
+The reading screen is `routes/books/[bookId]/pages/[position]/+page.svelte`. Its logic moves out into `lib/reading/` (keys, Selection, Highlight on the Page, From the Tutor) as it is touched; that is where its tests go. A module there is constructed during server-side rendering too, so it does nothing that reaches the server until its first `sync` or `start`, which the page calls in the browser.
 
 ## Conventions
 
@@ -39,4 +40,4 @@ The reading screen is `routes/books/[bookId]/pages/[position]/+page.svelte`. Its
 
 ## Checking a change in the browser
 
-`data/reader.db` holds real reading progress, and a Tutor session may be using it. Point the dev server's `DATABASE_PATH` at a copy (`sqlite3 data/reader.db ".backup <copy>"`). `pnpm check` runs `svelte-kit sync`, which switches a running dev server back to `.env`'s database: restart the server after it.
+`data/reader.db` holds real reading progress, and a Tutor session may be using it. Point the dev server's `DATABASE_PATH` at a copy (`sqlite3 data/reader.db ".backup <copy>"`). `pnpm check` and `pnpm test` (and `vitest`) regenerate SvelteKit's env config, which switches a running dev server back to `.env`'s database. Run neither while it is up, and before anything that writes, confirm it is on the copy: give the copy a marker (e.g. rename a Book) and look for it.
