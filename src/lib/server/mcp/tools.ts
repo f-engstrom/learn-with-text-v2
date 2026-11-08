@@ -28,6 +28,7 @@ import { getProgress } from '../domain/progress';
 import { askLearner, awaitAnswer, feedbackLength, InvalidTutorQuestion, withdrawQuestion } from '../domain/from-tutor';
 import { InvalidYourLanguage, listYourLanguages, removeYourLanguage, setYourLanguage, YOUR_LANGUAGE_LEVELS } from '../domain/your-languages';
 import { byPriority, type DueWord } from '../../practice';
+import { bookmarkedWord } from '../../reading/bookmark';
 import { fetchArticle, InvalidAddress, type WebArticle } from '../domain/webpages';
 
 /**
@@ -89,8 +90,7 @@ export function createReaderServer(
 			const sentences = page.paragraphs.flatMap((p, paragraph) => p.sentences.map((s) => ({ ...s, paragraph })));
 			const current = sentences[latest.bookmark.sentence - 1];
 			const text = (s: { tokens: { text: string }[] }) => s.tokens.map((t) => t.text).join('').trim();
-			const wanted = latest.bookmark.word?.toLocaleLowerCase(page.language.code);
-			const token = current?.tokens.find((t) => t.key !== undefined && t.text.toLocaleLowerCase(page.language.code) === wanted);
+			const token = current && bookmarkedWord(current.tokens, latest.bookmark.word, page.language.code);
 			return json({
 				book: { id: latest.bookId, title: latest.title, language: page.language.name, pageCount: page.book.pageCount },
 				bookmark: latest.bookmark,
@@ -153,14 +153,14 @@ export function createReaderServer(
 			const all = page.paragraphs.flatMap((p, paragraph) => p.sentences.map((s) => ({ ...s, paragraph: paragraph + 1 })));
 			const sentences = all.slice(from - 1, from - 1 + count).map((s, i) => {
 				const isBookmark = position === bookmark.page && from + i === bookmark.sentence;
-				const selectedWord = isBookmark ? bookmark.word?.toLocaleLowerCase(page.language.code) : undefined;
+				const selectedWord = isBookmark ? bookmarkedWord(s.tokens, bookmark.word, page.language.code) : undefined;
 				const words = s.tokens.flatMap((t) =>
 					t.key === undefined
 						? []
 						: [
 								{
 									...wordView(t.text, page.terms[t.key], t.words ?? 1),
-									...(selectedWord !== undefined && t.text.toLocaleLowerCase(page.language.code) === selectedWord ? { selected: true } : {})
+									...(t === selectedWord ? { selected: true } : {})
 								}
 							]
 				);

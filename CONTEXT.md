@@ -24,6 +24,10 @@ One sentence of a Page, in order, as split by its Language's rules. Multi-word T
 Where you are in a Book: its current Page and Sentence, and the Word (or phrase) you last selected in that Sentence, if any. The reading screen and the Tutor both use the same Bookmark; the one moved most recently, in any Book, is where you are now.
 _Avoid_: Position, resume point, current page
 
+**Selection**:
+The Word, phrase or Character part you have picked on the Page. The Term form and the Status keys act on it, and the Bookmark follows it.
+_Avoid_: Cursor (that's the Word the keys are on)
+
 **Highlight**:
 A run of one or more Sentences on one Page that the Tutor points you to, or a passage within them (such as one clause), with an optional short note. A Book has at most one; it lasts until the Tutor replaces or clears it, or you mark its Page Read. It never moves the Bookmark.
 _Avoid_: Selection (that's yours), focus, annotation
