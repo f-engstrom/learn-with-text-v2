@@ -2,7 +2,7 @@ import type { FrequencyBand } from '#lib/server/domain/frequency.ts';
 import type { PracticeView, RecallStrength } from '#lib/server/domain/practice.ts';
 import type { Status, Transfer } from '#lib/server/domain/terms.ts';
 
-// Wording for practice, shared by the reading screen and the Term list.
+// Practice priority and the wording for practice, shared by the reading screen, the Term list and the MCP server.
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -38,28 +38,6 @@ export function holdsLabel(recall: RecallStrength): string {
 	return `holds ${held}, ${Math.round(recall.today * 100)}% today`;
 }
 
-/** The subsets of a Page's Due Words you can practise. */
-export type Subset = 'priority' | 'paragraph' | 'highlight' | 'overdue';
-
-export const subsetLabels: Record<Subset, string> = {
-	priority: 'Top by priority',
-	paragraph: 'This paragraph',
-	highlight: 'The Highlight',
-	overdue: 'Most overdue'
-};
-
-/** A Due Word on the Page: where it is, and its Term's place in practice. */
-export interface DueWord {
-	index: number;
-	key: string;
-	/** 1-based Sentence and paragraph on the Page. */
-	sentence: number;
-	paragraph: number;
-	practice: PracticeView;
-	frequency?: FrequencyBand;
-	transfer?: Transfer;
-}
-
 const transferPoints = { easy: 0, medium: 1, hard: 2 } as const;
 
 /** How hard a Term is to carry over: 0 (form and concept easy) to 4 (both hard); -1 when not judged. */
@@ -76,43 +54,25 @@ export const frequencyLabels: Record<FrequencyBand, string> = {
 
 const bandOrder: Record<FrequencyBand, number> = { top1k: 0, top5k: 1, top20k: 2, rare: 3 };
 
-/** How many Words "Top by priority" takes. */
-export const TOP = 10;
+/** What Practice priority orders by: a Due Term, or one of its Words on a Page. */
+export interface Prioritised {
+	practice: PracticeView;
+	frequency?: FrequencyBand;
+	transfer?: Transfer;
+	/** Its place on the Page, the last tie-break. */
+	index?: number;
+}
 
-/** Practice priority between two Due Words: the more frequent first, then the harder to carry over, then the more overdue. */
-export function byPriority(a: DueWord, b: DueWord): number {
-	const band = (w: DueWord) => (w.frequency ? bandOrder[w.frequency] : 4);
+/** Practice priority between two Due Terms: the more frequent first, then the harder to carry over, then the more overdue. */
+export function byPriority(a: Prioritised, b: Prioritised): number {
+	const band = (w: Prioritised) => (w.frequency ? bandOrder[w.frequency] : 4);
 	return (
 		band(a) - band(b) ||
 		transferScore(b.transfer) - transferScore(a.transfer) ||
 		b.practice.overdue - a.practice.overdue ||
 		Date.parse(a.practice.due) - Date.parse(b.practice.due) ||
-		a.index - b.index
+		(a.index ?? 0) - (b.index ?? 0)
 	);
-}
-
-/**
- * The Words to practise, in order: each Due Term once, at its first place in the subset.
- * Paragraph and Highlight keep the text's order; the others go by priority or overdueness.
- */
-export function practiceQueue(
-	words: DueWord[],
-	subset: Subset,
-	{ paragraph, highlight }: { paragraph?: number; highlight?: { first: number; last: number } } = {}
-): number[] {
-	const due = words.filter((w) => w.practice.overdue > 0);
-	const seen = new Set<string>();
-	const once = (list: DueWord[]) => list.filter((w) => !seen.has(w.key) && seen.add(w.key));
-	switch (subset) {
-		case 'paragraph':
-			return once(due.filter((w) => w.paragraph === paragraph)).map((w) => w.index);
-		case 'highlight':
-			return highlight ? once(due.filter((w) => w.sentence >= highlight.first && w.sentence <= highlight.last)).map((w) => w.index) : [];
-		case 'priority':
-			return once([...due].sort(byPriority)).slice(0, TOP).map((w) => w.index);
-		case 'overdue':
-			return once([...due].sort((a, b) => Date.parse(a.practice.due) - Date.parse(b.practice.due) || a.index - b.index)).map((w) => w.index);
-	}
 }
 
 /** "form easy, concept hard". */

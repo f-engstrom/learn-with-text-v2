@@ -27,7 +27,7 @@ import { InvalidReview } from '../domain/practice';
 import { getProgress } from '../domain/progress';
 import { askLearner, awaitAnswer, feedbackLength, InvalidTutorQuestion, withdrawQuestion } from '../domain/from-tutor';
 import { InvalidYourLanguage, listYourLanguages, removeYourLanguage, setYourLanguage, YOUR_LANGUAGE_LEVELS } from '../domain/your-languages';
-import { byPriority, type DueWord } from '../../practice';
+import { byPriority } from '../../practice';
 import { bookmarkedWord } from '../../reading/bookmark';
 import { fetchArticle, InvalidAddress, type WebArticle } from '../domain/webpages';
 
@@ -315,19 +315,10 @@ export function createReaderServer(
 			if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
 			const { terms, total } = await listTerms(db, { languageId: language.id, due: 'due', limit: 1000 });
 			const ranked = terms
-				.map((term, index): DueWord & { term: (typeof terms)[number] } => ({
-					index,
-					key: term.text,
-					sentence: 0,
-					paragraph: 0,
-					practice: term.practice!,
-					frequency: term.frequency,
-					transfer: term.transfer,
-					term
-				}))
+				.map((term, index) => ({ ...term, practice: term.practice!, index }))
 				.sort(byPriority)
 				.slice(0, limit);
-			return json({ due: total, terms: ranked.map(({ term }) => ({ text: term.text, ...termView(term) })) });
+			return json({ due: total, terms: ranked.map((term) => ({ text: term.text, ...termView(term) })) });
 		}
 	);
 

@@ -1,13 +1,8 @@
 <script lang="ts">
-	import { statusLabels, subsetLabels, type Subset } from '#lib/practice.ts';
+	import { statusLabels } from '#lib/practice.ts';
+	import { subsetLabels, type PracticeState, type Subset } from '#lib/reading/practice.svelte.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import type { TermView } from '#lib/server/domain/terms.ts';
-
-	/** Practice on the Page: choosing a subset, then one Due Word at a time, then a summary. */
-	export type PracticeState =
-		| { stage: 'choose' }
-		| { stage: 'run'; subset: Subset; queue: number[]; at: number; revealed: boolean; reviewed: number }
-		| { stage: 'done'; reviewed: number };
 
 	interface Props {
 		state: PracticeState;
