@@ -7,8 +7,8 @@
 	import { commandFor } from '#lib/reading/keys.ts';
 	import { characterParts, termKey } from '#lib/normalise.ts';
 	import type { ReadingToken } from '#lib/server/domain/books.ts';
-	import type { Highlight } from '#lib/server/domain/reading.ts';
-	import type { Answer, TutorQuestion } from '#lib/server/domain/from-tutor.ts';
+	import type { Answer } from '#lib/server/domain/from-tutor.ts';
+	import { FromTutor } from '#lib/reading/from-tutor.svelte.ts';
 	import type { DaySoFar } from '#lib/server/domain/progress.ts';
 	import type { Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
@@ -303,11 +303,29 @@
 		wake();
 	}
 
-	/** The Tutor's Highlight, kept current by polling while the Page is open. */
-	let highlight = $state<Highlight | null>(null);
-	$effect(() => {
-		highlight = data.highlight;
+	/** From the Tutor: its Highlight and question, kept current while the Page is open. */
+	const fromTutor = new FromTutor(untrack(() => tutorState()), {
+		// The Tutor saved a Gloss or changed a Term: the Page's Statuses and Translations follow.
+		onTermsChanged: () => invalidateAll(),
+		// A new Highlight on this Page comes into view; the cursor and Bookmark stay put.
+		onNewHighlight: async (h) => {
+			if (h.page !== data.position) return;
+			await tick();
+			highlightElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		}
 	});
+	function tutorState() {
+		return { bookId: data.book.id, highlight: data.highlight, question: data.question, termsVersion: data.termsVersion };
+	}
+	$effect(() => {
+		const latest = tutorState();
+		untrack(() => fromTutor.sync(latest));
+	});
+	onMount(() => fromTutor.start());
+	let highlight = $derived(fromTutor.highlight);
+	/** TutorQuestions keeps what you write, per `askedAt`. */
+	let question = $derived(fromTutor.question);
+	let tutorQuestions = $state<TutorQuestions>();
 	let sentenceNumbers = $derived(new Map(sentences.map((s, i) => [s, i + 1])));
 	let highlightHere = $derived(highlight?.page === data.position ? highlight : undefined);
 	/** Where "This paragraph" is: the cursor's paragraph, else the first. */
@@ -352,60 +370,14 @@
 	const inPassage = (sentence: (typeof sentences)[number], t: number) => passage.has(`${sentenceNumbers.get(sentence)}:${t}`);
 	let highlightElement = $state<HTMLElement>();
 
-	/** The Tutor's question, kept current by the same polling; TutorQuestions keeps what you write, per `askedAt`. */
-	let question = $state<TutorQuestion | null>(null);
-	let tutorQuestions = $state<TutorQuestions>();
-	$effect(() => {
-		const latest = data.question;
-		untrack(() => showQuestion(latest));
-	});
-	function showQuestion(latest: TutorQuestion | null) {
-		question = latest;
-	}
-
 	async function answerTutor(answer: Answer) {
-		if (!question) return;
-		const body = new FormData();
-		body.set('askedAt', question.askedAt);
-		body.set('answer', JSON.stringify(answer));
-		const response = await fetch('?/answer', { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
-		const result = deserialize(await response.text());
-		if (result.type === 'failure') error = String(result.data?.message ?? 'Could not send your answer.');
-		else question = { ...question, answer };
+		const refused = await fromTutor.answer(answer);
+		if (refused) error = refused;
 	}
 
-	/** Puts the Tutor aside: its question and Highlight leave the screen until it asks again. */
 	function dismissTutor() {
-		highlight = null;
-		question = null;
-		fetch('?/dismissTutor', { method: 'POST', body: new FormData(), headers: { 'x-sveltekit-action': 'true' } });
+		fromTutor.dismiss();
 	}
-
-	let refreshingTerms = false;
-	onMount(() => {
-		const poll = setInterval(async () => {
-			if (document.hidden) return;
-			const latest: { highlight: Highlight | null; question: TutorQuestion | null; termsVersion: number } = await fetch(
-				`/books/${data.book.id}/tutor`
-			)
-				.then((r) => (r.ok ? r.json() : { highlight, question, termsVersion: data.termsVersion }))
-				.catch(() => ({ highlight, question, termsVersion: data.termsVersion }));
-			showQuestion(latest.question);
-			// The Tutor saved a Gloss or changed a Term: the Page's Statuses and Translations follow.
-			if (latest.termsVersion !== data.termsVersion && !refreshingTerms) {
-				refreshingTerms = true;
-				invalidateAll().finally(() => (refreshingTerms = false));
-			}
-			if (latest.highlight?.at === highlight?.at) return;
-			highlight = latest.highlight;
-			// A new Highlight on this Page comes into view; the cursor and Bookmark stay put.
-			if (latest.highlight?.page === data.position) {
-				await tick();
-				highlightElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			}
-		}, 2000);
-		return () => clearInterval(poll);
-	});
 
 	function showHighlight() {
 		highlightElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });

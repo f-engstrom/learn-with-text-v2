@@ -4,7 +4,7 @@ import { getPage } from '#lib/server/domain/books.ts';
 import { listDictionaries } from '#lib/server/domain/dictionaries.ts';
 import { daySoFar } from '#lib/server/domain/progress.ts';
 import { InvalidBookmark, markPageRead, setBookmark } from '#lib/server/domain/reading.ts';
-import { answerTutor, dismissTutor, fromTutor, InvalidTutorQuestion, type Answer } from '#lib/server/domain/from-tutor.ts';
+import { fromTutor } from '#lib/server/domain/from-tutor.ts';
 import { deleteTermAction, reviewAction, saveTermAction, setStatusAction } from '#lib/server/term-actions.ts';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -38,21 +38,6 @@ export const actions: Actions = {
 			if (e instanceof InvalidBookmark) return fail(400, { message: e.message });
 			throw e;
 		}
-	},
-	/** Your answer to the Tutor's question, or your own question instead. */
-	answer: async ({ request, params }) => {
-		const form = await request.formData();
-		try {
-			const answer: Answer = JSON.parse(String(form.get('answer')));
-			await answerTutor(database(), Number(params.bookId), String(form.get('askedAt')), answer);
-		} catch (e) {
-			if (e instanceof InvalidTutorQuestion) return fail(400, { message: e.message });
-			throw e;
-		}
-	},
-	/** Puts the Tutor aside: its question and Highlight leave the screen. */
-	dismissTutor: async ({ params }) => {
-		await dismissTutor(database(), Number(params.bookId));
 	},
 	/** Marks this Page Read (optionally making the rest Known) and goes on to the next Page, showing the day so far. */
 	markRead: async ({ request, params }) => {
