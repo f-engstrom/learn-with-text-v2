@@ -250,6 +250,22 @@ async function withoutBooks<T extends { url: string }>(db: Kysely<Database>, ite
 	return items.filter((c) => !have.has(c.url));
 }
 
+/** A Wikipedia article in the Language, cut like a Suggestion; undefined if there is none by that title. */
+export async function readWikipedia(source: WikipediaSource, language: Language, title: string): Promise<WebArticle | undefined> {
+	const article = await source.article(language.code, title);
+	if (!article) return undefined;
+	return { url: article.url, title: article.title, text: cutArticle(article.text, parserFor(language)) };
+}
+
+/** A Classic, by its web address, whole and without Wikisource's notes; undefined if it isn't one or is gone. */
+export async function readClassic(source: WikisourceSource, language: Language, url: string): Promise<WebArticle | undefined> {
+	const classic = findClassic(language.code, url);
+	if (!classic) return undefined;
+	const text = await source.text(classic);
+	if (text === undefined) return undefined;
+	return { url, title: classic.title, text: wholeWork(classic, text, language) };
+}
+
 /** Imports an article as a Book that keeps its address; one you already have is reused. */
 export async function importArticle(
 	db: Kysely<Database>,
@@ -257,16 +273,11 @@ export async function importArticle(
 	language: Language,
 	title: string
 ): Promise<number | undefined> {
-	const article = await source.article(language.code, title);
+	const article = await readWikipedia(source, language, title);
 	if (!article) return undefined;
 	const existing = await findBookByUrl(db, article.url);
 	if (existing !== undefined) return existing;
-	return createBook(db, {
-		languageId: language.id,
-		title: article.title,
-		text: cutArticle(article.text, parserFor(language)),
-		url: article.url
-	});
+	return createBook(db, { languageId: language.id, ...article });
 }
 
 /** Imports a Feed item as a Book that keeps its address; one you already have is reused. */
@@ -290,13 +301,12 @@ export async function importClassic(
 	language: Language,
 	url: string
 ): Promise<number | undefined> {
-	const classic = findClassic(language.code, url);
-	if (!classic) return undefined;
+	if (!findClassic(language.code, url)) return undefined;
 	const existing = await findBookByUrl(db, url);
 	if (existing !== undefined) return existing;
-	const text = await source.text(classic);
-	if (text === undefined) return undefined;
-	return createBook(db, { languageId: language.id, title: classic.title, text: wholeWork(classic, text, language), url });
+	const classic = await readClassic(source, language, url);
+	if (!classic) return undefined;
+	return createBook(db, { languageId: language.id, ...classic });
 }
 
 function shuffle<T>(items: T[]): T[] {

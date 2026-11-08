@@ -11,6 +11,13 @@ export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
 export class InvalidBook extends Error {}
 
+/** One web address, one Book: creating a second from the same address is refused. */
+export class BookExists extends InvalidBook {
+	constructor(readonly bookId: number) {
+		super('You already have that page as a Book.');
+	}
+}
+
 export interface NewBook {
 	languageId: number;
 	title: string;
@@ -114,6 +121,11 @@ export async function createBook(db: Kysely<Database>, input: NewBook): Promise<
 	if (!language) throw new InvalidBook('Choose a Language.');
 	const title = input.title.trim();
 	if (title === '') throw new InvalidBook('Give the Book a title.');
+
+	if (input.url) {
+		const had = await findBookByUrl(db, input.url);
+		if (had !== undefined) throw new BookExists(had);
+	}
 
 	const parser = parserFor(language);
 	const pages = splitIntoPages(input.text, parser);

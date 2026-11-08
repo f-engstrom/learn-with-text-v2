@@ -9,7 +9,8 @@ import { setBookmark } from '../domain/reading';
 import type { SuggestionSources } from '../domain/suggestions';
 import { listTerms, saveTerm } from '../domain/terms';
 import { answerTutor, getTutorQuestion } from '../domain/from-tutor';
-import { createReaderServer, wikipediaTitle } from './tools';
+import { createReaderServer } from './tools';
+import { wikipediaTitle } from '../domain/addresses';
 
 const words = (n: number) => Array.from({ length: n }, () => 'кот').join(' ') + '.';
 const sources: SuggestionSources = {
@@ -230,7 +231,7 @@ describe('Reader MCP server', () => {
 		const { call } = await connect();
 		const result = await call('import_book', { language: 'ru', url: 'https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D1%82' });
 		expect(result).toMatchObject({ title: 'Кот' });
-		expect(await call('import_book', { language: 'ru', url: 'https://ru.wikipedia.org/wiki/Кот' })).toEqual({ bookId: result.bookId, title: 'Кот' });
+		expect(await call('import_book', { language: 'ru', url: 'https://ru.wikipedia.org/wiki/Кот' })).toEqual({ bookId: result.bookId, alreadyHad: true });
 	});
 
 	it("says where the learner is: the latest Bookmark, its Sentence and paragraph so far, and the selected Word", async () => {

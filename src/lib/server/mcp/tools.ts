@@ -4,7 +4,8 @@ import type { Kysely } from 'kysely';
 import { z } from 'zod';
 import { fits, rankSuggestions } from '../../suggestions';
 import type { Database } from '../db/schema';
-import { createBook, findBookByUrl, getPage, InvalidBook, listBooks } from '../domain/books';
+import { createBook, getPage, InvalidBook, listBooks } from '../domain/books';
+import { importFromAddress } from '../domain/addresses';
 import { listLanguages, type Language } from '../domain/languages';
 import { termKey } from '../domain/parsing';
 import {
@@ -19,8 +20,7 @@ import {
 	setBookmark,
 	setHighlight
 } from '../domain/reading';
-import { findSuggestions, getFitRange, importArticle, importClassic, type SuggestionSources } from '../domain/suggestions';
-import { findClassic } from '../domain/classics';
+import { findSuggestions, getFitRange, type SuggestionSources } from '../domain/suggestions';
 import { findTerms, InvalidTerm, listTerms, type TermView } from '../domain/terms';
 import { assessTerm, linkParent, saveGloss, setTransfer } from '../domain/tutoring';
 import { InvalidReview } from '../domain/practice';
@@ -565,43 +565,13 @@ export function createReaderServer(
 				const language = await findLanguage(db, name);
 				if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
 				if ((text === undefined) === (url === undefined)) return failure('Give either text or url.');
-				// A Wikipedia article comes in through its API, cut like a Suggestion, without the page's notices.
-				const wikipedia = url === undefined ? undefined : wikipediaTitle(url, language.code);
-				if (wikipedia !== undefined) {
-					const bookId = await importArticle(db, sources.wikipedia, language, wikipedia);
-					if (bookId === undefined) return failure(`Wikipedia has no article "${wikipedia}".`);
-					return json({ bookId, title: wikipedia });
-				}
-				// So does a Classic, without Wikisource's notes.
-				if (url !== undefined && sources.wikisource && findClassic(language.code, url)) {
-					const bookId = await importClassic(db, sources.wikisource, language, url);
-					if (bookId === undefined) return failure("Wikisource doesn't have that text any more.");
-					return json({ bookId, title: findClassic(language.code, url)!.title });
-				}
-				if (url !== undefined) {
-					const article = await readArticle(url);
-					const existing = await findBookByUrl(db, article.url);
-					if (existing !== undefined) return json({ bookId: existing, alreadyHad: true });
-					const bookId = await createBook(db, { languageId: language.id, title: title?.trim() || article.title, text: article.text, url: article.url });
-					return json({ bookId, title: title?.trim() || article.title });
-				}
+				// Wikipedia articles and Classics come in through their APIs, without the pages' notices.
+				if (url !== undefined) return json(await importFromAddress(db, { ...sources, readArticle }, language, url, title));
 				return json({ bookId: await createBook(db, { languageId: language.id, title: title ?? '', text: text! }) });
 			})
 	);
 
 	return server;
-}
-
-/** The article title of an address on the Language's Wikipedia, e.g. https://ru.wikipedia.org/wiki/Футбол. */
-export function wikipediaTitle(url: string, code: string): string | undefined {
-	try {
-		const parsed = new URL(url);
-		if (!new RegExp(`^${code}(\\.m)?\\.wikipedia\\.org$`).test(parsed.hostname)) return undefined;
-		const match = parsed.pathname.match(/^\/wiki\/(.+)$/);
-		return match ? decodeURIComponent(match[1]).replaceAll('_', ' ') : undefined;
-	} catch {
-		return undefined;
-	}
 }
 
 /** Turns a broken rule into an error result the Tutor can read and act on. */

@@ -11,7 +11,7 @@ Domain rules sit in `src/lib/server/domain`, which the web app and the Tutor's M
 | Language, splitting into Words and Sentences | `domain/languages.ts`, `domain/parsing.ts` |
 | Normalised form, Character part | `lib/normalise.ts` (shared with the browser) |
 | Book, Page, importing text or a file | `domain/books.ts` |
-| Import from a web address | `domain/webpages.ts`; Wikipedia, Feeds and Classics in `domain/suggestions.ts`, `feeds.ts`, `classics.ts` |
+| Import from a web address (one address, one Book) | `domain/addresses.ts`, for the web page and the Tutor alike; readers in `domain/webpages.ts`, `suggestions.ts`, `classics.ts`, `feeds.ts` |
 | Bookmark, Highlight, Read | `domain/reading.ts`; the Bookmark's Word in `lib/reading/bookmark.ts` |
 | Selection (cursor, phrase, Character part), the Bookmark following it | `lib/reading/selection.svelte.ts` |
 | Term, Translation, Source, Parent, Follows Parent, Status | `domain/terms.ts` (`saveTerm` does it all in one call) |
