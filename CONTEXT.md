@@ -124,6 +124,10 @@ _Avoid_: AI, assistant, bot
 What the Tutor asks you in the reading screen, beside its Highlight: one to four questions, each typed or a pick among two to four options, with feedback on your last answer. You answer every question, or ask the Tutor something of your own instead. A Book has at most one; the next replaces it. Dismissing it puts the Tutor aside: the question and the Highlight leave the screen until the Tutor asks again.
 _Avoid_: Prompt, quiz, card
 
+**From the Tutor**:
+What the Tutor has put in front of you for a Book: its Highlight and its Tutor's question, either or both. Dismissing it puts the Tutor aside and clears both; they come back only when the Tutor sets a Highlight or asks again.
+_Avoid_: Tutor card, Tutor state, Tutor channel
+
 **Gloss**:
 A short meaning the Tutor offers for a Word during a session. It is offered only for Unknown Words and Learning 1–2 Terms, and is saved as a Translation with Source Tutor.
 

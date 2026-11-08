@@ -1,6 +1,7 @@
 import type { Kysely } from 'kysely';
 import type { Database } from '../db/schema';
-import { clearHighlight } from './reading';
+import { clearHighlight, getHighlight, type Highlight } from './reading';
+import { termsVersion } from './terms';
 
 export class InvalidTutorQuestion extends Error {}
 
@@ -95,6 +96,24 @@ export async function getTutorQuestion(db: Kysely<Database>, bookId: number): Pr
 		questions: JSON.parse(row.questions),
 		askedAt: row.asked_at,
 		...(row.answer ? { answer: JSON.parse(row.answer) } : {})
+	};
+}
+
+/** From the Tutor: what the reading screen shows for a Book, and its Language's Terms version so the screen can follow Term changes. */
+export interface FromTutor {
+	highlight: Highlight | null;
+	question: TutorQuestion | null;
+	termsVersion: number;
+}
+
+/** From the Tutor for a Book, or undefined if there is no such Book. */
+export async function fromTutor(db: Kysely<Database>, bookId: number): Promise<FromTutor | undefined> {
+	const book = await db.selectFrom('book').select('language_id').where('id', '=', bookId).executeTakeFirst();
+	if (!book) return undefined;
+	return {
+		highlight: (await getHighlight(db, bookId)) ?? null,
+		question: (await getTutorQuestion(db, bookId)) ?? null,
+		termsVersion: await termsVersion(db, book.language_id)
 	};
 }
 

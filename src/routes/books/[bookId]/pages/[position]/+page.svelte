@@ -8,7 +8,7 @@
 	import { characterParts, termKey } from '#lib/normalise.ts';
 	import type { ReadingToken } from '#lib/server/domain/books.ts';
 	import type { Highlight } from '#lib/server/domain/reading.ts';
-	import type { Answer, TutorQuestion } from '#lib/server/domain/tutor-question.ts';
+	import type { Answer, TutorQuestion } from '#lib/server/domain/from-tutor.ts';
 	import type { DaySoFar } from '#lib/server/domain/progress.ts';
 	import type { Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';

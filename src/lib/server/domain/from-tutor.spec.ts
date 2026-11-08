@@ -4,22 +4,24 @@ import { migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
 import { createBook } from './books';
 import { getHighlight, setHighlight } from './reading';
+import { saveTerm } from './terms';
 import {
 	answerTutor,
 	askLearner,
 	awaitAnswer,
 	dismissTutor,
+	fromTutor,
 	getTutorQuestion,
 	InvalidTutorQuestion,
 	withdrawQuestion
-} from './tutor-question';
+} from './from-tutor';
 
 async function setup() {
 	const db = openDatabase(':memory:');
 	await migrateToLatest(db);
 	const russian = (await listLanguages(db)).find((l) => l.code === 'ru')!;
 	const bookId = await createBook(db, { languageId: russian.id, title: 'Кот', text: 'Кот спит. Мышь бежит.' });
-	return { db, bookId };
+	return { db, bookId, languageId: russian.id };
 }
 
 const translate = { prompt: 'Translate «Кот спит».' };
@@ -86,6 +88,36 @@ describe('Tutor’s question', () => {
 		await askLearner(db, bookId, { questions: [translate] });
 		await withdrawQuestion(db, bookId);
 		expect(await getTutorQuestion(db, bookId)).toBeUndefined();
+	});
+});
+
+describe('From the Tutor', () => {
+	it('is the Highlight and the question, either or both', async () => {
+		const { db, bookId } = await setup();
+		expect(await fromTutor(db, bookId)).toMatchObject({ highlight: null, question: null });
+		const highlight = await setHighlight(db, bookId, { page: 1, first: 1, last: 2 });
+		const question = await askLearner(db, bookId, { questions: [translate] });
+		expect(await fromTutor(db, bookId)).toMatchObject({ highlight, question });
+	});
+
+	it('is cleared, both parts, when the learner dismisses it', async () => {
+		const { db, bookId } = await setup();
+		await setHighlight(db, bookId, { page: 1, first: 1, last: 1 });
+		await askLearner(db, bookId, { questions: [translate] });
+		await dismissTutor(db, bookId);
+		expect(await fromTutor(db, bookId)).toMatchObject({ highlight: null, question: null });
+	});
+
+	it('carries a Terms version that moves on when a Term changes', async () => {
+		const { db, bookId, languageId } = await setup();
+		const before = (await fromTutor(db, bookId))!.termsVersion;
+		await saveTerm(db, { languageId, text: 'кот', status: 'learning1', translations: [] });
+		expect((await fromTutor(db, bookId))!.termsVersion).not.toBe(before);
+	});
+
+	it('is nothing for a Book that does not exist', async () => {
+		const { db } = await setup();
+		expect(await fromTutor(db, 999)).toBeUndefined();
 	});
 });
 

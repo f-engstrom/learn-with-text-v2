@@ -8,7 +8,7 @@ import { listLanguages } from '../domain/languages';
 import { setBookmark } from '../domain/reading';
 import type { SuggestionSources } from '../domain/suggestions';
 import { listTerms, saveTerm } from '../domain/terms';
-import { answerTutor, getTutorQuestion } from '../domain/tutor-question';
+import { answerTutor, getTutorQuestion } from '../domain/from-tutor';
 import { createReaderServer, wikipediaTitle } from './tools';
 
 const words = (n: number) => Array.from({ length: n }, () => 'кот').join(' ') + '.';

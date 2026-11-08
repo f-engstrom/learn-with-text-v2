@@ -10,5 +10,5 @@ The reading-tutor skill originally kept the text position and vocabulary in its 
 ## Consequences
 
 - Two processes may write the database at once, so SQLite runs in WAL mode with a busy timeout, and every rule (e.g. Tutor adjustments stay within Learning 1–4) is enforced in shared domain code, not in either entry point.
-- An open reading screen doesn't see Tutor changes until it reloads.
+- An open reading screen doesn't see Tutor changes until it reloads. (Since then the reading screen polls for From the Tutor and Terms changes; see ADR 0006.)
 - This repo ships its own variant of the reading-tutor skill that uses the MCP tools.

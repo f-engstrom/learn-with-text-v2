@@ -25,7 +25,7 @@ import { findTerms, InvalidTerm, listTerms, type TermView } from '../domain/term
 import { assessTerm, linkParent, saveGloss, setTransfer } from '../domain/tutoring';
 import { InvalidReview } from '../domain/practice';
 import { getProgress } from '../domain/progress';
-import { askLearner, awaitAnswer, feedbackLength, InvalidTutorQuestion, withdrawQuestion } from '../domain/tutor-question';
+import { askLearner, awaitAnswer, feedbackLength, InvalidTutorQuestion, withdrawQuestion } from '../domain/from-tutor';
 import { InvalidYourLanguage, listYourLanguages, removeYourLanguage, setYourLanguage, YOUR_LANGUAGE_LEVELS } from '../domain/your-languages';
 import { byPriority, type DueWord } from '../../practice';
 import { fetchArticle, InvalidAddress, type WebArticle } from '../domain/webpages';

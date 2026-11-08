@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { tick, untrack, type Snippet } from 'svelte';
 	import { cardCommandFor } from '#lib/reading/keys.ts';
-	import type { Answer, TutorQuestion } from '#lib/server/domain/tutor-question.ts';
+	import type { Answer, TutorQuestion } from '#lib/server/domain/from-tutor.ts';
 
 	interface Props {
 		question: TutorQuestion;
