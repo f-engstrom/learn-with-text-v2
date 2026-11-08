@@ -33,7 +33,7 @@ The reading screen is `routes/books/[bookId]/pages/[position]/+page.svelte`. Its
 
 - Domain functions take the database as their first argument and import nothing from SvelteKit, so the MCP server reuses them. Tests run them against `openDatabase(':memory:')` after `migrateToLatest`.
 - `src/lib/*.ts` files are shared with the browser. They may import types from `lib/server`, never values.
-- The Term form's fields are parsed in `lib/server/term-actions.ts`, shared by the reading screen, the Term list and Review Due Terms.
+- The Term form's fields are parsed in `lib/server/term-actions.ts`, shared by the reading screen and the Term list.
 - A Term column the learner and the Tutor see travels: migration, `db/schema.ts`, `domain/terms.ts` (`TermView`, `selectTerms`, `toViews`), `term-actions.ts`, `TermForm.svelte`, the Term list, the reading screen's facts, and `termView` in `mcp/tools.ts`.
 - A new migration is a file in `db/migrations` plus an entry in `db/migrate.ts`. Changing a CHECK constraint means rebuilding the table and re-creating its triggers (see `0021-azure-source.ts`).
 - Status history and the Terms version are written by SQLite triggers (ADR 0005), not by domain code.
