@@ -85,3 +85,42 @@ export function cardCommandFor(e: KeyInput, typing: boolean): CardCommand | unde
 	if (digit && !typing && !e.altKey) return { kind: 'pick', option: Number(digit) - 1 };
 	return undefined;
 }
+
+/** Where a key landed and what the reading screen is doing, for `routeKey`. */
+export interface KeyFacts {
+	/** Something already handled it. */
+	handled: boolean;
+	/** In the Tutor's card, which has its own keys. */
+	inTutorCard: boolean;
+	/** In a text field: only Escape (close) applies there. */
+	typing: boolean;
+	/** On a button or link, which handles Enter itself. */
+	onControl: boolean;
+	zen: boolean;
+	/** The reading command for the key, from `commandFor`. */
+	command: Command | undefined;
+	/** Offers the key to Practice, which handles it and says whether it took it. Asked only in its turn. */
+	practice: () => boolean;
+}
+
+/** Who acts on a key; each route but `none` means the key is used up. */
+export type KeyRoute =
+	| { to: 'none' }
+	| { to: 'practice' }
+	| { to: 'zen'; key: 'enter' | 'escape' }
+	| { to: 'reading'; command: Command };
+
+/**
+ * Who a key goes to, in order: the Tutor's card, Practice, zen mode's Enter and Escape, and then the
+ * reading command, unless you're typing or Enter is on a button.
+ */
+export function routeKey(facts: KeyFacts): KeyRoute {
+	const { command } = facts;
+	if (facts.handled || facts.inTutorCard) return { to: 'none' };
+	if (!facts.typing && facts.practice()) return { to: 'practice' };
+	if (facts.zen && command?.kind === 'open') return { to: 'zen', key: 'enter' };
+	if (facts.zen && command?.kind === 'close') return { to: 'zen', key: 'escape' };
+	if (!command || (facts.typing && command.kind !== 'close')) return { to: 'none' };
+	if (command.kind === 'open' && facts.onControl) return { to: 'none' };
+	return { to: 'reading', command };
+}

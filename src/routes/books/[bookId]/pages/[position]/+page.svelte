@@ -3,7 +3,9 @@
 	import { invalidateAll, replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount, tick, untrack } from 'svelte';
-	import { commandFor } from '#lib/reading/keys.ts';
+	import { commandFor, routeKey, type Command } from '#lib/reading/keys.ts';
+	import { PersistedFlag } from '#lib/reading/persisted-flag.svelte.ts';
+	import { Zen } from '#lib/reading/zen.svelte.ts';
 	import { termKey } from '#lib/normalise.ts';
 	import { sendReview } from '#lib/reviews.ts';
 	import { Selection, type Selected, type Word } from '#lib/reading/selection.svelte.ts';
@@ -97,19 +99,10 @@
 	let dir: 'rtl' | 'ltr' = $derived(data.language.rightToLeft ? 'rtl' : 'ltr');
 
 	/** Due marks on the Words, on unless you turn them off (D). */
-	let showDue = $state(true);
-	const dueKey = 'reader.due';
-	onMount(() => {
-		try {
-			showDue = localStorage.getItem(dueKey) !== 'off';
-		} catch {}
-	});
-	function toggleDue() {
-		showDue = !showDue;
-		try {
-			localStorage.setItem(dueKey, showDue ? 'on' : 'off');
-		} catch {}
-	}
+	const dueMarks = new PersistedFlag('reader.due', true);
+	onMount(() => dueMarks.load());
+	let showDue = $derived(dueMarks.value);
+	const toggleDue = () => dueMarks.toggle();
 	const overdueOf = (key: string) => (showDue ? (data.terms[key]?.practice?.overdue ?? 0) : 0);
 
 	/** The 1-based paragraph each Sentence (by 0-based index) is in. */
@@ -155,28 +148,21 @@
 		await invalidateAll();
 	}
 
-	/**
-	 * Zen mode: only the text, plain and centred. Tapping a Word shows its Translations; the Page arrows
-	 * and Exit appear while you move the mouse or tap outside the text.
-	 */
-	let zen = $state(false);
-	let idle = $state(false);
-	let idleTimer: ReturnType<typeof setTimeout> | undefined;
-	const zenKey = 'reader.zen';
-	/** Whether the selected Word's Translation tooltip is showing, in zen mode. */
-	let glossShown = $state(false);
+	/** Zen mode: only the text; toggling it closes the Term form. */
+	const zenMode = new Zen({ onChange: () => (open = false) });
+	let zen = $derived(zenMode.on);
+	let idle = $derived(zenMode.idle);
+	const toggleZen = () => zenMode.toggle();
+	const wake = () => zenMode.wake();
 	let gloss = $derived.by(() => {
-		if (!zen || !glossShown || recalling || !selected) return '';
+		if (!zen || !zenMode.glossShown || recalling || !selected) return '';
 		return term?.translations.map((t) => t.text).join('; ') || 'No Translation yet';
 	});
 
 	onMount(() => {
-		try {
-			zen = localStorage.getItem(zenKey) === 'on';
-		} catch {}
-		wake();
+		zenMode.load();
 		return () => {
-			clearTimeout(idleTimer);
+			zenMode.destroy();
 			delete document.documentElement.dataset.zen;
 		};
 	});
@@ -205,29 +191,10 @@
 		return { update: place };
 	}
 
-	/** Shows zen mode's controls, and hides them again after a couple of idle seconds. */
-	function wake() {
-		idle = false;
-		clearTimeout(idleTimer);
-		if (zen) idleTimer = setTimeout(() => (idle = true), 2500);
-	}
-
-	function toggleZen() {
-		zen = !zen;
-		open = false;
-		glossShown = false;
-		try {
-			localStorage.setItem(zenKey, zen ? 'on' : 'off');
-		} catch {}
-		wake();
-	}
-
 	/** In zen mode a tap outside the text dismisses the tooltip and shows the controls. */
 	function onpointerdown(e: PointerEvent) {
-		if (!zen) return;
 		if (e.target instanceof Element && e.target.closest('.word, .zen-controls')) return;
-		glossShown = false;
-		wake();
+		zenMode.tapOutside();
 	}
 
 	/** From the Tutor: its Highlight and question, kept current while the Page is open. */
@@ -306,30 +273,23 @@
 	}
 
 	function onkeydown(e: KeyboardEvent) {
-		if (e.defaultPrevented) return;
-		// The Tutor's card has its own keys.
-		if (e.target instanceof HTMLElement && e.target.closest('.highlight-note')) return;
-		if (!isTyping(e.target) && practice.key(e)) {
-			e.preventDefault();
-			return;
-		}
-		const command = commandFor(e, data.language.rightToLeft);
-		// In zen mode Enter shows or hides the Translation tooltip, and Escape leaves.
-		if (zen && command?.kind === 'open') {
-			e.preventDefault();
-			glossShown = !glossShown;
-			return;
-		}
-		if (zen && command?.kind === 'close') {
-			e.preventDefault();
-			if (glossShown) glossShown = false;
-			else toggleZen();
-			return;
-		}
-		// While typing in the Term form, only Escape (close) applies.
-		if (!command || (isTyping(e.target) && command.kind !== 'close')) return;
-		if (command.kind === 'open' && isControl(e.target)) return;
+		const route = routeKey({
+			handled: e.defaultPrevented,
+			inTutorCard: e.target instanceof HTMLElement && e.target.closest('.highlight-note') !== null,
+			typing: isTyping(e.target),
+			onControl: isControl(e.target),
+			zen,
+			command: commandFor(e, data.language.rightToLeft),
+			practice: () => practice.key(e)
+		});
+		if (route.to === 'none') return;
 		e.preventDefault();
+		if (route.to === 'zen') return route.key === 'enter' ? zenMode.enter() : zenMode.escape();
+		if (route.to === 'reading') run(route.command);
+	}
+
+	/** Carries out a reading command. */
+	function run(command: Command) {
 		switch (command.kind) {
 			case 'move':
 			case 'sentence':
@@ -354,7 +314,7 @@
 				toggleDue();
 				break;
 			case 'practice':
-				if (zen) toggleZen();
+				zenMode.leave();
 				startPractice();
 				break;
 			case 'tutor':
@@ -385,7 +345,7 @@
 		if (shift) error = refused;
 		// In zen mode a tap shows the Word's Translations; tapping it again hides them.
 		if (zen) {
-			glossShown = !(again && glossShown);
+			zenMode.tapWord(again);
 			return;
 		}
 		open = true;

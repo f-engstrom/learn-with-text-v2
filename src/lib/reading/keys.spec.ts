@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { cardCommandFor, commandFor, type KeyInput } from './keys';
+import { describe, it, expect, vi } from 'vitest';
+import { cardCommandFor, commandFor, routeKey, type KeyFacts, type KeyInput } from './keys';
 
 const press = (key: string, code = '', mods: Partial<KeyInput> = {}): KeyInput => ({
 	key,
@@ -110,5 +110,48 @@ describe('cardCommandFor', () => {
 		expect(cardCommandFor(press('ArrowRight', '', { shiftKey: true }), false)).toBeUndefined();
 		expect(cardCommandFor(press('1', 'Digit1', { metaKey: true }), false)).toBeUndefined();
 		expect(cardCommandFor(press('k', 'KeyK'), false)).toBeUndefined();
+	});
+});
+
+describe('routeKey', () => {
+	const facts = (over: Partial<KeyFacts> = {}): KeyFacts => ({
+		handled: false,
+		inTutorCard: false,
+		typing: false,
+		onControl: false,
+		zen: false,
+		command: undefined,
+		practice: () => false,
+		...over
+	});
+	const status = { kind: 'status', status: 'known' } as const;
+
+	it('leaves keys alone that something handled, or that land in the Tutor’s card, without asking Practice', () => {
+		const practice = vi.fn(() => true);
+		expect(routeKey(facts({ handled: true, command: status, practice }))).toEqual({ to: 'none' });
+		expect(routeKey(facts({ inTutorCard: true, command: status, practice }))).toEqual({ to: 'none' });
+		expect(practice).not.toHaveBeenCalled();
+	});
+
+	it('offers the key to Practice first, except while typing', () => {
+		expect(routeKey(facts({ command: status, practice: () => true }))).toEqual({ to: 'practice' });
+		const practice = vi.fn(() => true);
+		expect(routeKey(facts({ typing: true, command: { kind: 'close' }, practice }))).toEqual({ to: 'reading', command: { kind: 'close' } });
+		expect(practice).not.toHaveBeenCalled();
+	});
+
+	it('gives Enter and Escape to zen mode', () => {
+		expect(routeKey(facts({ zen: true, command: { kind: 'open' } }))).toEqual({ to: 'zen', key: 'enter' });
+		expect(routeKey(facts({ zen: true, command: { kind: 'close' } }))).toEqual({ to: 'zen', key: 'escape' });
+		expect(routeKey(facts({ zen: true, command: status }))).toEqual({ to: 'reading', command: status });
+		// Escape while practising stops Practice, not zen mode.
+		expect(routeKey(facts({ zen: true, command: { kind: 'close' }, practice: () => true }))).toEqual({ to: 'practice' });
+	});
+
+	it('lets only Escape through while typing, and leaves Enter to buttons', () => {
+		expect(routeKey(facts({ typing: true, command: status }))).toEqual({ to: 'none' });
+		expect(routeKey(facts({ onControl: true, command: { kind: 'open' } }))).toEqual({ to: 'none' });
+		expect(routeKey(facts({ onControl: true, command: status }))).toEqual({ to: 'reading', command: status });
+		expect(routeKey(facts())).toEqual({ to: 'none' });
 	});
 });

@@ -21,13 +21,15 @@ Domain rules sit in `src/lib/server/domain`, which the web app and the Tutor's M
 | Review, Due, Recall strength | `domain/practice.ts`; sent from the browser by `lib/reviews.ts` |
 | Practice priority, Status labels, practice wording | `lib/practice.ts` (shared with the browser and the MCP server) |
 | Practice on the Page (subsets, the run, its keys) | `lib/reading/practice.svelte.ts` |
+| Zen mode, Due marks | `lib/reading/zen.svelte.ts`, `lib/reading/persisted-flag.svelte.ts` |
+| Which key goes where in the reading screen | `routeKey` in `lib/reading/keys.ts` |
 | Frequency | `domain/frequency.ts` |
 | Suggestion, Unknown share, Fit range, Topic | `domain/suggestions.ts`, `lib/suggestions.ts`, `domain/topics.ts` |
 | Dictionary, Wiktionary panel, Azure panel | `lib/dictionaries.ts`, `domain/wiktionary.ts`, `domain/azure.ts` |
 | Your languages | `domain/your-languages.ts` |
 | Words read, Milestone, Status history, The day so far | `domain/progress.ts` |
 
-The reading screen is `routes/books/[bookId]/pages/[position]/+page.svelte`. Its logic moves out into `lib/reading/` (keys, Selection, Practice, Highlight on the Page, From the Tutor) as it is touched; that is where its tests go. A module there is constructed during server-side rendering too, so it does nothing that reaches the server until its first `sync` or `start`, which the page calls in the browser.
+The reading screen is `routes/books/[bookId]/pages/[position]/+page.svelte`. Its logic moves out into `lib/reading/` (keys and their routing, Selection, Practice, zen mode, Highlight on the Page, From the Tutor); the page is markup and wiring, and new logic goes into one of these modules, where its tests go. A module there is constructed during server-side rendering too, so it does nothing that reaches the server until its first `sync` or `start`, which the page calls in the browser.
 
 ## Conventions
 

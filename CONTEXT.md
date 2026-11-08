@@ -91,6 +91,10 @@ A per-Term choice, off by default, that makes a Term and its Parent share one St
 A Page is Read once you mark it so. Marking a Page Read can optionally make every remaining Unknown Word on it Known, except Words that sit inside a Multi-word Term on that Page.
 _Avoid_: Done, finished, completed (for Pages)
 
+**Zen mode**:
+The reading screen with only the text, plain and centred, for reading without the tools. Tapping a Word shows its Translations in a tooltip instead of opening the Term form; the controls appear while you move. Practising leaves it.
+_Avoid_: Focus mode, reader mode
+
 **Unknown share**:
 The fraction of a Book's (or a Suggestion's) distinct Words that are Unknown.
 _Avoid_: Unknown percent, difficulty
