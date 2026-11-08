@@ -2,7 +2,7 @@ import type { Kysely } from 'kysely';
 import type { Database } from '../db/schema';
 import { getPage, toBookmark, type Bookmark } from './books';
 import { suggestPronunciation } from './pronunciation';
-import { passageParts } from '../../reading/passage';
+import { passageParts } from '../../reading/highlight';
 
 export class InvalidBookmark extends Error {}
 export class InvalidHighlight extends Error {}

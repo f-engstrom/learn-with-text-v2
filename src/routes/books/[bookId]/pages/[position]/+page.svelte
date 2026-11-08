@@ -17,7 +17,7 @@
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import PracticeCard from './PracticeCard.svelte';
 	import PracticePanel, { type PracticeState } from './PracticePanel.svelte';
-	import { passageParts } from '#lib/reading/passage.ts';
+	import { highlightOnPage } from '#lib/reading/highlight.ts';
 	import { frequencyLabels, levelLabels, practiceQueue, suggestedStatus, transferLabel, type DueWord, type Subset } from '#lib/practice.ts';
 	import WiktionaryPanel from './WiktionaryPanel.svelte';
 	import AzurePanel from './AzurePanel.svelte';
@@ -326,7 +326,7 @@
 	/** TutorQuestions keeps what you write, per `askedAt`. */
 	let question = $derived(fromTutor.question);
 	let tutorQuestions = $state<TutorQuestions>();
-	let sentenceNumbers = $derived(new Map(sentences.map((s, i) => [s, i + 1])));
+	let sentenceIndex = $derived(new Map(sentences.map((s, i) => [s, i])));
 	let highlightHere = $derived(highlight?.page === data.position ? highlight : undefined);
 	/** Where "This paragraph" is: the cursor's paragraph, else the first. */
 	let practiceContext = $derived({
@@ -342,32 +342,11 @@
 			.map((subset) => ({ subset, count: practiceQueue(dueWords, subset, practiceContext).length }))
 	);
 
-	/** Whether a Sentence is in the Highlight's run of Sentences. */
-	const inHighlight = (sentence: (typeof sentences)[number]) => {
-		const n = sentenceNumbers.get(sentence) ?? 0;
-		return highlightHere !== undefined && n >= highlightHere.first && n <= highlightHere.last;
-	};
+	/** Where the Highlight falls on this Page: its Sentences, or its passage's tokens. */
+	let onPage = $derived(highlightOnPage(sentences, highlightHere, data.position));
 	/** A whole Sentence underlined: when the Highlight has no passage. */
-	const highlighted = (sentence: (typeof sentences)[number]) => inHighlight(sentence) && !highlightHere?.text;
-	/** With a passage, the tokens it covers, as "sentence:token" (1-based Sentence on the Page). */
-	let passage = $derived.by(() => {
-		const text = highlightHere?.text;
-		if (!text) return new Set<string>();
-		const keys: string[] = [];
-		const parts: string[] = [];
-		for (const sentence of sentences.filter(inHighlight)) {
-			const n = sentenceNumbers.get(sentence)!;
-			sentence.tokens.forEach((token, t) => {
-				keys.push(`${n}:${t}`);
-				parts.push(token.text);
-			});
-			// Sentences may not end in a space; keep their last and first Words apart.
-			keys.push('');
-			parts.push(' ');
-		}
-		return new Set((passageParts(parts, text) ?? []).map((i) => keys[i]).filter(Boolean));
-	});
-	const inPassage = (sentence: (typeof sentences)[number], t: number) => passage.has(`${sentenceNumbers.get(sentence)}:${t}`);
+	const highlighted = (sentence: (typeof sentences)[number]) => !onPage?.tokens && !!onPage?.sentences.has(sentenceIndex.get(sentence)!);
+	const inPassage = (sentence: (typeof sentences)[number], t: number) => !!onPage?.tokens?.has(`${sentenceIndex.get(sentence)}:${t}`);
 	let highlightElement = $state<HTMLElement>();
 
 	async function answerTutor(answer: Answer) {
@@ -709,7 +688,7 @@
 			<p>
 				{#each paragraph.sentences as sentence, s (s)}
 					{@const isHighlighted = highlighted(sentence)}
-					{#if inHighlight(sentence) && sentenceNumbers.get(sentence) === highlightHere?.first}<span
+					{#if sentenceIndex.get(sentence) === onPage?.first}<span
 							class="highlight-start"
 							bind:this={highlightElement}
 						></span>{/if}<span class="sentence" class:highlighted={isHighlighted}>
