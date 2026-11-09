@@ -38,6 +38,8 @@ The reading screen is `routes/books/[bookId]/pages/[position]/+page.svelte`. Its
 - The Term form's field names and how they're read live in `lib/term-writes.ts` (`termFields`, `readTermForm`), with `sendStatus` for a Status on its own; `lib/server/term-actions.ts` is the form's actions.
 - A Term column the learner and the Tutor see travels: migration, `db/schema.ts`, `domain/terms.ts` (`TermView`, `selectTerms`, `toViews`), `readTermForm` and `termFields` in `lib/term-writes.ts`, `TermForm.svelte`, the Term list, the reading screen's facts, and `termView` in `mcp/tools.ts`.
 - A new migration is a file in `db/migrations` plus an entry in `db/migrate.ts`. Changing a CHECK constraint means rebuilding the table and re-creating its triggers (see `0021-azure-source.ts`).
+- A broken rule is thrown as a subclass of `Refused` (`domain/refused.ts`), such as `InvalidTerm`; the MCP server's `guard` turns any of them into a message for the Tutor, so a new rule needs no wiring there.
+- The browser reaches the server with plain JSON endpoints (`/books/[id]/tutor`, `/books/[id]/bookmark`, `/terms/[id]/reviews`, `/terms/status`, `/languages/[id]/fit-range`); form actions are for real `<form>`s with `use:enhance`.
 - Status history and the Terms version are written by SQLite triggers (ADR 0005), not by domain code.
 - The Tutor's assessment is stored as `term.tutor_level` and is `tutorAssessment` everywhere above the database.
 

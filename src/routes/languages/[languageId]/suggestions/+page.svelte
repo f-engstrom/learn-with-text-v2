@@ -17,10 +17,11 @@
 	let picking = $state<string | undefined>();
 
 	function saveFitRange() {
-		const body = new FormData();
-		body.set('min', String(min));
-		body.set('max', String(max));
-		fetch('?/fitRange', { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
+		fetch(`/languages/${data.language.id}/fit-range`, {
+			method: 'PUT',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify(range)
+		}).catch(() => undefined);
 	}
 </script>
 

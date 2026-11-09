@@ -3,7 +3,7 @@ import { database } from '#lib/server/database.ts';
 import { InvalidBook } from '#lib/server/domain/books.ts';
 import { getLanguage } from '#lib/server/domain/languages.ts';
 import { feedsFromWeb, listFeeds } from '#lib/server/domain/feeds.ts';
-import { findSuggestions, getFitRange, importArticle, importClassic, importFeedItem, setFitRange, wikipediaFromWeb } from '#lib/server/domain/suggestions.ts';
+import { findSuggestions, getFitRange, importArticle, importClassic, importFeedItem, wikipediaFromWeb } from '#lib/server/domain/suggestions.ts';
 import { CLASSICS, wikisourceFromWeb } from '#lib/server/domain/classics.ts';
 import { listTopics } from '#lib/server/domain/topics.ts';
 import type { Suggestion } from '#lib/suggestions.ts';
@@ -35,14 +35,6 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-	fitRange: async ({ request, params }) => {
-		const form = await request.formData();
-		const range = await setFitRange(database(), Number(params.languageId), {
-			min: Number(form.get('min')) / 100,
-			max: Number(form.get('max')) / 100
-		});
-		return { fitRange: range };
-	},
 	pick: async ({ request, params }) => {
 		const db = database();
 		const language = await getLanguage(db, Number(params.languageId));
