@@ -21,16 +21,20 @@
 	let step = $state(0);
 	let ownQuestion = $state('');
 	let asking = $state(false);
+	/** Feedback on the last answer comes on its own, before the new round's passage and questions. */
+	let reviewing = $state(untrack(() => !!question.feedback));
 	let stepElement = $state<HTMLElement>();
+	let continueButton = $state<HTMLButtonElement>();
 
 	const last = $derived(question.questions.length - 1);
 	const current = $derived(question.questions[step]);
 	const done = (i: number) => drafts[i]?.trim() !== '';
 	const answered = $derived(drafts.every((_, i) => done(i)));
 
-	/** Puts the keyboard on the current question: its text box, or the question itself for options. */
+	/** Puts the keyboard on the current question: its text box, or the question itself for options; on the feedback, its Continue. */
 	export async function focus() {
 		await tick();
+		if (reviewing) return continueButton?.focus();
 		const box = stepElement?.querySelector('textarea');
 		(box ?? stepElement)?.focus();
 	}
@@ -58,8 +62,13 @@
 		advancing = setTimeout(() => step === from && goTo(from + 1), 300);
 	}
 
+	function startRound() {
+		reviewing = false;
+		focus();
+	}
+
 	function onkeydown(e: KeyboardEvent) {
-		if (asking) {
+		if (asking || reviewing) {
 			if (e.key === 'Escape') {
 				e.preventDefault();
 				onleave();
@@ -88,83 +97,88 @@
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div class="tutor-questions" {onkeydown} role="group" aria-label="The Tutor's questions">
-	{#if question.feedback && step === 0 && !asking}
+	{#if reviewing}
 		<section class="feedback" aria-label="Your last answer">
 			<p class="label">Your last answer</p>
 			<p>{question.feedback}</p>
 		</section>
-	{/if}
-	{@render children?.()}
-	{#if asking}
-		<form
-			class="questions"
-			onsubmit={(e) => {
-				e.preventDefault();
-				if (ownQuestion.trim()) onanswer({ ask: ownQuestion });
-			}}
-		>
-			<fieldset>
-				<legend>Your question for the Tutor</legend>
-				<!-- svelte-ignore a11y_autofocus -->
-				<textarea rows="2" autofocus bind:value={ownQuestion} onkeydown={(e) => onEnter(e, () => e.currentTarget.form?.requestSubmit())}
-				></textarea>
-			</fieldset>
-			<div class="actions">
-				<button type="submit" class="primary" disabled={!ownQuestion.trim()}>Ask</button>
-				<button type="button" class="link" onclick={() => ((asking = false), focus())}>Back to the question</button>
-			</div>
-		</form>
+		<div class="actions">
+			<button type="button" class="primary" bind:this={continueButton} onclick={startRound}>Continue</button>
+		</div>
+		<p class="hint keys"><kbd>Enter</kbd> continue · <kbd>Esc</kbd> back to the text</p>
 	{:else}
-		<form
-			class="questions"
-			onsubmit={(e) => {
-				e.preventDefault();
-				next();
-			}}
-		>
-			{#if last > 0}
-				<nav class="steps" aria-label="Questions">
-					{#each question.questions as _, i (i)}
-						<button
-							type="button"
-							class="dot"
-							class:done={done(i)}
-							aria-current={i === step ? 'step' : undefined}
-							aria-label="Question {i + 1} of {last + 1}{done(i) ? ', answered' : ''}"
-							onclick={() => goTo(i)}
-						></button>
-					{/each}
-					<span class="count">{step + 1} of {last + 1}</span>
-				</nav>
-			{/if}
-			<fieldset bind:this={stepElement} tabindex="-1">
-				<legend>{current.prompt}</legend>
-				{#if current.options}
-					<div class="options">
-						{#each current.options as option, o (option)}
-							<button type="button" aria-pressed={drafts[step] === option} onclick={() => pick(option)}
-								><kbd class="hint">{o + 1}</kbd>{option}</button
-							>
+		{@render children?.()}
+		{#if asking}
+			<form
+				class="questions"
+				onsubmit={(e) => {
+					e.preventDefault();
+					if (ownQuestion.trim()) onanswer({ ask: ownQuestion });
+				}}
+			>
+				<fieldset>
+					<legend>Your question for the Tutor</legend>
+					<!-- svelte-ignore a11y_autofocus -->
+					<textarea rows="2" autofocus bind:value={ownQuestion} onkeydown={(e) => onEnter(e, () => e.currentTarget.form?.requestSubmit())}
+					></textarea>
+				</fieldset>
+				<div class="actions">
+					<button type="submit" class="primary" disabled={!ownQuestion.trim()}>Ask</button>
+					<button type="button" class="link" onclick={() => ((asking = false), focus())}>Back to the question</button>
+				</div>
+			</form>
+		{:else}
+			<form
+				class="questions"
+				onsubmit={(e) => {
+					e.preventDefault();
+					next();
+				}}
+			>
+				{#if last > 0}
+					<nav class="steps" aria-label="Questions">
+						{#each question.questions as _, i (i)}
+							<button
+								type="button"
+								class="dot"
+								class:done={done(i)}
+								aria-current={i === step ? 'step' : undefined}
+								aria-label="Question {i + 1} of {last + 1}{done(i) ? ', answered' : ''}"
+								onclick={() => goTo(i)}
+							></button>
 						{/each}
-					</div>
-				{:else}
-					<textarea rows="2" {lang} bind:value={drafts[step]} onkeydown={(e) => onEnter(e, next)}></textarea>
+						<span class="count">{step + 1} of {last + 1}</span>
+					</nav>
 				{/if}
-			</fieldset>
-			<div class="actions">
-				{#if step === last}
-					<button type="submit" class="primary" disabled={!answered}>Send</button>
-				{:else if !current.options}
-					<button type="submit" disabled={!done(step)}>Next</button>
-				{/if}
-				<button type="button" class="link" onclick={() => (asking = true)}>Ask the Tutor something first</button>
-			</div>
-			<p class="hint keys">
-				{#if current.options}<kbd>1</kbd>–<kbd>{current.options.length}</kbd> pick ·{/if}
-				{#if last > 0}<kbd>{current.options ? '←' : 'Alt ←'}</kbd> <kbd>{current.options ? '→' : 'Alt →'}</kbd> questions ·{/if}
-				<kbd>Esc</kbd> back to the text
-			</p>
-		</form>
+				<fieldset bind:this={stepElement} tabindex="-1">
+					<legend>{current.prompt}</legend>
+					{#if current.options}
+						<div class="options">
+							{#each current.options as option, o (option)}
+								<button type="button" aria-pressed={drafts[step] === option} onclick={() => pick(option)}
+									><kbd class="hint">{o + 1}</kbd>{option}</button
+								>
+							{/each}
+						</div>
+					{:else}
+						<textarea rows="2" {lang} bind:value={drafts[step]} onkeydown={(e) => onEnter(e, next)}></textarea>
+					{/if}
+				</fieldset>
+				<div class="actions">
+					{#if step === last}
+						<button type="submit" class="primary" disabled={!answered}>Send</button>
+					{:else if !current.options}
+						<button type="submit" disabled={!done(step)}>Next</button>
+					{/if}
+					<button type="button" class="link" onclick={() => (asking = true)}>Ask the Tutor something first</button>
+				</div>
+				<p class="hint keys">
+					{#if current.options}<kbd>1</kbd>–<kbd>{current.options.length}</kbd> pick ·{/if}
+					{#if last > 0}<kbd>{current.options ? '←' : 'Alt ←'}</kbd> <kbd>{current.options ? '→' : 'Alt →'}</kbd> questions ·{/if}
+					<kbd>Esc</kbd> back to the text
+				</p>
+			</form>
+		{/if}
 	{/if}
 </div>
 
