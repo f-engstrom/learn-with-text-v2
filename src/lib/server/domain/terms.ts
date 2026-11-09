@@ -7,6 +7,7 @@ import { MAX_TERM_WORDS } from './multiword';
 import { practiceViews, type PracticeView } from './practice';
 import { parserFor, termKey } from './parsing';
 import { suggestPronunciation } from './pronunciation';
+import { Refused } from './refused';
 
 export type Status = StatusValue;
 export type Source = SourceValue;
@@ -20,7 +21,7 @@ export interface Transfer {
 }
 
 /** In display order: Learning 1–4, then Known and Ignored. */
-export class InvalidTerm extends Error {}
+export class InvalidTerm extends Refused {}
 
 export interface TranslationView {
 	id: number;
@@ -348,6 +349,8 @@ export async function listTerms(db: Kysely<Database>, filter: TermFilter = {}): 
 	const offset = filter.offset ?? 0;
 	const withChildren = <Q extends SelectQueryBuilder<any, any, any>>(q: Q) =>
 		q.select((eb) => eb.selectFrom('term as child').whereRef('child.parent_id', '=', 'term.id').select(eb.fn.countAll<number>().as('n')).as('children'));
+	const toItems = async (rows: (TermRow & { children: unknown })[]): Promise<TermListItem[]> =>
+		(await toViews(db, rows)).map(({ view }, i) => ({ ...view, languageId: rows[i].language_id, children: Number(rows[i].children) }));
 
 	// Due and Recall strength aren't columns, so those filters work on the practice views.
 	if (filter.due || filter.recall) {
@@ -368,24 +371,18 @@ export async function listTerms(db: Kysely<Database>, filter: TermFilter = {}): 
 		if (filter.due === 'due') matching = matching.sort((a, b) => Date.parse(practice.get(a.id)!.due) - Date.parse(practice.get(b.id)!.due));
 		const ids = matching.slice(offset, offset + limit).map((c) => c.id);
 		const rows = ids.length === 0 ? [] : await withChildren(selectTerms(db)).where('term.id', 'in', ids).execute();
-		const views = await toViews(db, rows);
-		const byId = new Map(views.map(({ view }, i) => [view.id, { ...view, languageId: rows[i].language_id, children: Number(rows[i].children) }]));
+		const byId = new Map((await toItems(rows)).map((item) => [item.id, item]));
 		return { total: matching.length, terms: ids.map((id) => byId.get(id)!) };
 	}
 
 	const { total } = await filtered(db.selectFrom('term').select((eb) => eb.fn.countAll<number>().as('total'))).executeTakeFirstOrThrow();
-	const rows = await filtered(selectTerms(db))
-		.select((eb) => eb.selectFrom('term as child').whereRef('child.parent_id', '=', 'term.id').select(eb.fn.countAll<number>().as('n')).as('children'))
+	const rows = await withChildren(filtered(selectTerms(db)))
 		.orderBy('term.created_at', 'desc')
 		.orderBy('term.id', 'desc')
 		.limit(limit)
 		.offset(offset)
 		.execute();
-	const views = await toViews(db, rows);
-	return {
-		total: Number(total),
-		terms: views.map(({ view }, i) => ({ ...view, languageId: rows[i].language_id, children: Number(rows[i].children) }))
-	};
+	return { total: Number(total), terms: await toItems(rows) };
 }
 
 function selectTerms(db: Kysely<Database>) {
