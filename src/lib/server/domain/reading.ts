@@ -3,9 +3,10 @@ import type { Database } from '../db/schema';
 import { getPage, toBookmark, type Bookmark } from './books';
 import { suggestPronunciation } from './pronunciation';
 import { passageParts } from '../../reading/highlight';
+import { Refused } from './refused';
 
-export class InvalidBookmark extends Error {}
-export class InvalidHighlight extends Error {}
+export class InvalidBookmark extends Refused {}
+export class InvalidHighlight extends Refused {}
 
 /** A run of Sentences on one Page that the Tutor points you to. Sentences are 1-based and inclusive. */
 export interface Highlight {

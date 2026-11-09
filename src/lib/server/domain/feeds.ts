@@ -2,6 +2,7 @@ import type { Kysely } from 'kysely';
 import { DOMParser } from 'linkedom';
 import type { Database } from '../db/schema';
 import { fetchArticle, InvalidAddress, type WebArticle } from './webpages';
+import { Refused } from './refused';
 
 export interface Feed {
 	id: number;
@@ -16,7 +17,7 @@ export interface FeedItem {
 	published?: Date;
 }
 
-export class InvalidFeed extends Error {}
+export class InvalidFeed extends Refused {}
 
 /** Bidirectional control characters some feeds put in their names (e.g. BBC Persian). */
 const BIDI_CONTROLS = /[‪-‮⁦-⁩]/g;

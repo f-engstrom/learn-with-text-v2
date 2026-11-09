@@ -5,11 +5,12 @@ import { getLanguage, type Language } from './languages';
 import { candidateSpans, chooseSpans } from './multiword';
 import { countWords, normalise, parserFor, partKeys, type Parser, type Token } from './parsing';
 import { findTerms, type TermView } from './terms';
+import { Refused } from './refused';
 
 export const PAGE_WORD_TARGET = 250;
 export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
-export class InvalidBook extends Error {}
+export class InvalidBook extends Refused {}
 
 /** One web address, one Book: creating a second from the same address is refused. */
 export class BookExists extends InvalidBook {

@@ -1,12 +1,13 @@
 import type { Kysely } from 'kysely';
 import type { Database } from '../db/schema';
+import { Refused } from './refused';
 
 export interface Topic {
 	id: number;
 	text: string;
 }
 
-export class InvalidTopic extends Error {}
+export class InvalidTopic extends Refused {}
 
 export async function listTopics(db: Kysely<Database>): Promise<Topic[]> {
 	return db.selectFrom('topic').select(['id', 'text']).orderBy('text').execute();

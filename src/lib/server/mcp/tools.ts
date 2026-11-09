@@ -4,7 +4,7 @@ import type { Kysely } from 'kysely';
 import { z } from 'zod';
 import { fits, rankSuggestions } from '../../suggestions';
 import type { Database } from '../db/schema';
-import { createBook, getPage, InvalidBook, listBooks } from '../domain/books';
+import { createBook, getPage, listBooks } from '../domain/books';
 import { importFromAddress } from '../domain/addresses';
 import { listLanguages, type Language } from '../domain/languages';
 import { termKey } from '../domain/parsing';
@@ -13,23 +13,21 @@ import {
 	getBookmark,
 	getHighlight,
 	highlightNoteLength,
-	InvalidBookmark,
-	InvalidHighlight,
 	latestBookmark,
 	markPageRead,
 	setBookmark,
 	setHighlight
 } from '../domain/reading';
 import { findSuggestions, getFitRange, type SuggestionSources } from '../domain/suggestions';
-import { findTerms, InvalidTerm, listTerms, type TermView } from '../domain/terms';
+import { findTerms, listTerms, type TermView } from '../domain/terms';
 import { assessTerm, linkParent, saveGloss, setTransfer } from '../domain/tutoring';
-import { InvalidReview } from '../domain/practice';
 import { getProgress } from '../domain/progress';
-import { askLearner, awaitAnswer, feedbackLength, InvalidTutorQuestion, withdrawQuestion } from '../domain/from-tutor';
-import { InvalidYourLanguage, listYourLanguages, removeYourLanguage, setYourLanguage, YOUR_LANGUAGE_LEVELS } from '../domain/your-languages';
+import { askLearner, awaitAnswer, feedbackLength, withdrawQuestion } from '../domain/from-tutor';
+import { listYourLanguages, removeYourLanguage, setYourLanguage, YOUR_LANGUAGE_LEVELS } from '../domain/your-languages';
 import { byPriority } from '../../practice';
 import { bookmarkedWord } from '../../reading/bookmark';
-import { fetchArticle, InvalidAddress, type WebArticle } from '../domain/webpages';
+import { fetchArticle, type WebArticle } from '../domain/webpages';
+import { Refused } from '../domain/refused';
 
 /**
  * The Reader's MCP server for the Tutor (ADR 0003). Every rule (what a Gloss may be saved for, how
@@ -579,7 +577,7 @@ async function guard(run: () => Promise<CallToolResult>): Promise<CallToolResult
 	try {
 		return await run();
 	} catch (e) {
-		if (e instanceof InvalidTerm || e instanceof InvalidBookmark || e instanceof InvalidHighlight || e instanceof InvalidTutorQuestion || e instanceof InvalidReview || e instanceof InvalidYourLanguage || e instanceof InvalidBook || e instanceof InvalidAddress) {
+		if (e instanceof Refused) {
 			return failure(e.message);
 		}
 		throw e;

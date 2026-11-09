@@ -4,6 +4,7 @@ import type { Database, GradeValue, ReviewSourceValue, ScheduleTable } from '../
 import type { Status } from './terms';
 import { wordAt } from '../../practice';
 import { isLearning } from '../../terms';
+import { Refused } from './refused';
 
 export { wordAt };
 
@@ -13,7 +14,7 @@ export type ReviewSource = ReviewSourceValue;
 export const GRADES: readonly Grade[] = ['missed', 'hard', 'got'];
 export const REVIEW_SOURCES: readonly ReviewSource[] = ['page', 'list', 'tutor'];
 
-export class InvalidReview extends Error {}
+export class InvalidReview extends Refused {}
 
 const DAY = 24 * 60 * 60 * 1000;
 

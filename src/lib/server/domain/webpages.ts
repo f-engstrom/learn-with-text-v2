@@ -1,5 +1,6 @@
 import { Readability } from '@mozilla/readability';
 import { parseHTML } from 'linkedom';
+import { Refused } from './refused';
 
 /** An article as the New Book screen shows it, to edit before saving. */
 export interface WebArticle {
@@ -8,7 +9,7 @@ export interface WebArticle {
 	text: string;
 }
 
-export class InvalidAddress extends Error {}
+export class InvalidAddress extends Refused {}
 
 export const MAX_PAGE_BYTES = 5 * 1024 * 1024;
 /** Less text than this is a menu or a notice, not an article. */

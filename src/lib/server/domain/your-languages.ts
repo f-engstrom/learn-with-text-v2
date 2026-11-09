@@ -1,12 +1,13 @@
 import type { Kysely } from 'kysely';
 import type { Database, YourLanguageTable } from '../db/schema';
+import { Refused } from './refused';
 
 // Your languages: what Transfer and the Tutor's bridges are measured against (see CONTEXT.md).
 
 export type YourLanguageLevel = YourLanguageTable['level'];
 export const YOUR_LANGUAGE_LEVELS: readonly YourLanguageLevel[] = ['native', 'fluent', 'some'];
 
-export class InvalidYourLanguage extends Error {}
+export class InvalidYourLanguage extends Refused {}
 
 export interface YourLanguage {
 	name: string;

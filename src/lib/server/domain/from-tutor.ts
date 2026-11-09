@@ -2,8 +2,9 @@ import type { Kysely } from 'kysely';
 import type { Database } from '../db/schema';
 import { clearHighlight, getHighlight, type Highlight } from './reading';
 import { termsVersion } from './terms';
+import { Refused } from './refused';
 
-export class InvalidTutorQuestion extends Error {}
+export class InvalidTutorQuestion extends Refused {}
 
 /** One thing to answer: typed when it has no options, else a pick among them (or the learner's own words). */
 export interface Question {
