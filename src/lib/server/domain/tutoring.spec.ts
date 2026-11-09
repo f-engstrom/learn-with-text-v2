@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { sql } from 'kysely';
 import { openDatabase } from '../db/open';
 import { migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
@@ -62,6 +63,15 @@ describe('assessTerm', () => {
 		expect((await get('кот')).practice).toMatchObject({ reviews: 1 });
 		await saveTerm(db, { languageId: ru, text: 'и', status: 'known' });
 		expect(await assessTerm(db, { languageId: ru, text: 'и', answer: 'missed' })).toEqual({ status: 'known', to: 'learning4' });
+	});
+
+	it('keeps neither the assessment nor the Review when the Review can’t be saved', async () => {
+		const { db, ru, get } = await setup();
+		await saveTerm(db, { languageId: ru, text: 'кот', status: 'learning2', translations: [] });
+		// A Review that fails on the way into the database.
+		await sql`create trigger refuse_review before insert on review begin select raise(abort, 'no Reviews today'); end`.execute(db);
+		await expect(assessTerm(db, { languageId: ru, text: 'кот', answer: 'got' })).rejects.toThrow(/no Reviews today/);
+		expect((await get('кот')).tutorAssessment).toBeUndefined();
 	});
 
 	it('refuses Unknown Words and Ignored Terms', async () => {

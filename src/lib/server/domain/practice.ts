@@ -145,7 +145,10 @@ export async function practiceViews(
 	);
 }
 
-/** Records a Review of a Learning Term and moves its schedule (its Parent's, if it Follows Parent). */
+/**
+ * Records a Review of a Learning Term and moves its schedule (its Parent's, if it Follows Parent).
+ * Inside a transaction it joins it, so a caller can make the Review part of a larger change.
+ */
 export async function recordReview(
 	db: Kysely<Database>,
 	termId: number,
@@ -155,7 +158,8 @@ export async function recordReview(
 ): Promise<PracticeView> {
 	if (!(GRADES as readonly string[]).includes(grade)) throw new InvalidReview(`A Review is graded ${GRADES.join(', ')}.`);
 	if (!(REVIEW_SOURCES as readonly string[]).includes(source)) throw new InvalidReview(`Unknown Review source “${source}”.`);
-	return db.transaction().execute(async (trx) => {
+	const inTransaction = <T>(run: (trx: Kysely<Database>) => Promise<T>) => (db.isTransaction ? run(db) : db.transaction().execute(run));
+	return inTransaction(async (trx) => {
 		const term = await trx.selectFrom('term').select(['text', 'status']).where('id', '=', termId).executeTakeFirst();
 		if (!term) throw new InvalidReview('No such Term.');
 		if (!isLearning(term.status)) throw new InvalidReview(`Only Learning 1–4 Terms are practised; “${term.text}” is ${term.status}.`);

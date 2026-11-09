@@ -69,8 +69,11 @@ export async function assessTerm(
 	const from = term.tutorAssessment ?? term.status;
 	const step = input.answer === 'got' ? 1 : input.answer === 'missed' ? -1 : 0;
 	const to = LEVELS[Math.min(Math.max(LEVELS.indexOf(from) + step, 0), LEVELS.length - 1)];
-	await db.updateTable('term').set({ tutor_level: to }).where('id', '=', term.id).execute();
-	const practice = isLearning(term.status) ? await recordReview(db, term.id, input.answer as Grade, 'tutor') : undefined;
+	// The assessment and the Review it counts as are saved together, or neither is.
+	const practice = await db.transaction().execute(async (trx) => {
+		await trx.updateTable('term').set({ tutor_level: to }).where('id', '=', term.id).execute();
+		return isLearning(term.status) ? recordReview(trx, term.id, input.answer as Grade, 'tutor') : undefined;
+	});
 	return { status: term.status, ...(term.tutorAssessment ? { from: term.tutorAssessment } : {}), to, ...(practice ? { practice } : {}) };
 }
 
