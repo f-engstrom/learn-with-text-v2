@@ -2,16 +2,14 @@ import type { Kysely } from 'kysely';
 import type { Database } from '../db/schema';
 import { getLanguage } from './languages';
 import { termKey } from './parsing';
-import { isPractised, recordReview, type Grade, type PracticeView } from './practice';
+import { recordReview, type Grade, type PracticeView } from './practice';
+import { isLearning, LEVELS } from '../../terms';
 import { findTerms, InvalidTerm, saveTerm, type Status, type Transfer } from './terms';
 
 // The Tutor's changes to Terms. The rules live here so no entry point can break them (ADR 0003).
 
 /** Glosses are offered, and saved, only for these: Unknown Words and Learning 1–2 Terms. */
 const GLOSSABLE: readonly (Status | 'unknown')[] = ['unknown', 'learning1', 'learning2'];
-const LEARNING: readonly Status[] = ['learning1', 'learning2', 'learning3', 'learning4'];
-/** The Tutor's assessment runs on the Status scale without Ignored. */
-const ASSESSMENT: readonly Status[] = [...LEARNING, 'known'];
 const TRANSFER_LEVELS = ['easy', 'medium', 'hard'] as const;
 
 export interface Gloss {
@@ -70,9 +68,9 @@ export async function assessTerm(
 	if (term.status === 'ignored') throw new InvalidTerm(`“${term.text}” is Ignored; it isn't vocabulary to assess.`);
 	const from = term.tutorAssessment ?? term.status;
 	const step = input.answer === 'got' ? 1 : input.answer === 'missed' ? -1 : 0;
-	const to = ASSESSMENT[Math.min(Math.max(ASSESSMENT.indexOf(from) + step, 0), ASSESSMENT.length - 1)];
+	const to = LEVELS[Math.min(Math.max(LEVELS.indexOf(from) + step, 0), LEVELS.length - 1)];
 	await db.updateTable('term').set({ tutor_level: to }).where('id', '=', term.id).execute();
-	const practice = isPractised(term.status) ? await recordReview(db, term.id, input.answer as Grade, 'tutor') : undefined;
+	const practice = isLearning(term.status) ? await recordReview(db, term.id, input.answer as Grade, 'tutor') : undefined;
 	return { status: term.status, ...(term.tutorAssessment ? { from: term.tutorAssessment } : {}), to, ...(practice ? { practice } : {}) };
 }
 

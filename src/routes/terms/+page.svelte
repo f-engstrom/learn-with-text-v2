@@ -4,13 +4,13 @@
 	import { page } from '$app/state';
 	import TermForm from '#lib/components/TermForm.svelte';
 	import { actionUrl } from '#lib/actions.ts';
-	import { dueLabel, frequencyLabels, statusLabels, transferLabel } from '#lib/practice.ts';
-	import type { Source, Status } from '#lib/server/domain/terms.ts';
+	import { dueLabel, frequencyLabels, transferLabel } from '#lib/practice.ts';
+	import { LEVELS, sourceLabels, statusLabels } from '#lib/terms.ts';
+	import type { Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
 
-	const sourceLabels: Record<Source, string> = { you: 'You', wiktionary: 'Wiktionary', tutor: 'Tutor', azure: 'Azure' };
 
 	/** The Term whose form is open below its row. */
 	let editing = $state<number | undefined>();
@@ -90,7 +90,7 @@
 		<select name="recall" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
 			<option value="">Any</option>
 			<option value="none" selected={data.filter.recall === 'none'}>No Reviews yet</option>
-			{#each ['learning1', 'learning2', 'learning3', 'learning4', 'known'] as const as level (level)}
+			{#each LEVELS as level (level)}
 				<option value={level} selected={data.filter.recall === level}>{statusLabels[level]}</option>
 			{/each}
 		</select>

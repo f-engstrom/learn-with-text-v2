@@ -5,6 +5,7 @@
 	import { actionUrl } from '#lib/actions.ts';
 	import type { Language } from '#lib/server/domain/languages.ts';
 	import type { Source, TermView } from '#lib/server/domain/terms.ts';
+	import { sourceLabels } from '#lib/terms.ts';
 
 	interface Props {
 		language: Language;
@@ -25,7 +26,6 @@
 		ignored: 'Ignored'
 	} as const;
 
-	const sourceLabels: Record<Source, string> = { you: '', wiktionary: 'Wiktionary', tutor: 'Tutor', azure: 'Azure' };
 
 	interface Row {
 		id?: number;
@@ -145,7 +145,7 @@
 						aria-label="Translation {i + 1}"
 						autocomplete="off"
 					></textarea>
-					{#if sourceLabels[row.source]}<small class="source">{sourceLabels[row.source]}</small>{/if}
+					{#if row.source !== 'you'}<small class="source">{sourceLabels[row.source]}</small>{/if}
 					<button type="button" aria-label="Move up" disabled={i === 0} onclick={() => move(i, i - 1)}>↑</button>
 					<button type="button" aria-label="Move down" disabled={i === rows.length - 1} onclick={() => move(i, i + 1)}
 						>↓</button

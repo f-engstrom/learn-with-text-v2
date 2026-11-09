@@ -21,7 +21,8 @@
 	import PracticePanel from './PracticePanel.svelte';
 	import { Practice } from '#lib/reading/practice.svelte.ts';
 	import { highlightOnPage } from '#lib/reading/highlight.ts';
-	import { frequencyLabels, statusLabels, suggestedStatus, transferLabel } from '#lib/practice.ts';
+	import { frequencyLabels, suggestedStatus, transferLabel } from '#lib/practice.ts';
+	import { statusLabels } from '#lib/terms.ts';
 	import WiktionaryPanel from './WiktionaryPanel.svelte';
 	import AzurePanel from './AzurePanel.svelte';
 	import TutorQuestions from './TutorQuestions.svelte';

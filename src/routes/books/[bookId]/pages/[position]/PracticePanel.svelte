@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { statusLabels } from '#lib/practice.ts';
+	import { statusLabels } from '#lib/terms.ts';
 	import { subsetLabels, type PracticeState, type Subset } from '#lib/reading/practice.svelte.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import type { TermView } from '#lib/server/domain/terms.ts';

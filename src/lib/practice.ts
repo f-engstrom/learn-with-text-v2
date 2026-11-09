@@ -6,16 +6,6 @@ import type { Status, Transfer } from '#lib/server/domain/terms.ts';
 
 const DAY = 24 * 60 * 60 * 1000;
 
-/** Labels for the Status scale, which the Tutor's assessment and Recall strength are read on too. */
-export const statusLabels: Record<Status, string> = {
-	learning1: 'Learning 1',
-	learning2: 'Learning 2',
-	learning3: 'Learning 3',
-	learning4: 'Learning 4',
-	known: 'Known',
-	ignored: 'Ignored'
-};
-
 const days = (n: number) => `${n} ${n === 1 ? 'day' : 'days'}`;
 
 /** Whole calendar days from `now` to `date`, in local time: 0 today, 1 tomorrow, -2 the day before yesterday. */

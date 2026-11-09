@@ -1,7 +1,8 @@
 import type { Kysely } from 'kysely';
 import type { Database } from '../db/schema';
 import { listLanguages, type Language } from './languages';
-import { isPractised, practiceViews } from './practice';
+import { practiceViews } from './practice';
+import { isLearning } from '../../terms';
 import type { Status } from './terms';
 
 /** Words read totals worth marking (see CONTEXT.md). */
@@ -140,7 +141,7 @@ export async function getProgress(db: Kysely<Database>, now = new Date()): Promi
 			week,
 			weeks,
 			known,
-			learning: own.filter((t) => isPractised(t.status)).length,
+			learning: own.filter((t) => isLearning(t.status)).length,
 			knownHistory: knownHistory(history, known, now),
 			forecast: forecast(
 				own.flatMap((t) => practice.get(t.id) ?? []).map((p) => p.due),
@@ -231,10 +232,10 @@ export async function daySoFar(db: Kysely<Database>, languageId: number, now = n
 	const ids = [...last.keys()];
 	return {
 		wordsRead: Number(read.words),
-		newTerms: ids.filter((id) => first.get(id) === null && isLearning(last.get(id))).length,
+		newTerms: ids.filter((id) => first.get(id) === null && isLearningNow(last.get(id))).length,
 		nowKnown: ids.filter((id) => first.get(id) !== 'known' && last.get(id) === 'known').length,
 		reviews: Number(reviews.n)
 	};
 }
 
-const isLearning = (status: Status | null | undefined) => status != null && isPractised(status);
+const isLearningNow = (status: Status | null | undefined) => status != null && isLearning(status);

@@ -3,6 +3,7 @@ import { createEmptyCard, fsrs, Rating, type Card, type Grade as FsrsGrade } fro
 import type { Database, GradeValue, ReviewSourceValue, ScheduleTable } from '../db/schema';
 import type { Status } from './terms';
 import { wordAt } from '../../practice';
+import { isLearning } from '../../terms';
 
 export { wordAt };
 
@@ -21,7 +22,6 @@ const scheduler = fsrs({ enable_short_term: false, enable_fuzz: false });
 const ratings: Record<Grade, FsrsGrade> = { missed: Rating.Again, hard: Rating.Hard, got: Rating.Good };
 
 /** Statuses that take part in practice (ADR 0004). */
-export const isPractised = (status: Status) => status.startsWith('learning');
 
 /** How well the Reviews show you know a Term, on the Status scale. */
 export interface RecallStrength {
@@ -113,7 +113,7 @@ export async function practiceViews(
 	terms: { id: number; status: Status }[],
 	now = new Date()
 ): Promise<Map<number, PracticeView>> {
-	const practised = terms.filter((t) => isPractised(t.status));
+	const practised = terms.filter((t) => isLearning(t.status));
 	if (practised.length === 0) return new Map();
 	// Few Terms follow a Parent, so the whole chain map is small; walking it in memory saves a query per Term.
 	const following = new Map(
@@ -158,7 +158,7 @@ export async function recordReview(
 	return db.transaction().execute(async (trx) => {
 		const term = await trx.selectFrom('term').select(['text', 'status']).where('id', '=', termId).executeTakeFirst();
 		if (!term) throw new InvalidReview('No such Term.');
-		if (!isPractised(term.status)) throw new InvalidReview(`Only Learning 1–4 Terms are practised; “${term.text}” is ${term.status}.`);
+		if (!isLearning(term.status)) throw new InvalidReview(`Only Learning 1–4 Terms are practised; “${term.text}” is ${term.status}.`);
 		const owner = await scheduleOwner(trx, termId);
 		const row = await trx.selectFrom('schedule').selectAll().where('term_id', '=', owner).executeTakeFirst();
 		const { card } = scheduler.next(row ? toCard(row) : createEmptyCard(now), now, ratings[grade as Grade]);

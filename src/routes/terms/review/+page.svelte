@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import { dueLabel, holdsLabel, statusLabels, wordAt } from '#lib/practice.ts';
+	import { statusLabels } from '#lib/terms.ts';
+	import { dueLabel, holdsLabel, wordAt } from '#lib/practice.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import { sendReview } from '#lib/reviews.ts';
 	import type { PageProps } from './$types';

@@ -1,5 +1,6 @@
 import { sql, type Kysely, type SelectQueryBuilder, type Transaction } from 'kysely';
 import type { Database, SourceValue, StatusValue, TransferValue } from '../db/schema';
+import { isSource, isStatus, LEARNING } from '../../terms';
 import { bandRanks, ensureFrequencyLists, frequencyBands, type FrequencyBand } from './frequency';
 import { getLanguage, listLanguages, type Language } from './languages';
 import { MAX_TERM_WORDS } from './multiword';
@@ -19,8 +20,6 @@ export interface Transfer {
 }
 
 /** In display order: Learning 1–4, then Known and Ignored. */
-export const STATUSES: readonly Status[] = ['learning1', 'learning2', 'learning3', 'learning4', 'known', 'ignored'];
-
 export class InvalidTerm extends Error {}
 
 export interface TranslationView {
@@ -56,12 +55,6 @@ export interface TranslationInput {
 	source?: string;
 }
 
-export const SOURCES: readonly Source[] = ['you', 'wiktionary', 'tutor', 'azure'];
-
-export function isSource(value: string | undefined): value is Source {
-	return value !== undefined && (SOURCES as readonly string[]).includes(value);
-}
-
 export interface SaveTerm {
 	languageId: number;
 	text: string;
@@ -74,10 +67,6 @@ export interface SaveTerm {
 	parent?: string;
 	/** Omit to keep the current choice. Has no effect without a Parent. */
 	followsParent?: boolean;
-}
-
-export function isStatus(value: string): value is Status {
-	return (STATUSES as readonly string[]).includes(value);
 }
 
 /**
@@ -314,7 +303,7 @@ export async function listTerms(db: Kysely<Database>, filter: TermFilter = {}): 
 	const filtered = <Q extends SelectQueryBuilder<any, any, any>>(query: Q): Q => {
 		let q = query as SelectQueryBuilder<any, any, any>;
 		if (filter.languageId !== undefined) q = q.where('term.language_id', '=', filter.languageId);
-		if (filter.status === 'learning') q = q.where('term.status', 'in', ['learning1', 'learning2', 'learning3', 'learning4']);
+		if (filter.status === 'learning') q = q.where('term.status', 'in', LEARNING);
 		else if (filter.status !== undefined) q = q.where('term.status', '=', filter.status);
 		if (filter.source !== undefined) {
 			const source = filter.source;
@@ -363,7 +352,7 @@ export async function listTerms(db: Kysely<Database>, filter: TermFilter = {}): 
 	// Due and Recall strength aren't columns, so those filters work on the practice views.
 	if (filter.due || filter.recall) {
 		const candidates = await filtered(db.selectFrom('term').select(['term.id', 'term.status']))
-			.where('term.status', 'in', ['learning1', 'learning2', 'learning3', 'learning4'])
+			.where('term.status', 'in', LEARNING)
 			.orderBy('term.created_at', 'desc')
 			.orderBy('term.id', 'desc')
 			.execute();
