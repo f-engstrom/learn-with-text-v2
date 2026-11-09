@@ -93,6 +93,20 @@ describe('Practice on the Page', () => {
 		expect(practice.subsets.map((s) => s.subset)).toContain('highlight');
 	});
 
+	it('marks only the Terms in Top by priority, every place they appear', () => {
+		const { source, practice } = open();
+		expect([...practice.marked].sort()).toEqual(['дом', 'кот', 'лес']);
+		// Ten more frequent Due Terms push the page's own out of the top.
+		for (let i = 0; i < 10; i++) {
+			source.words.push({ index: 5 + i, key: `слово${i}`, sentence: 2 });
+			source.terms[`слово${i}`] = term(10 + i, 1, 26);
+			source.frequency[`слово${i}`] = 'top1k';
+		}
+		expect(practice.marked.size).toBe(10);
+		expect(practice.marked.has('дом')).toBe(false);
+		expect(practice.dueCount).toBe(13);
+	});
+
 	it('goes through the subset, a Review per Word, then says how many', async () => {
 		const { practice, review, grade, onReviewed, onShow } = open();
 		practice.start();

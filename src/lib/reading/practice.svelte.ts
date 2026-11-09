@@ -123,6 +123,11 @@ export class Practice {
 	});
 	/** Due Terms on this Page, each counted once. */
 	dueCount = $derived(practiceQueue(this.dueWords, 'overdue').length);
+	/** The Terms that carry a Due mark: those in Top by priority, so a Page with many Due Terms isn't dotted all over. */
+	marked: Set<string> = $derived.by(() => {
+		const keyOf = new Map(this.dueWords.map((w) => [w.index, w.key]));
+		return new Set(practiceQueue(this.dueWords, 'priority').map((index) => keyOf.get(index)!));
+	});
 	/** The Word being practised, by index. */
 	word = $derived(this.state?.stage === 'run' ? this.state.queue[this.state.at] : undefined);
 	/** While the practised Word's meaning is still hidden. */

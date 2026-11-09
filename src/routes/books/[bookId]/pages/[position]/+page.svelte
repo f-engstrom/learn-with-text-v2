@@ -20,7 +20,7 @@
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import PracticeCard from './PracticeCard.svelte';
 	import PracticePanel from './PracticePanel.svelte';
-	import { Practice } from '#lib/reading/practice.svelte.ts';
+	import { Practice, TOP } from '#lib/reading/practice.svelte.ts';
 	import { highlightOnPage } from '#lib/reading/highlight.ts';
 	import { frequencyLabels, suggestedStatus, transferLabel } from '#lib/practice.ts';
 	import { statusLabels } from '#lib/terms.ts';
@@ -116,12 +116,12 @@
 	let wordElements = $state<HTMLElement[]>([]);
 	let dir: 'rtl' | 'ltr' = $derived(data.language.rightToLeft ? 'rtl' : 'ltr');
 
-	/** Due marks on the Words, on unless you turn them off (D). */
+	/** Due marks on the Words of the Top by priority Terms, on unless you turn them off (D). */
 	const dueMarks = new PersistedFlag('reader.due', true);
 	onMount(() => dueMarks.load());
 	let showDue = $derived(dueMarks.value);
 	const toggleDue = () => dueMarks.toggle();
-	const overdueOf = (key: string) => (showDue ? (data.terms[key]?.practice?.overdue ?? 0) : 0);
+	const overdueOf = (key: string) => (showDue && practice.marked.has(key) ? (data.terms[key]?.practice?.overdue ?? 0) : 0);
 
 	/** The 1-based paragraph each Sentence (by 0-based index) is in. */
 	let paragraphOf = $derived(data.paragraphs.flatMap((p, i) => p.sentences.map(() => i + 1)));
@@ -454,7 +454,7 @@
 			<button type="button" onclick={startPractice} title="Practise the Due Words (R)"
 				>Practice{#if dueOnPage > 0}<span class="count">{dueOnPage}</span>{/if}</button
 			>
-			<button type="button" aria-pressed={showDue} onclick={toggleDue} title="Due marks (D)">Due</button>
+			<button type="button" aria-pressed={showDue} onclick={toggleDue} title="Due marks on the top {TOP} by priority (D)">Due</button>
 			<button type="button" aria-pressed={zen} onclick={toggleZen} title="Zen mode (Z)">Zen</button>
 		</span>
 	</header>
@@ -615,7 +615,7 @@
 						<span class="swatch learning3"></span> 3
 						<span class="swatch learning4"></span> 4
 						<span class="swatch known"></span> Known
-						<span class="due-dot"></span> Due
+						<span class="due-dot"></span> Due, top {TOP}
 					</p>
 				</div>
 			{/if}
