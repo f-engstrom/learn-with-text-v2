@@ -604,7 +604,7 @@
 			{:else}
 				<div class="help card">
 					<p class="start"><span class="pointer">Click a Word, or press <kbd>→</kbd> to start.</span><span class="touch">Tap a Word to open it.</span></p>
-					<details open>
+					<details>
 						<summary>Keys</summary>
 						{@render keys()}
 					</details>
