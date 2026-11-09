@@ -87,6 +87,22 @@
 	let picked = $derived(selection.picked);
 	let selected = $derived(selection.selected);
 	let open = $state(false);
+	let rail = $state<HTMLElement>();
+	// On a wide screen the column beside the text sticks only once the Page header has scrolled away; until then its
+	// bottom, where Save sits, can be below the window. Opening the Term panel scrolls just enough to show it, keeping
+	// the chosen Word on screen.
+	$effect(() => {
+		if (!open || !selected) return;
+		untrack(() => tick().then(revealRail));
+	});
+	function revealRail() {
+		if (!rail || getComputedStyle(rail).display === 'contents') return;
+		const overflow = rail.getBoundingClientRect().bottom - innerHeight;
+		const word = current === undefined ? undefined : wordElements[current]?.getBoundingClientRect();
+		const by = Math.min(overflow, word ? word.top - 16 : overflow);
+		// Not smooth: focusing the Word, which happens alongside, would cancel a smooth scroll.
+		if (by > 0) window.scrollBy({ top: by });
+	}
 	let term = $derived(selected && data.terms[selected.key]);
 	let band = $derived(selected && data.frequency[selected.key]);
 	/** A Status the Tutor's assessment and Recall strength agree on, if it isn't yours. */
@@ -489,7 +505,7 @@
 	</article>
 
 	<!-- One sticky column beside the text; on a phone it dissolves so the note sits above the Page. -->
-	<div class="rail">
+	<div class="rail" bind:this={rail}>
 		{#if highlight || question}
 			<div class="highlight-note card" role="status">
 				<p class="from">From the Tutor{#if question && !question.answer}<kbd class="t-hint" title="Press T to answer">T</kbd>{/if}</p>
@@ -690,10 +706,29 @@
 		grid-area: note;
 		flex-shrink: 0;
 	}
+	/* With the Term panel or Practice open below it, a long note scrolls on its own, so the panel keeps most of the column. */
+	.rail:has(.term-panel, .practice-panel) .highlight-note {
+		flex-shrink: 1;
+		min-height: 5rem;
+		overflow-y: auto;
+	}
+	.rail:has(.term-panel, .practice-panel) .side {
+		min-height: min(28rem, 60vh);
+	}
 	.side {
 		grid-area: side;
 		min-height: 0;
 		overflow-y: auto;
+	}
+	/* Save and Delete stay in reach at the bottom of the scrolling panel while the form is in view. */
+	.term-panel :global(.form-actions) {
+		position: sticky;
+		bottom: 0;
+		z-index: 1;
+		margin-inline: -0.5rem;
+		padding: 0.6rem 0.5rem;
+		background: var(--surface);
+		box-shadow: 0 -10px 12px -10px color-mix(in srgb, var(--text) 25%, transparent);
 	}
 	.page {
 		font-family: var(--font-text);
@@ -1005,10 +1040,8 @@
 	}
 	.term-panel {
 		position: relative;
-		/* With a Dictionary open the panel is taller than the window, so it scrolls on its own. */
-		max-height: calc(100vh - 2rem);
+		/* Taller than the window with a Dictionary open: the column beside the text scrolls it, so Save can stick to its bottom. */
 		min-height: 0;
-		overflow-y: auto;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
 		gap: 1rem;
@@ -1179,6 +1212,8 @@
 			max-height: 62vh;
 			gap: 0.75rem;
 			padding: 1rem;
+			/* On a phone the sheet itself scrolls. */
+			overflow-y: auto;
 			overflow-x: hidden;
 			overscroll-behavior: contain;
 			border-end-start-radius: 0;
@@ -1205,7 +1240,9 @@
 		.rail {
 			display: contents;
 		}
-		.side {
+		.side,
+		.rail:has(.term-panel, .practice-panel) .side {
+			min-height: 0;
 			overflow: visible;
 		}
 		.help details:not([open]) + .legend,
