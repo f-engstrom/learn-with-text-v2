@@ -124,6 +124,34 @@ describe('From the Tutor in the reading screen', () => {
 		stop();
 	});
 
+	it('folds for Later until the Tutor asks something new', async () => {
+		const s = server({ ...empty, question: question('q1') });
+		const { fromTutor, stop } = open(s, { initial: { ...empty, question: question('q1') } });
+		fromTutor.fold();
+		await poll();
+		expect(fromTutor.folded).toBe(true);
+		fromTutor.unfold();
+		expect(fromTutor.folded).toBe(false);
+		fromTutor.fold();
+		s.set({ question: question('q2') });
+		await poll();
+		expect(fromTutor.folded).toBe(false);
+		stop();
+	});
+
+	it('unfolds for a new Highlight, and after a sync to another Book', async () => {
+		const s = server({ ...empty, highlight: highlight('a') });
+		const { fromTutor, stop } = open(s, { initial: { ...empty, highlight: highlight('a') } });
+		fromTutor.fold();
+		s.set({ highlight: highlight('b') });
+		await poll();
+		expect(fromTutor.folded).toBe(false);
+		fromTutor.fold();
+		fromTutor.sync({ bookId: 2, ...empty, highlight: highlight('c') });
+		expect(fromTutor.folded).toBe(false);
+		stop();
+	});
+
 	it('does not poll while the tab is hidden', async () => {
 		const s = server();
 		const { stop } = open(s, { hidden: true });

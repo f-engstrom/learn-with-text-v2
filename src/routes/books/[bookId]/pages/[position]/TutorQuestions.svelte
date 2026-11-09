@@ -21,20 +21,16 @@
 	let step = $state(0);
 	let ownQuestion = $state('');
 	let asking = $state(false);
-	/** Feedback on the last answer comes on its own, before the new round's passage and questions. */
-	let reviewing = $state(untrack(() => !!question.feedback));
 	let stepElement = $state<HTMLElement>();
-	let continueButton = $state<HTMLButtonElement>();
 
 	const last = $derived(question.questions.length - 1);
 	const current = $derived(question.questions[step]);
 	const done = (i: number) => drafts[i]?.trim() !== '';
 	const answered = $derived(drafts.every((_, i) => done(i)));
 
-	/** Puts the keyboard on the current question: its text box, or the question itself for options; on the feedback, its Continue. */
+	/** Puts the keyboard on the current question: its text box, or the question itself for options. */
 	export async function focus() {
 		await tick();
-		if (reviewing) return continueButton?.focus();
 		const box = stepElement?.querySelector('textarea');
 		(box ?? stepElement)?.focus();
 	}
@@ -62,13 +58,8 @@
 		advancing = setTimeout(() => step === from && goTo(from + 1), 300);
 	}
 
-	function startRound() {
-		reviewing = false;
-		focus();
-	}
-
 	function onkeydown(e: KeyboardEvent) {
-		if (asking || reviewing) {
+		if (asking) {
 			if (e.key === 'Escape') {
 				e.preventDefault();
 				onleave();
@@ -97,17 +88,13 @@
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div class="tutor-questions" {onkeydown} role="group" aria-label="The Tutor's questions">
-	{#if reviewing}
-		<section class="feedback" aria-label="Your last answer">
-			<p class="label">Your last answer</p>
+	{#if question.feedback}
+		<section class="feedback" aria-label="On your last answer">
+			<p class="label">On your last answer</p>
 			<p>{question.feedback}</p>
 		</section>
-		<div class="actions">
-			<button type="button" class="primary" bind:this={continueButton} onclick={startRound}>Continue</button>
-		</div>
-		<p class="hint keys"><kbd>Enter</kbd> continue · <kbd>Esc</kbd> back to the text</p>
-	{:else}
-		{@render children?.()}
+	{/if}
+	{@render children?.()}
 		{#if asking}
 			<form
 				class="questions"
@@ -179,7 +166,6 @@
 				</p>
 			</form>
 		{/if}
-	{/if}
 </div>
 
 <style>
@@ -220,22 +206,26 @@
 		align-items: center;
 		gap: 0.35rem;
 	}
+	/* A bar per question, in a taller button so it is easy to hit. */
 	.dot {
-		width: 0.7rem;
-		height: 0.7rem;
+		--bar: var(--border);
+		width: 1.75rem;
+		height: 1rem;
 		padding: 0;
-		border: 1.5px solid var(--muted);
-		border-radius: 50%;
-		background: none;
+		border: none;
+		border-radius: 0;
+		background: linear-gradient(var(--bar) 0 0) center / 100% 0.25rem no-repeat;
 		box-shadow: none;
 	}
+	.dot:hover:not(:disabled) {
+		--bar: color-mix(in srgb, var(--accent) 45%, var(--border));
+		background: linear-gradient(var(--bar) 0 0) center / 100% 0.25rem no-repeat;
+	}
 	.dot.done {
-		border-color: var(--accent);
-		background: var(--accent);
+		--bar: color-mix(in srgb, var(--accent) 50%, var(--border));
 	}
 	.dot[aria-current='step'] {
-		outline: 2px solid var(--accent);
-		outline-offset: 2px;
+		--bar: var(--accent);
 	}
 	.count {
 		margin-inline-start: 0.3rem;
@@ -255,7 +245,10 @@
 	legend {
 		padding: 0;
 		margin-bottom: 0.4rem;
+		font-family: var(--font-text);
+		font-size: 1.15rem;
 		font-weight: 600;
+		line-height: 1.4;
 		white-space: pre-line;
 	}
 	textarea {
@@ -264,9 +257,13 @@
 		resize: vertical;
 	}
 	.options {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+		gap: 0.5rem;
+	}
+	.options button {
+		min-height: 2.75rem;
+		text-align: start;
 	}
 	.options button[aria-pressed='true'] {
 		background: var(--accent-soft);

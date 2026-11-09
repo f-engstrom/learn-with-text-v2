@@ -129,7 +129,7 @@ Claude running this project's reading-tutor skill, which reads and changes the R
 _Avoid_: AI, assistant, bot
 
 **Tutor's question**:
-What the Tutor asks you in the reading screen, beside its Highlight: one to four questions, each typed or a pick among two to four options, with feedback on your last answer, which you read on its own before the new passage and questions. You answer every question, or ask the Tutor something of your own instead. A Book has at most one; the next replaces it. Dismissing it puts the Tutor aside: the question and the Highlight leave the screen until the Tutor asks again.
+What the Tutor asks you in the reading screen, in the text under its Highlight: one to four questions, each typed or a pick among two to four options, with feedback on your last answer above them. You answer every question, or ask the Tutor something of your own instead. A Book has at most one; the next replaces it. Later folds it away until you open it or the Tutor asks again; dismissing it puts the Tutor aside: the question and the Highlight leave the screen until the Tutor asks again.
 _Avoid_: Prompt, quiz, card
 
 **From the Tutor**:

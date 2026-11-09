@@ -67,3 +67,15 @@ export function highlightOnPage(
 	}
 	return { ...here, tokens: new Set((passageParts(parts, highlight.text) ?? []).map((i) => keys[i]).filter(Boolean)) };
 }
+
+/** The paragraph (0-based) the Tutor's turn follows: the one holding the Highlight's last Sentence on this Page. */
+export function turnParagraph(paragraphs: { sentences: unknown[] }[], here: HighlightOnPage | undefined): number | undefined {
+	if (!here || here.sentences.size === 0) return undefined;
+	const last = Math.max(...here.sentences);
+	let end = 0;
+	for (let p = 0; p < paragraphs.length; p++) {
+		end += paragraphs[p].sentences.length;
+		if (last < end) return p;
+	}
+	return undefined;
+}

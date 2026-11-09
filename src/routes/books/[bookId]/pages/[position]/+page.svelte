@@ -21,12 +21,12 @@
 	import PracticeCard from './PracticeCard.svelte';
 	import PracticePanel from './PracticePanel.svelte';
 	import { Practice, TOP } from '#lib/reading/practice.svelte.ts';
-	import { highlightOnPage } from '#lib/reading/highlight.ts';
+	import { highlightOnPage, turnParagraph } from '#lib/reading/highlight.ts';
 	import { frequencyLabels, suggestedStatus, transferLabel } from '#lib/practice.ts';
 	import { statusLabels } from '#lib/terms.ts';
 	import WiktionaryPanel from './WiktionaryPanel.svelte';
 	import AzurePanel from './AzurePanel.svelte';
-	import TutorQuestions from './TutorQuestions.svelte';
+	import TutorTurn from './TutorTurn.svelte';
 
 
 	let { data, form }: PageProps = $props();
@@ -237,7 +237,7 @@
 	let highlight = $derived(fromTutor.highlight);
 	/** TutorQuestions keeps what you write, per `askedAt`. */
 	let question = $derived(fromTutor.question);
-	let tutorQuestions = $state<TutorQuestions>();
+	let tutorTurn = $state<TutorTurn>();
 	let sentenceIndex = $derived(new Map(sentences.map((s, i) => [s, i])));
 	let highlightHere = $derived(highlight?.page === data.position ? highlight : undefined);
 	/** Due Terms on this Page, each counted once. */
@@ -249,6 +249,8 @@
 	const highlighted = (sentence: (typeof sentences)[number]) => !onPage?.tokens && !!onPage?.sentences.has(sentenceIndex.get(sentence)!);
 	const inPassage = (sentence: (typeof sentences)[number], t: number) => !!onPage?.tokens?.has(`${sentenceIndex.get(sentence)}:${t}`);
 	let highlightElement = $state<HTMLElement>();
+	/** The Tutor's turn follows the paragraph its Highlight ends in; with no Highlight here it opens the Page. */
+	let turnAt = $derived(turnParagraph(data.paragraphs, onPage));
 
 	async function answerTutor(answer: Answer) {
 		const refused = await fromTutor.answer(answer);
@@ -257,10 +259,6 @@
 
 	function dismissTutor() {
 		fromTutor.dismiss();
-	}
-
-	function showHighlight() {
-		highlightElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 	}
 
 	const statusOf = (key: string) => pending[key] ?? data.terms[key]?.status ?? 'unknown';
@@ -287,7 +285,7 @@
 	function onkeydown(e: KeyboardEvent) {
 		const route = routeKey({
 			handled: e.defaultPrevented,
-			inTutorCard: e.target instanceof HTMLElement && e.target.closest('.highlight-note') !== null,
+			inTutorCard: e.target instanceof HTMLElement && e.target.closest('.turn') !== null,
 			typing: isTyping(e.target),
 			onControl: isControl(e.target),
 			zen,
@@ -330,7 +328,7 @@
 				startPractice();
 				break;
 			case 'tutor':
-				tutorQuestions?.focus();
+				tutorTurn?.focus();
 				break;
 			case 'close':
 				open = false;
@@ -403,28 +401,24 @@
 	</dl>
 {/snippet}
 
-{#snippet tutorContext()}
-	{#if highlight}
-		{#if highlight.note}<p class="note-text">{highlight.note}</p>{/if}
-		{#if highlightHere && highlight.text}
-			<button type="button" class="passage" lang={data.language.code} {dir} title="Show it in the text" onclick={showHighlight}
-				>{highlight.text}</button
-			>
-		{:else if highlightHere}
-			<button type="button" onclick={showHighlight}
-				>{highlight.first === highlight.last ? `Sentence ${highlight.first}` : `Sentences ${highlight.first}–${highlight.last}`}</button
-			>
-		{:else}
-			<a class="button" href="/books/{data.book.id}/pages/{highlight.page}">On Page {highlight.page} →</a>
-		{/if}
-	{/if}
-	{#if question?.glosses}
-		<ul class="glosses">
-			{#each question.glosses as g (g.text)}
-				<li><span lang={data.language.code} {dir}>{g.text}</span> {g.gloss}</li>
-			{/each}
-		</ul>
-	{/if}
+{#snippet turn()}
+	<div class="turn" lang="en" dir="ltr">
+		<TutorTurn
+			bind:this={tutorTurn}
+			{highlight}
+			{question}
+			here={turnAt !== undefined}
+			folded={fromTutor.folded}
+			bookId={data.book.id}
+			lang={data.language.code}
+			{dir}
+			onanswer={answerTutor}
+			onleave={() => (current === undefined ? selection.moveTo(0) : selection.refocus())}
+			ondismiss={dismissTutor}
+			onfold={() => fromTutor.fold()}
+			onunfold={() => fromTutor.unfold()}
+		/>
+	</div>
 {/snippet}
 
 {#snippet pages()}
@@ -473,8 +467,9 @@
 
 <div class="reader" class:zen class:sheet-open={open && !!selected && !practising}>
 	<article class="page" class:zen class:practising={practising?.stage === 'run'} lang={data.language.code} {dir}>
+		{#if (highlight || question) && turnAt === undefined}{@render turn()}{/if}
 		{#each data.paragraphs as paragraph, p (p)}
-			<p>
+			<p class:anchor={p === turnAt}>
 				{#each paragraph.sentences as sentence, s (s)}
 					{@const isHighlighted = highlighted(sentence)}
 					{#if sentenceIndex.get(sentence) === onPage?.first}<span
@@ -501,37 +496,12 @@
 					</span>
 				{/each}
 			</p>
+			{#if p === turnAt}{@render turn()}{/if}
 		{/each}
 	</article>
 
-	<!-- One sticky column beside the text; on a phone it dissolves so the note sits above the Page. -->
+	<!-- One sticky column beside the text; on a phone it dissolves below the Page. -->
 	<div class="rail" bind:this={rail}>
-		{#if highlight || question}
-			<div class="highlight-note card" role="status">
-				<p class="from">From the Tutor{#if question && !question.answer}<kbd class="t-hint" title="Press T to answer">T</kbd>{/if}</p>
-				<button type="button" class="tutor-close" aria-label="Dismiss the Tutor" title="Dismiss until the Tutor asks again" onclick={dismissTutor}>✕</button>
-				{#if question?.answer}
-					<p class="sent">
-						<span class="waiting">Sent, waiting for the Tutor…</span>
-						<span class="yours">{'ask' in question.answer ? `You asked: ${question.answer.ask}` : question.answer.answers.join(' · ')}</span>
-					</p>
-				{:else if question}
-					{#key question.askedAt}
-						<TutorQuestions
-							bind:this={tutorQuestions}
-							{question}
-							lang={data.language.code}
-							onanswer={answerTutor}
-							onleave={() => (current === undefined ? selection.moveTo(0) : selection.refocus())}
-						>
-							{@render tutorContext()}
-						</TutorQuestions>
-					{/key}
-				{:else}
-					{@render tutorContext()}
-				{/if}
-			</div>
-		{/if}
 		<aside class="side">
 			{#if practising}
 				<PracticePanel
@@ -680,7 +650,7 @@
 		background: color-mix(in srgb, var(--ok) 18%, transparent);
 		color: var(--ok);
 	}
-	/* The Tutor's note sits above the side column beside the text, and above the text on a phone. */
+	/* The text, and beside it the Term panel or Practice; on a phone the panel comes below the text. */
 	.reader {
 		display: grid;
 		grid-template-columns: minmax(0, 44rem) minmax(20rem, 1fr);
@@ -696,24 +666,11 @@
 		grid-area: rail;
 		position: sticky;
 		top: 1rem;
-		/* The note and the panel share one window's height; the Term panel scrolls within what is left. */
+		/* One window's height; the Term panel scrolls within it. */
 		max-height: calc(100vh - 2rem);
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
-	}
-	.highlight-note {
-		grid-area: note;
-		flex-shrink: 0;
-	}
-	/* With the Term panel or Practice open below it, a long note scrolls on its own, so the panel keeps most of the column. */
-	.rail:has(.term-panel, .practice-panel) .highlight-note {
-		flex-shrink: 1;
-		min-height: 5rem;
-		overflow-y: auto;
-	}
-	.rail:has(.term-panel, .practice-panel) .side {
-		min-height: min(28rem, 60vh);
 	}
 	.side {
 		grid-area: side;
@@ -964,93 +921,23 @@
 	.highlight-start {
 		scroll-margin: 6rem;
 	}
-	.highlight-note {
-		display: grid;
-		gap: 0.5rem;
-		justify-items: start;
-		border-inline-start: 4px solid var(--accent);
+	/* The Tutor's turn, in the text under its passage: back in the interface's own type. */
+	.turn {
+		margin: 0.4em 0 1.6rem;
+		font-family: var(--font-ui);
+		font-size: 1rem;
+		line-height: 1.55;
+		letter-spacing: normal;
 	}
-	.highlight-note p {
-		margin: 0;
+	/* While you answer, the rest of the Page steps back. */
+	.page > p {
+		transition: opacity 0.3s;
 	}
-	.highlight-note {
-		position: relative;
+	.page:has(.turn:focus-within) > p:not(.anchor) {
+		opacity: 0.5;
 	}
-	.tutor-close {
-		position: absolute;
-		top: 0.5rem;
-		inset-inline-end: 0.5rem;
-		padding: 0.15rem 0.45rem;
-		border: none;
-		background: none;
-		box-shadow: none;
-		color: var(--muted);
-	}
-	.passage {
-		padding: 0.1rem 0 0.1rem 0.7rem;
-		border: none;
-		border-inline-start: 2px solid var(--border);
-		border-radius: 0;
-		background: none;
-		box-shadow: none;
-		color: var(--text);
-		font-family: var(--font-text);
-		font-size: 1.1rem;
-		line-height: 1.5;
-		text-align: start;
-	}
-	.passage:hover {
-		border-inline-start-color: var(--accent);
-	}
-	.glosses {
-		display: grid;
-		gap: 0.2rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-		font-size: 0.95rem;
-	}
-	.glosses span {
-		margin-inline-end: 0.35rem;
-		font-family: var(--font-text);
-		font-size: 1.05rem;
-		font-weight: 600;
-	}
-	.sent {
-		display: grid;
-		gap: 0.2rem;
-	}
-	.sent .waiting {
-		color: var(--muted);
-	}
-	.sent .yours {
-		color: var(--muted);
-		font-size: 0.85rem;
-		font-style: italic;
-	}
-	.highlight-note .from {
-		color: var(--muted);
-		font-size: 0.8rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-	}
-	.note-text {
-		font-size: 1.05rem;
-	}
-	/* T answers the Tutor; the hint goes once the keyboard is in the card. */
-	.t-hint {
-		margin-inline-start: 0.5rem;
-		font-size: 0.7rem;
-		text-transform: none;
-	}
-	.highlight-note:focus-within .t-hint {
+	.page.zen .turn {
 		display: none;
-	}
-	@media (hover: none) and (pointer: coarse) {
-		.t-hint {
-			display: none;
-		}
 	}
 	.term-panel {
 		position: relative;
@@ -1247,7 +1134,7 @@
 		}
 		.reader {
 			grid-template-columns: minmax(0, 1fr);
-			grid-template-areas: 'note' 'page' 'side';
+			grid-template-areas: 'page' 'side';
 			grid-template-rows: auto;
 			gap: 1.5rem;
 		}

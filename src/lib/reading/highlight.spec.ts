@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { highlightOnPage, passageParts } from './highlight';
+import { highlightOnPage, turnParagraph, passageParts } from './highlight';
 
 describe('passageParts', () => {
 	const tokens = ['которые', ' ', 'сами', ' ', 'бы', ' ', 'охотно', ' ', 'грешили', ', ', 'если', ' ', 'б', ' ', 'умели', ', ', 'но'];
@@ -40,5 +40,21 @@ describe('highlightOnPage', () => {
 	it('is nothing on another Page, or with no Highlight', () => {
 		expect(highlightOnPage(page, { page: 3, first: 1, last: 1, at }, 2)).toBeUndefined();
 		expect(highlightOnPage(page, null, 2)).toBeUndefined();
+	});
+});
+
+describe('turnParagraph', () => {
+	const paragraphs = [{ sentences: [1, 2] }, { sentences: [3] }, { sentences: [4, 5] }];
+	const on = (...sentences: number[]) => ({ first: sentences[0], sentences: new Set(sentences) });
+
+	it('is the paragraph holding the Highlight’s last Sentence', () => {
+		expect(turnParagraph(paragraphs, on(0))).toBe(0);
+		expect(turnParagraph(paragraphs, on(1, 2))).toBe(1);
+		expect(turnParagraph(paragraphs, on(4))).toBe(2);
+	});
+
+	it('is nothing without a Highlight here, or past the Page’s end', () => {
+		expect(turnParagraph(paragraphs, undefined)).toBeUndefined();
+		expect(turnParagraph(paragraphs, on())).toBeUndefined();
 	});
 });

@@ -48,7 +48,11 @@ export interface Options {
 export class FromTutor {
 	highlight = $state<Highlight | null>(null);
 	question = $state<TutorQuestion | null>(null);
+	/** Put off with Later: the turn is a pill until you open it, or the Tutor asks or highlights something new. */
+	folded = $state(false);
 	#bookId: number;
+	/** What `folded` was set for: the question, else the Highlight. */
+	#foldedFor = '';
 	#termsVersion: number;
 	/** Moves on with every local change; a poll answered for an older one is dropped. */
 	#generation = 0;
@@ -59,6 +63,7 @@ export class FromTutor {
 		this.#termsVersion = initial.termsVersion;
 		this.highlight = initial.highlight;
 		this.question = initial.question;
+		this.#foldedFor = this.#showing();
 		this.#options = {
 			transport: httpTransport,
 			intervalMs: 2000,
@@ -74,6 +79,15 @@ export class FromTutor {
 		this.#termsVersion = state.termsVersion;
 		this.highlight = state.highlight;
 		this.question = state.question;
+		this.#refold();
+	}
+
+	fold() {
+		this.folded = true;
+	}
+
+	unfold() {
+		this.folded = false;
 	}
 
 	/** Answers the current question; resolves to an error message if the Tutor has moved on. */
@@ -113,8 +127,22 @@ export class FromTutor {
 			this.#termsVersion = latest.termsVersion;
 			this.#options.onTermsChanged?.();
 		}
-		if (latest.highlight?.at === this.highlight?.at) return;
-		this.highlight = latest.highlight;
-		if (latest.highlight) this.#options.onNewHighlight?.(latest.highlight);
+		if (latest.highlight?.at !== this.highlight?.at) {
+			this.highlight = latest.highlight;
+			if (latest.highlight) this.#options.onNewHighlight?.(latest.highlight);
+		}
+		this.#refold();
+	}
+
+	#showing() {
+		return this.question?.askedAt ?? this.highlight?.at ?? '';
+	}
+
+	/** Something new from the Tutor opens the turn again. */
+	#refold() {
+		const showing = this.#showing();
+		if (showing === this.#foldedFor) return;
+		this.#foldedFor = showing;
+		this.folded = false;
 	}
 }
