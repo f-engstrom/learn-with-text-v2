@@ -25,6 +25,8 @@
 	--status-learning3: #ece6c2;
 	--status-learning4: #dfe7cc;
 	--status-ignored: #9a9183;
+	/* The underline under a Learning Term in the text, at full strength for Learning 1. */
+	--status-learning-mark: #b4664e;
 
 	/* Due marks, from just Due to long overdue; the -text variants are for words on a surface. */
 	--due-1: #d9a033;
@@ -66,6 +68,7 @@
 		--status-learning3: #444027;
 		--status-learning4: #363f2a;
 		--status-ignored: #857b6c;
+		--status-learning-mark: #d9967a;
 
 		--due-1: #e0ac47;
 		--due-2: #e48552;

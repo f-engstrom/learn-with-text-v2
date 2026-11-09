@@ -765,24 +765,38 @@
 		text-decoration: underline dotted var(--muted);
 		text-underline-offset: 0.25em;
 	}
+	/* --status fills a Character part; a Word in the text uses --fill and --mark below. */
 	.unknown {
 		--status: var(--status-unknown);
+		--fill: var(--status-unknown);
 	}
 	.learning1 {
 		--status: var(--status-learning1);
+		--mark: var(--status-learning-mark);
+		--mark-weight: 0.14em;
 	}
 	.learning2 {
 		--status: var(--status-learning2);
+		--mark: color-mix(in srgb, var(--status-learning-mark) 70%, transparent);
+		--mark-weight: 0.12em;
 	}
 	.learning3 {
 		--status: var(--status-learning3);
+		--mark: color-mix(in srgb, var(--status-learning-mark) 45%, transparent);
+		--mark-weight: 0.09em;
 	}
 	.learning4 {
 		--status: var(--status-learning4);
+		--mark: color-mix(in srgb, var(--status-learning-mark) 30%, transparent);
+		--mark-weight: 0.06em;
 	}
+	/* Only an Unknown Word is filled. A Learning Term is underlined, thinner and fainter from 1 to 4,
+	   so the levels differ in weight and lightness and a page of Learning Terms still reads as text. */
 	.word,
 	.swatch {
-		background: var(--status, transparent);
+		background:
+			linear-gradient(var(--mark, transparent) 0 0) bottom / 100% var(--mark-weight, 0) no-repeat,
+			var(--fill, transparent);
 		transition:
 			background-color 0.6s,
 			box-shadow 0.6s;
