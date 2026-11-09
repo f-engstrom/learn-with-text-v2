@@ -3,7 +3,7 @@ import { FREQUENCY_BANDS, type FrequencyBand } from '#lib/server/domain/frequenc
 import { listLanguages } from '#lib/server/domain/languages.ts';
 import { listTerms, TERM_PAGE_SIZE, type TermFilter } from '#lib/server/domain/terms.ts';
 import { isSource, isStatus } from '#lib/terms.ts';
-import { deleteTermAction, saveTermAction, setStatusAction } from '#lib/server/term-actions.ts';
+import { deleteTermAction, saveTermAction } from '#lib/server/term-actions.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url }) => {
@@ -48,6 +48,5 @@ export const load: PageServerLoad = async ({ url }) => {
 
 export const actions: Actions = {
 	saveTerm: saveTermAction,
-	setStatus: setStatusAction,
 	deleteTerm: deleteTermAction
 };

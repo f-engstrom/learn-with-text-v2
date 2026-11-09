@@ -6,6 +6,7 @@
 	import type { Language } from '#lib/server/domain/languages.ts';
 	import type { Source, TermView } from '#lib/server/domain/terms.ts';
 	import { sourceLabels } from '#lib/terms.ts';
+	import { termFields } from '#lib/term-writes.ts';
 
 	interface Props {
 		language: Language;
@@ -115,14 +116,14 @@
 </header>
 
 <form method="POST" action={actionUrl('saveTerm', page.url.search)} use:enhance bind:this={formElement}>
-	<input type="hidden" name="languageId" value={language.id} />
-	<input type="hidden" name="text" value={term?.text ?? text} />
+	<input type="hidden" name={termFields.languageId} value={language.id} />
+	<input type="hidden" name={termFields.text} value={term?.text ?? text} />
 
 	<fieldset class="statuses">
 		<legend>Status</legend>
 		{#each Object.entries(statusButtonLabels) as [value, label] (value)}
 			<label class="status-option {value}">
-				<input type="radio" name="status" {value} checked={(term?.status ?? 'learning1') === value} />
+				<input type="radio" name={termFields.status} {value} checked={(term?.status ?? 'learning1') === value} />
 				{label}
 			</label>
 		{/each}
@@ -133,10 +134,10 @@
 		<ol>
 			{#each rows as row, i (row)}
 				<li>
-					<input type="hidden" name="translationId" value={row.id ?? ''} />
-					<input type="hidden" name="translationSource" value={row.source} />
+					<input type="hidden" name={termFields.translationId} value={row.id ?? ''} />
+					<input type="hidden" name={termFields.translationSource} value={row.source} />
 					<textarea
-						name="translationText"
+						name={termFields.translationText}
 						rows="1"
 						bind:value={row.text}
 						use:grow={row.text}
@@ -166,7 +167,7 @@
 	<label>
 		Pronunciation
 		<input
-			name="pronunciation"
+			name={termFields.pronunciation}
 			value={term?.pronunciation ?? ''}
 			placeholder={language.code === 'zh' && !term ? 'Pinyin is filled in when you save' : ''}
 			autocomplete="off"
@@ -175,13 +176,13 @@
 
 	<label>
 		Parent
-		<input name="parent" bind:value={parent} lang={language.code} {dir} placeholder="e.g. its dictionary form" autocomplete="off" />
+		<input name={termFields.parent} bind:value={parent} lang={language.code} {dir} placeholder="e.g. its dictionary form" autocomplete="off" />
 	</label>
 	{#if term?.parent && term.parent.text === parent.trim()}
 		<p class="parent-status"><small>Parent's Status: {statusButtonLabels[term.parent.status]}</small></p>
 	{/if}
 	<label class="follows">
-		<input type="checkbox" name="followsParent" bind:checked={followsParent} disabled={parent.trim() === ''} />
+		<input type="checkbox" name={termFields.followsParent} bind:checked={followsParent} disabled={parent.trim() === ''} />
 		Follows Parent (shares its Status)
 	</label>
 
@@ -197,7 +198,7 @@
 
 {#if term}
 	<form id="delete-term-{term.id}" method="POST" action={actionUrl('deleteTerm', page.url.search)} use:enhance hidden>
-		<input type="hidden" name="id" value={term.id} />
+		<input type="hidden" name={termFields.id} value={term.id} />
 	</form>
 {/if}
 

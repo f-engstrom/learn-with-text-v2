@@ -5,7 +5,7 @@ import { listDictionaries } from '#lib/server/domain/dictionaries.ts';
 import { daySoFar } from '#lib/server/domain/progress.ts';
 import { InvalidBookmark, markPageRead } from '#lib/server/domain/reading.ts';
 import { fromTutor } from '#lib/server/domain/from-tutor.ts';
-import { deleteTermAction, saveTermAction, setStatusAction } from '#lib/server/term-actions.ts';
+import { deleteTermAction, saveTermAction } from '#lib/server/term-actions.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, url }) => {
@@ -22,7 +22,6 @@ export const load: PageServerLoad = async ({ params, url }) => {
 
 export const actions: Actions = {
 	saveTerm: saveTermAction,
-	setStatus: setStatusAction,
 	deleteTerm: deleteTermAction,
 	/** Marks this Page Read (optionally making the rest Known) and goes on to the next Page, showing the day so far. */
 	markRead: async ({ request, params }) => {

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { deserialize, enhance } from '$app/forms';
+	import { enhance } from '$app/forms';
+	import { sendStatus } from '#lib/term-writes.ts';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import TermForm from '#lib/components/TermForm.svelte';
@@ -28,13 +29,7 @@
 	}
 
 	async function setStatus(term: { languageId: number; text: string }, status: string) {
-		const body = new FormData();
-		body.set('languageId', String(term.languageId));
-		body.set('text', term.text);
-		body.set('status', status);
-		const response = await fetch('?/setStatus', { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
-		const result = deserialize(await response.text());
-		error = result.type === 'failure' ? String(result.data?.message) : undefined;
+		error = await sendStatus(term.languageId, term.text, status);
 		await invalidateAll();
 	}
 </script>

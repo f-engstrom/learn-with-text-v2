@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { deserialize, enhance } from '$app/forms';
+	import { enhance } from '$app/forms';
+	import { sendStatus } from '#lib/term-writes.ts';
 	import { invalidateAll, replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount, tick, untrack } from 'svelte';
@@ -250,13 +251,7 @@
 
 	async function setStatus(word: Selected, status: Status) {
 		pending[word.key] = status;
-		const body = new FormData();
-		body.set('languageId', String(data.language.id));
-		body.set('text', word.text);
-		body.set('status', status);
-		const response = await fetch('?/setStatus', { method: 'POST', body, headers: { 'x-sveltekit-action': 'true' } });
-		const result = deserialize(await response.text());
-		error = result.type === 'failure' ? String(result.data?.message) : undefined;
+		error = await sendStatus(data.language.id, word.text, status);
 		await invalidateAll();
 		delete pending[word.key];
 	}
