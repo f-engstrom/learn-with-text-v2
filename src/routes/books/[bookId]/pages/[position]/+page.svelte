@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import Tag from '#lib/components/Tag.svelte';
 	import Count from '#lib/components/Count.svelte';
 	import CloseButton from '#lib/components/CloseButton.svelte';
@@ -367,7 +368,7 @@
 {#snippet pages()}
 	<nav class="pages" aria-label="Pages">
 		{#if data.position > 1}
-			<a class="button" href="/books/{data.book.id}/pages/{data.position - 1}">← Previous</a>
+			<Button href="/books/{data.book.id}/pages/{data.position - 1}">← Previous</Button>
 		{:else}
 			<span></span>
 		{/if}
@@ -376,7 +377,7 @@
 			{#if data.read}<Tag tone="ok">Read</Tag>{/if}
 		</span>
 		{#if data.position < data.book.pageCount}
-			<a class="button" href="/books/{data.book.id}/pages/{data.position + 1}">Next →</a>
+			<Button href="/books/{data.book.id}/pages/{data.position + 1}">Next →</Button>
 		{:else}
 			<span></span>
 		{/if}
@@ -388,11 +389,11 @@
 		<h1 lang={data.language.code} {dir}>{data.book.title}</h1>
 		<Tag>{data.language.name}</Tag>
 		<span class="toggles">
-			<button type="button" onclick={startPractice} title="Practise the Due Words (R)"
-				>Practice{#if dueOnPage > 0}<Count value={dueOnPage} />{/if}</button
+			<Button type="button" onclick={startPractice} title="Practise the Due Words (R)"
+				>Practice{#if dueOnPage > 0}<Count value={dueOnPage} />{/if}</Button
 			>
-			<button type="button" class="toggle" aria-pressed={showDue} onclick={toggleDue} title="Due marks on the top {TOP} by priority (D)">Due</button>
-			<button type="button" class="toggle" aria-pressed={zen} onclick={toggleZen} title="Zen mode (Z)">Zen</button>
+			<Button type="button" pressed={showDue} onclick={toggleDue} title="Due marks on the top {TOP} by priority (D)">Due</Button>
+			<Button type="button" pressed={zen} onclick={toggleZen} title="Zen mode (Z)">Zen</Button>
 		</span>
 	</header>
 	{@render pages()}
@@ -471,20 +472,20 @@
 {#if zen}
 	<nav class="zen-controls" class:shown={!idle} aria-label="Zen mode">
 		{#if data.position > 1}
-			<a class="button" href="/books/{data.book.id}/pages/{data.position - 1}" aria-label="Previous Page">←</a>
+			<Button href="/books/{data.book.id}/pages/{data.position - 1}" aria-label="Previous Page">←</Button>
 		{/if}
 		<span class="position">Page {data.position} of {data.book.pageCount}</span>
 		{#if data.position < data.book.pageCount}
-			<a class="button" href="/books/{data.book.id}/pages/{data.position + 1}" aria-label="Next Page">→</a>
+			<Button href="/books/{data.book.id}/pages/{data.position + 1}" aria-label="Next Page">→</Button>
 		{/if}
-		<button type="button" onclick={toggleZen}>Exit zen</button>
+		<Button type="button" onclick={toggleZen}>Exit zen</Button>
 	</nav>
 {/if}
 
 <footer class="end chrome" class:zen>
 	<form method="POST" action="?/markRead" class="mark-read" use:enhance>
-		<button class="primary">Mark as read</button>
-		<button name="restKnown" value="true">Mark as read, rest Known</button>
+		<Button variant="primary">Mark as read</Button>
+		<Button name="restKnown" value="true">Mark as read, rest Known</Button>
 	</form>
 	{@render pages()}
 </footer>
@@ -507,10 +508,10 @@
 		gap: 1rem;
 		max-width: 44rem;
 	}
-	.pages > :first-child {
+	.pages > :global(:first-child) {
 		justify-self: start;
 	}
-	.pages > :last-child {
+	.pages > :global(:last-child) {
 		justify-self: end;
 	}
 	.position {
@@ -595,8 +596,8 @@
 		font-size: 0.85rem;
 		white-space: nowrap;
 	}
-	.zen-controls .button,
-	.zen-controls button {
+	.zen-controls :global(.button),
+	.zen-controls :global(button) {
 		padding: 0.3rem 0.75rem;
 		border-radius: 999px;
 		font-size: 0.85rem;
@@ -607,7 +608,7 @@
 		gap: 0.4rem;
 		margin-inline-start: auto;
 	}
-	.toggles button {
+	.toggles :global(button) {
 		padding-block: 0.2rem;
 		font-size: 0.85rem;
 	}

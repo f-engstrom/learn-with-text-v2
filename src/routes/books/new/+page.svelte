@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -33,7 +34,7 @@
 			Web address
 			<input name="url" type="url" placeholder="https://…" value={form?.values.url ?? ''} autocomplete="off" />
 		</label>
-		<button formaction="?/fetch" formnovalidate>Fetch article</button>
+		<Button formaction="?/fetch" formnovalidate>Fetch article</Button>
 	</div>
 	{#if form && 'fetched' in form}
 		<small class="fetched">Fetched. Check the title and text, edit anything you like, then create the Book.</small>
@@ -59,7 +60,7 @@
 	<small>UTF-8 text, up to 5 MB. A line containing only <code>---</code> starts a new Page.</small>
 
 	<div class="actions">
-		<button type="submit" class="primary">Create Book</button>
+		<Button type="submit" variant="primary">Create Book</Button>
 	</div>
 </form>
 

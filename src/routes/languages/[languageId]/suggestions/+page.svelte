@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import Tag from '#lib/components/Tag.svelte';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
@@ -98,13 +99,13 @@
 						<input type="hidden" name="kind" value={suggestion.feed ? 'feed' : suggestion.author ? 'classic' : 'wikipedia'} />
 						<input type="hidden" name="title" value={suggestion.title} />
 						<input type="hidden" name="url" value={suggestion.url} />
-						<button class="primary" disabled={picking !== undefined}>{picking === suggestion.url ? 'Importing…' : 'Read this'}</button>
+						<Button variant="primary" disabled={picking !== undefined}>{picking === suggestion.url ? 'Importing…' : 'Read this'}</Button>
 					</form>
 				</li>
 			{/each}
 		</ol>
 	{/if}
-	<p><button type="button" onclick={() => invalidateAll()}>Find others</button></p>
+	<p><Button type="button" onclick={() => invalidateAll()}>Find others</Button></p>
 {/await}
 
 <style>

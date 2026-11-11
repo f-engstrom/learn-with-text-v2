@@ -1,5 +1,6 @@
 <!-- Beside the text when a Word, phrase or Character part is selected: its Term form, what is known about the Term, practice, and the dictionaries. -->
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import CloseButton from '#lib/components/CloseButton.svelte';
 	import TermForm from '#lib/components/TermForm.svelte';
 	import type { Dictionary } from '#lib/dictionaries.ts';
@@ -105,7 +106,7 @@
 	{#if term && suggestion}
 		<p class="suggestion">
 			{suggestion.from} to <strong>{statusLabels[suggestion.level]}</strong>; your Status is {statusLabels[term.status]}.
-			<button type="button" onclick={() => onstatus(suggestion.level)}>Set {statusLabels[suggestion.level]}</button>
+			<Button type="button" onclick={() => onstatus(suggestion.level)}>Set {statusLabels[suggestion.level]}</Button>
 		</p>
 	{/if}
 	{#if term?.practice}
@@ -196,7 +197,7 @@
 		background: var(--accent-soft);
 		font-size: 0.9rem;
 	}
-	.suggestion button {
+	.suggestion :global(button) {
 		margin-top: 0.4rem;
 		padding-block: 0.2rem;
 		font-size: 0.85rem;

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import PageHeader from '#lib/components/PageHeader.svelte';
 	import Tag from '#lib/components/Tag.svelte';
 	import Grades from '#lib/components/Grades.svelte';
@@ -89,7 +90,7 @@
 {#if !data.term}
 	<div class="card done">
 		<p>Nothing is Due. Read on, and Words come back here when it's time.</p>
-		<a class="button" href="/">Back to your Books</a>
+		<Button href="/">Back to your Books</Button>
 	</div>
 {:else}
 	{@const term = data.term}
@@ -110,7 +111,7 @@
 		{/if}
 
 		{#if !revealed}
-			<button type="button" class="primary" onclick={() => (revealed = true)}><kbd>Space</kbd> Reveal</button>
+			<Button type="button" variant="primary" key="Space" onclick={() => (revealed = true)}>Reveal</Button>
 		{:else}
 			<div class="answer">
 				<p class="word" lang={term.language.code} {dir}>

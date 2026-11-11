@@ -1,5 +1,6 @@
 <!-- The three answers to a Review: Missed, Hard, Got it; with their keys where the screen takes them. -->
 <script lang="ts">
+	import Button from './Button.svelte';
 	import type { Grade } from '#lib/server/domain/practice.ts';
 
 	interface Props {
@@ -20,7 +21,7 @@
 
 <div class="grades" role="group" aria-label={label}>
 	{#each grades as { grade, label }, i (grade)}
-		<button type="button" onclick={() => ongrade(grade)}>{#if keys}<kbd>{i + 1}</kbd>{' '}{/if}{label}</button>
+		<Button type="button" key={keys ? `${i + 1}` : undefined} onclick={() => ongrade(grade)}>{label}</Button>
 	{/each}
 </div>
 

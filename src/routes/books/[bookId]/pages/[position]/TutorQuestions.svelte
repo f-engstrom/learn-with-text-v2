@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import { tick, untrack, type Snippet } from 'svelte';
 	import { cardCommandFor } from '#lib/reading/keys.ts';
 	import type { Answer, TutorQuestion } from '#lib/server/domain/from-tutor.ts';
@@ -109,8 +110,8 @@
 					></textarea></label
 				>
 				<div class="actions">
-					<button type="submit" class="primary" disabled={!ownQuestion.trim()}>Ask</button>
-					<button type="button" class="link" onclick={() => ((asking = false), focus())}>Back to the question</button>
+					<Button type="submit" variant="primary" disabled={!ownQuestion.trim()}>Ask</Button>
+					<Button type="button" variant="link" onclick={() => ((asking = false), focus())}>Back to the question</Button>
 				</div>
 			</form>
 		{:else}
@@ -141,8 +142,8 @@
 					{#if current.options}
 						<div class="options">
 							{#each current.options as option, o (option)}
-								<button type="button" class="toggle" aria-pressed={drafts[step] === option} onclick={() => pick(option)}
-									><kbd class="hint">{o + 1}</kbd>{option}</button
+								<Button type="button" pressed={drafts[step] === option} onclick={() => pick(option)}
+									><kbd class="hint">{o + 1}</kbd>{option}</Button
 								>
 							{/each}
 						</div>
@@ -154,11 +155,11 @@
 				</fieldset>
 				<div class="actions">
 					{#if step === last}
-						<button type="submit" class="primary" disabled={!answered}>{last > 0 ? 'Send answers' : 'Send answer'}</button>
+						<Button type="submit" variant="primary" disabled={!answered}>{last > 0 ? 'Send answers' : 'Send answer'}</Button>
 					{:else if !current.options}
-						<button type="submit" disabled={!done(step)}>Next</button>
+						<Button type="submit" disabled={!done(step)}>Next</Button>
 					{/if}
-					<button type="button" class="link" onclick={() => (asking = true)}>Ask the Tutor instead</button>
+					<Button type="button" variant="link" onclick={() => (asking = true)}>Ask the Tutor instead</Button>
 				</div>
 				<p class="hint keys">
 					{#if current.options}<kbd>1</kbd>–<kbd>{current.options.length}</kbd> pick ·{/if}
@@ -264,12 +265,12 @@
 		display: grid;
 		gap: 0.5rem;
 	}
-	.options button {
+	.options :global(button) {
 		min-height: 2.75rem;
 		text-align: start;
 	}
 	@media (max-width: 40rem) {
-		.options button {
+		.options :global(button) {
 			min-height: 3rem;
 		}
 	}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import CloseButton from '#lib/components/CloseButton.svelte';
 	import Grades from '#lib/components/Grades.svelte';
 	import { statusLabels } from '#lib/terms.ts';
@@ -34,8 +35,8 @@
 			<ol class="subsets">
 				{#each available as { subset, count }, i (subset)}
 					<li>
-						<button type="button" onclick={() => onpick(subset)}
-							><kbd>{i + 1}</kbd> {subsetLabels[subset]} <span class="count">{count}</span></button
+						<Button type="button" key={`${i + 1}`} onclick={() => onpick(subset)}
+							>{subsetLabels[subset]} <span class="count">{count}</span></Button
 						>
 					</li>
 				{/each}
@@ -46,7 +47,7 @@
 		<p class="word">{text}</p>
 		{#if !state.revealed}
 			<p class="muted">Recall it in its Sentence, then reveal.</p>
-			<button type="button" class="primary" onclick={onreveal}><kbd>Space</kbd> Reveal</button>
+			<Button type="button" variant="primary" key="Space" onclick={onreveal}>Reveal</Button>
 		{:else}
 			{#if term}
 				<ul class="meaning">
@@ -67,7 +68,7 @@
 	{:else}
 		<h2>Practice done</h2>
 		<p>{state.reviewed} {state.reviewed === 1 ? 'Review' : 'Reviews'} saved.</p>
-		<button type="button" onclick={onstop}><kbd>Esc</kbd> Back to reading</button>
+		<Button type="button" key="Esc" onclick={onstop}>Back to reading</Button>
 	{/if}
 </div>
 
@@ -94,7 +95,7 @@
 		padding: 0;
 		list-style: none;
 	}
-	.subsets button {
+	.subsets :global(button) {
 		width: 100%;
 		padding-block: 0.55rem;
 	}

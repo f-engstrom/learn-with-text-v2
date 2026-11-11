@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import PageHeader from '#lib/components/PageHeader.svelte';
 	import { enhance } from '$app/forms';
 	import { sendStatus } from '#lib/term-writes.ts';
@@ -40,7 +41,7 @@
 </svelte:head>
 
 <PageHeader title="Terms">
-	<a class="button primary" href="/terms/review{data.filter.language ? `?language=${data.filter.language}` : ''}">Review Due Terms</a>
+	<Button href="/terms/review{data.filter.language ? `?language=${data.filter.language}` : ''}" variant="primary">Review Due Terms</Button>
 </PageHeader>
 
 <form method="GET" class="filters card" data-sveltekit-keepfocus data-sveltekit-replacestate>
@@ -103,7 +104,7 @@
 		Search
 		<input type="search" name="q" value={data.filter.q} placeholder="Term or Translation" />
 	</label>
-	<button>Filter</button>
+	<Button>Filter</Button>
 </form>
 
 <p class="summary">
@@ -171,8 +172,8 @@
 						{#if term.transfer}<small title={term.transfer.reason}>Transfer: {transferLabel(term.transfer)}</small>{/if}
 					</td>
 					<td class="actions">
-						<button type="button" onclick={() => (editing = editing === term.id ? undefined : term.id)}
-							>{editing === term.id ? 'Close' : 'Edit'}</button
+						<Button type="button" onclick={() => (editing = editing === term.id ? undefined : term.id)}
+							>{editing === term.id ? 'Close' : 'Edit'}</Button
 						>
 						<form
 							method="POST"
@@ -182,7 +183,7 @@
 							}}
 						>
 							<input type="hidden" name="id" value={term.id} />
-							<button class="delete">Delete</button>
+							<Button variant="danger">Delete</Button>
 						</form>
 					</td>
 				</tr>
@@ -229,7 +230,7 @@
 		.filters label:has(input[type='search']) {
 			grid-column: 1 / -1;
 		}
-		.filters button {
+		.filters :global(button) {
 			justify-self: start;
 		}
 	}
@@ -311,9 +312,6 @@
 		.terms tr.editor td {
 			display: block;
 		}
-	}
-	.delete {
-		color: var(--danger);
 	}
 	.practice {
 		white-space: nowrap;

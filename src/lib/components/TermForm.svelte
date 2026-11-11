@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from './Button.svelte';
 	import Tag from './Tag.svelte';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
@@ -148,17 +149,17 @@
 						autocomplete="off"
 					></textarea>
 					{#if row.source !== 'you'}<small class="source">{sourceLabels[row.source]}</small>{/if}
-					<button type="button" aria-label="Move up" disabled={i === 0} onclick={() => move(i, i - 1)}>↑</button>
-					<button type="button" aria-label="Move down" disabled={i === rows.length - 1} onclick={() => move(i, i + 1)}
-						>↓</button
+					<Button type="button" aria-label="Move up" disabled={i === 0} onclick={() => move(i, i - 1)}>↑</Button>
+					<Button type="button" aria-label="Move down" disabled={i === rows.length - 1} onclick={() => move(i, i + 1)}
+						>↓</Button
 					>
-					<button type="button" aria-label="Remove" onclick={() => rows.splice(i, 1)}>✕</button>
+					<Button type="button" aria-label="Remove" onclick={() => rows.splice(i, 1)}>✕</Button>
 				</li>
 			{/each}
 		</ol>
 		<div class="row-actions">
-			<button type="button" onclick={() => rows.push({ text: '', source: 'you' })}>Add Translation</button>
-			<button type="button" onclick={pasteFromClipboard} title="Adds the copied text and saves (key: P)">Paste as Translation</button>
+			<Button type="button" onclick={() => rows.push({ text: '', source: 'you' })}>Add Translation</Button>
+			<Button type="button" onclick={pasteFromClipboard} title="Adds the copied text and saves (key: P)">Paste as Translation</Button>
 		</div>
 		{#if clipboardError}
 			<p class="error" role="alert">{clipboardError}</p>
@@ -191,9 +192,9 @@
 		<p class="error" role="alert">{error}</p>
 	{/if}
 	<div class="form-actions">
-		<button type="submit" class="primary">Save</button>
+		<Button type="submit" variant="primary">Save</Button>
 		<!-- Submits the delete form below; forms can't nest, but their buttons can share a row. -->
-		{#if term}<button type="submit" form="delete-term-{term.id}" class="danger">Delete Term</button>{/if}
+		{#if term}<Button type="submit" form="delete-term-{term.id}" variant="danger">Delete Term</Button>{/if}
 	</div>
 </form>
 
@@ -302,7 +303,7 @@
 		margin-top: -0.1rem;
 		font-size: 0.8rem;
 	}
-	.translations li button {
+	.translations li :global(button) {
 		grid-row: 1;
 		padding-inline: 0.55rem;
 	}
@@ -334,7 +335,7 @@
 		flex-wrap: wrap;
 		gap: 0.5rem;
 	}
-	.row-actions button {
+	.row-actions :global(button) {
 		white-space: nowrap;
 	}
 </style>

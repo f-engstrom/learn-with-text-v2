@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import { enhance } from '$app/forms';
 	import type { YourLanguageLevel } from '#lib/server/domain/your-languages.ts';
 	import type { PageProps } from './$types';
@@ -37,7 +38,7 @@
 					</form>
 					<form method="POST" action="?/remove" use:enhance>
 						<input type="hidden" name="name" value={language.name} />
-						<button aria-label="Remove {language.name}">✕</button>
+						<Button aria-label="Remove {language.name}">✕</Button>
 					</form>
 				</li>
 			{/each}
@@ -51,7 +52,7 @@
 				<option value={level} selected={level === 'fluent'}>{levelLabels[level]}</option>
 			{/each}
 		</select>
-		<button>Add</button>
+		<Button>Add</Button>
 	</form>
 	{#if form?.message}
 		<p class="error" role="alert">{form.message}</p>
@@ -76,7 +77,7 @@
 	.name {
 		font-weight: 500;
 	}
-	.languages button {
+	.languages :global(button) {
 		padding: 0.2rem 0.5rem;
 	}
 	.add {

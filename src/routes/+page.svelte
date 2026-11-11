@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import PageHeader from '#lib/components/PageHeader.svelte';
 	import Meter from '#lib/components/Meter.svelte';
 	import type { PageProps } from './$types';
@@ -13,7 +14,7 @@
 </svelte:head>
 
 <PageHeader title="Books">
-	<a class="button primary" href="/books/new">New Book</a>
+	<Button href="/books/new" variant="primary">New Book</Button>
 </PageHeader>
 
 {#if data.latest || data.due > 0}
@@ -44,7 +45,7 @@
 	<h2 id="find-heading">Find something to read</h2>
 	<div class="languages">
 		{#each data.languages as language (language.id)}
-			<a class="button" href="/languages/{language.id}/suggestions">{language.name}</a>
+			<Button href="/languages/{language.id}/suggestions">{language.name}</Button>
 		{/each}
 	</div>
 	<p class="note">Wikipedia articles on your <a href="/topics">Topics</a> and the latest from your <a href="/feeds">Feeds</a>, ranked by how well they fit.</p>

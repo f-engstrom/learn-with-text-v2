@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
@@ -28,7 +29,7 @@
 					</span>
 					<form method="POST" action="?/remove" use:enhance>
 						<input type="hidden" name="id" value={feed.id} />
-						<button aria-label="Remove {feed.name}">Remove</button>
+						<Button variant="danger" aria-label="Remove {feed.name}">Remove</Button>
 					</form>
 				</li>
 			{/each}
@@ -65,7 +66,7 @@
 		Name <small>(optional: the feed's own title is used)</small>
 		<input name="name" value={form?.values?.name ?? ''} autocomplete="off" />
 	</label>
-	<button disabled={adding}>{adding ? 'Reading the feed…' : 'Add Feed'}</button>
+	<Button disabled={adding}>{adding ? 'Reading the feed…' : 'Add Feed'}</Button>
 </form>
 {#if form?.message}
 	<p class="error" role="alert">{form.message}</p>
@@ -98,15 +99,12 @@
 	.feeds small a {
 		color: inherit;
 	}
-	.feeds button {
-		color: var(--danger);
-	}
 	.add {
 		display: grid;
 		gap: 0.75rem;
 		max-width: 36rem;
 	}
-	.add button {
+	.add :global(button) {
 		justify-self: start;
 	}
 	.note {

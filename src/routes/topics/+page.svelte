@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
@@ -22,7 +23,7 @@
 				{topic.text}
 				<form method="POST" action="?/remove" use:enhance>
 					<input type="hidden" name="id" value={topic.id} />
-					<button aria-label="Remove {topic.text}">✕</button>
+					<Button aria-label="Remove {topic.text}">✕</Button>
 				</form>
 			</li>
 		{/each}
@@ -31,7 +32,7 @@
 
 <form method="POST" action="?/add" class="add" use:enhance>
 	<input name="text" placeholder="e.g. football, Roman history" aria-label="New Topic" autocomplete="off" required />
-	<button>Add Topic</button>
+	<Button>Add Topic</Button>
 </form>
 {#if form?.message}
 	<p class="error" role="alert">{form.message}</p>
@@ -57,7 +58,7 @@
 		color: var(--accent);
 		font-weight: 500;
 	}
-	.topics button {
+	.topics :global(button) {
 		padding: 0 0.35rem;
 		border: none;
 		background: none;

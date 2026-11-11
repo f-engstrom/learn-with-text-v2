@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import CloseButton from '#lib/components/CloseButton.svelte';
 	import { tick } from 'svelte';
@@ -91,7 +92,7 @@
 			<span class="who">Tutor</span>
 			{#if yourTurn}<kbd class="t-hint" title="Press T to answer">T</kbd>{/if}
 			<span class="spacer"></span>
-			{#if question}<button type="button" class="quiet" title="Fold it away until you’re ready" onclick={later}>Later</button>{/if}
+			{#if question}<Button type="button" variant="quiet" title="Fold it away until you’re ready" onclick={later}>Later</Button>{/if}
 			<CloseButton label="Put the Tutor aside" title="Until the Tutor asks again" onclick={ondismiss} inline />
 		</header>
 		{#if question?.answer}
