@@ -6165,39 +6165,7 @@
 				}
 			],
 			"highlight": null,
-			"question": {
-				"feedback": "Right: появилось is neuter because лицо is.",
-				"glosses": [
-					{
-						"text": "набережная",
-						"gloss": "embankment, seafront"
-					},
-					{
-						"text": "привыкнуть",
-						"gloss": "to get used to"
-					}
-				],
-				"questions": [
-					{
-						"prompt": "Who is the new face on the seafront?",
-						"options": [
-							"A lady with a dog",
-							"Gurov",
-							"A student"
-						]
-					},
-					{
-						"prompt": "What does «привыкший тут» tell you about Gurov?"
-					}
-				],
-				"askedAt": "2026-11-10T12:00:00.000Z",
-				"answer": {
-					"answers": [
-						"A lady with a dog",
-						"He has settled in."
-					]
-				}
-			},
+			"question": null,
 			"termsVersion": 73,
 			"daySoFar": {
 				"wordsRead": 108,

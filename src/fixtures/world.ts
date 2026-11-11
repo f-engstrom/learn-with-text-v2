@@ -11,7 +11,7 @@ import { createBook, getPage, listBooks } from '../lib/server/domain/books';
 import { CLASSICS } from '../lib/server/domain/classics';
 import { listDictionaries } from '../lib/server/domain/dictionaries';
 import { addFeed, listFeeds } from '../lib/server/domain/feeds';
-import { askLearner, answerTutor, fromTutor } from '../lib/server/domain/from-tutor';
+import { askLearner, answerTutor, dismissTutor, fromTutor } from '../lib/server/domain/from-tutor';
 import { listLanguages, type Language } from '../lib/server/domain/languages';
 import { findExample, recordReview } from '../lib/server/domain/practice';
 import { daySoFar, getProgress } from '../lib/server/domain/progress';
@@ -252,6 +252,7 @@ async function readerWorld() {
 	const question = await fromTutor(db, books.lady);
 	await answerTutor(db, books.lady, asked.askedAt, { answers: ['A lady with a dog', 'He has settled in.'] });
 	const answered = await fromTutor(db, books.lady);
+	await dismissTutor(db, books.lady);
 	await clearHighlight(db, books.lady);
 
 	// A day's reading, then Mark as read, which sends you to the next Page with the day so far.
