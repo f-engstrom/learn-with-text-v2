@@ -68,14 +68,41 @@ export function highlightOnPage(
 	return { ...here, tokens: new Set((passageParts(parts, highlight.text) ?? []).map((i) => keys[i]).filter(Boolean)) };
 }
 
-/** The paragraph (0-based) the Tutor's turn follows: the one holding the Highlight's last Sentence on this Page. */
-export function turnParagraph(paragraphs: { sentences: unknown[] }[], here: HighlightOnPage | undefined): number | undefined {
+/** Where the Tutor's turn goes: right after the Highlight, which may be in the middle of a Sentence. */
+export interface TurnPlace {
+	/** The paragraph holding the Highlight's end (0-based). */
+	paragraph: number;
+	/** The Sentence, within that paragraph, the Highlight ends in. */
+	sentence: number;
+	/** The token of that Sentence the turn follows; its last means the turn follows the whole Sentence. */
+	token: number;
+}
+
+/**
+ * Where the Tutor's turn goes among `paragraphs`, given where the Highlight falls on this Page: after
+ * its passage's last token (and the punctuation stuck to it), or after its last whole Sentence.
+ */
+export function turnPlace(
+	paragraphs: { sentences: { tokens: { text: string }[] }[] }[],
+	here: HighlightOnPage | undefined
+): TurnPlace | undefined {
 	if (!here || here.sentences.size === 0) return undefined;
 	const last = Math.max(...here.sentences);
-	let end = 0;
+	let start = 0;
 	for (let p = 0; p < paragraphs.length; p++) {
-		end += paragraphs[p].sentences.length;
-		if (last < end) return p;
+		const end = start + paragraphs[p].sentences.length;
+		if (last < end) {
+			const tokens = paragraphs[p].sentences[last - start].tokens;
+			let token = tokens.length - 1;
+			const inPassage = tokens.map((_, t) => t).filter((t) => here.tokens?.has(`${last}:${t}`));
+			if (inPassage.length > 0) {
+				token = Math.max(...inPassage);
+				// A comma or full stop stays with the passage rather than opening the line after the turn.
+				while (token + 1 < tokens.length && /^[^\s\p{L}\p{N}]/u.test(tokens[token + 1].text)) token++;
+			}
+			return { paragraph: p, sentence: last - start, token };
+		}
+		start = end;
 	}
 	return undefined;
 }

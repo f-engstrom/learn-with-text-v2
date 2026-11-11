@@ -1,7 +1,7 @@
-<!-- The Page's text: paragraphs of Sentences of Words, with the Tutor's Highlight and, under its paragraph, the Tutor's turn. -->
+<!-- The Page's text: paragraphs of Sentences of Words, with the Tutor's Highlight and, right after it, the Tutor's turn. -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import type { HighlightOnPage } from '#lib/reading/highlight.ts';
+	import type { HighlightOnPage, TurnPlace } from '#lib/reading/highlight.ts';
 	import type { Word as PageWord } from '#lib/reading/selection.svelte.ts';
 	import type { PageView } from '#lib/server/domain/books.ts';
 	import type { Status } from '#lib/server/domain/terms.ts';
@@ -29,9 +29,9 @@
 		/** Zen mode: the Translations to show under the Word at `glossAt`. */
 		gloss: string;
 		glossAt: number | undefined;
-		/** The Tutor's turn, and the paragraph (by index) it follows; with a turn and no paragraph it opens the Page. */
+		/** The Tutor's turn, and where in the text it follows the Highlight; with a turn and no place it opens the Page. */
 		turn?: Snippet;
-		turnAt: number | undefined;
+		turnAt: TurnPlace | undefined;
 		onchoose: (word: PageWord, shift: boolean) => void;
 	}
 
@@ -61,36 +61,56 @@
 	const inPassage = (sentence: number, token: number) => !!onPage?.tokens?.has(`${sentence}:${token}`);
 </script>
 
+<!-- Sentence `s` of paragraph `p`, or its tokens from `from` up to `to` when the Tutor's turn breaks into it. -->
+{#snippet sentenceAt(p: number, s: number, from = 0, to = paragraphs[p].sentences[s].tokens.length)}
+	{@const index = firstSentence[p] + s}
+	{#if from === 0 && index === onPage?.first}<span class="highlight-start" bind:this={highlightElement}></span>{/if}<span
+		class="sentence"
+		class:highlighted={highlighted(index)}
+	>
+		{#each paragraphs[p].sentences[s].tokens.slice(from, to) as token, i (from + i)}
+			{@const t = from + i}
+			{#if token.key !== undefined && token.index !== undefined}{@const w = token as PageWord}<Word
+					text={w.text}
+					status={statusOf(w.key)}
+					current={current === w.index}
+					phrase={inPhrase(w.index)}
+					multi={(w.words ?? 1) > 1}
+					inPassage={inPassage(index, t)}
+					due={overdueOf(w.key)}
+					gloss={glossAt === w.index ? gloss : ''}
+					tabStop={w.index === (current ?? 0)}
+					keys={wordKeys}
+					onchoose={(shift) => onchoose(w, shift)}
+					bind:element={wordElements[w.index]}
+				/>{:else if inPassage(index, t)}<span class="in-passage">{token.text}</span>{:else}{token.text}{/if}
+		{/each}
+	</span>
+{/snippet}
+
 <article class="page" class:zen class:practising {lang} {dir}>
 	{#if turn && turnAt === undefined}{@render turn()}{/if}
 	{#each paragraphs as paragraph, p (p)}
-		<p class:anchor={p === turnAt}>
-			{#each paragraph.sentences as sentence, s (s)}
-				{@const index = firstSentence[p] + s}
-				{#if index === onPage?.first}<span class="highlight-start" bind:this={highlightElement}></span>{/if}<span
-					class="sentence"
-					class:highlighted={highlighted(index)}
-				>
-					{#each sentence.tokens as token, t (t)}
-						{#if token.key !== undefined && token.index !== undefined}{@const w = token as PageWord}<Word
-								text={w.text}
-								status={statusOf(w.key)}
-								current={current === w.index}
-								phrase={inPhrase(w.index)}
-								multi={(w.words ?? 1) > 1}
-								inPassage={inPassage(index, t)}
-								due={overdueOf(w.key)}
-								gloss={glossAt === w.index ? gloss : ''}
-								tabStop={w.index === (current ?? 0)}
-								keys={wordKeys}
-								onchoose={(shift) => onchoose(w, shift)}
-								bind:element={wordElements[w.index]}
-							/>{:else if inPassage(index, t)}<span class="in-passage">{token.text}</span>{:else}{token.text}{/if}
-					{/each}
-				</span>
-			{/each}
-		</p>
-		{#if turn && p === turnAt}{@render turn()}{/if}
+		{#if turn && turnAt?.paragraph === p}
+			<!-- The turn breaks into the paragraph right after the Highlight; the rest of it carries on below. -->
+			{@const k = turnAt.sentence}
+			{@const split = turnAt.token + 1}
+			{@const restOfSentence = split < paragraph.sentences[k].tokens.length}
+			{@const broken = restOfSentence || k + 1 < paragraph.sentences.length}
+			<p class="anchor" class:broken>
+				{#each paragraph.sentences.slice(0, k) as _, s (s)}{@render sentenceAt(p, s)}{/each}
+				{@render sentenceAt(p, k, 0, split)}
+			</p>
+			{@render turn()}
+			{#if broken}
+				<p class="rest">
+					{#if restOfSentence}{@render sentenceAt(p, k, split)}{/if}
+					{#each paragraph.sentences.slice(k + 1) as _, i (i)}{@render sentenceAt(p, k + 1 + i)}{/each}
+				</p>
+			{/if}
+		{:else}
+			<p>{#each paragraph.sentences as _, s (s)}{@render sentenceAt(p, s)}{/each}</p>
+		{/if}
 	{/each}
 </article>
 
@@ -104,6 +124,10 @@
 	}
 	.page p {
 		margin: 0 0 1.1em;
+	}
+	/* A paragraph the Tutor's turn breaks into: the turn sits close under its Sentence. */
+	.page p.broken {
+		margin-bottom: 0;
 	}
 	.page:not(.zen) :global(.word:hover) {
 		filter: brightness(0.96);

@@ -21,7 +21,7 @@
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import PracticePanel from './PracticePanel.svelte';
 	import { Practice, TOP } from '#lib/reading/practice.svelte.ts';
-	import { highlightOnPage, turnParagraph } from '#lib/reading/highlight.ts';
+	import { highlightOnPage, turnPlace } from '#lib/reading/highlight.ts';
 	import Help from './Help.svelte';
 	import PageText from './PageText.svelte';
 	import TermPanel from './TermPanel.svelte';
@@ -224,8 +224,8 @@
 
 	/** Where the Highlight falls on this Page: its Sentences, or its passage's tokens. */
 	let onPage = $derived(highlightOnPage(sentences, highlightHere, data.position));
-	/** The Tutor's turn follows the paragraph its Highlight ends in; with no Highlight here it opens the Page. */
-	let turnAt = $derived(turnParagraph(data.paragraphs, onPage));
+	/** The Tutor's turn follows the Sentence its Highlight ends with; with no Highlight here it opens the Page. */
+	let turnAt = $derived(turnPlace(data.paragraphs, onPage));
 
 	async function answerTutor(answer: Answer) {
 		const refused = await fromTutor.answer(answer);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { highlightOnPage, turnParagraph, passageParts } from './highlight';
+import { highlightOnPage, turnPlace, passageParts } from './highlight';
 
 describe('passageParts', () => {
 	const tokens = ['которые', ' ', 'сами', ' ', 'бы', ' ', 'охотно', ' ', 'грешили', ', ', 'если', ' ', 'б', ' ', 'умели', ', ', 'но'];
@@ -43,18 +43,38 @@ describe('highlightOnPage', () => {
 	});
 });
 
-describe('turnParagraph', () => {
-	const paragraphs = [{ sentences: [1, 2] }, { sentences: [3] }, { sentences: [4, 5] }];
+describe('turnPlace', () => {
+	const sentence = (...texts: string[]) => ({ tokens: texts.map((text) => ({ text })) });
+	const paragraphs = [
+		{ sentences: [sentence('One', '.'), sentence(' ', 'Two', '.')] },
+		{ sentences: [sentence('Three', ', ', 'four', ' ', 'five', '.')] },
+		{ sentences: [sentence('Six', '.'), sentence(' ', 'Seven', '.')] }
+	];
 	const on = (...sentences: number[]) => ({ first: sentences[0], sentences: new Set(sentences) });
+	const passage = (sentence: number, ...tokens: number[]) => ({
+		...on(sentence),
+		tokens: new Set(tokens.map((t) => `${sentence}:${t}`))
+	});
 
-	it('is the paragraph holding the Highlight’s last Sentence', () => {
-		expect(turnParagraph(paragraphs, on(0))).toBe(0);
-		expect(turnParagraph(paragraphs, on(1, 2))).toBe(1);
-		expect(turnParagraph(paragraphs, on(4))).toBe(2);
+	it('is after the Highlight’s last whole Sentence, within its paragraph', () => {
+		expect(turnPlace(paragraphs, on(0))).toEqual({ paragraph: 0, sentence: 0, token: 1 });
+		expect(turnPlace(paragraphs, on(1, 2))).toEqual({ paragraph: 1, sentence: 0, token: 5 });
+		expect(turnPlace(paragraphs, on(3, 4))).toEqual({ paragraph: 2, sentence: 1, token: 2 });
+	});
+
+	it('is right after a passage, taking the punctuation stuck to it but not the space', () => {
+		expect(turnPlace(paragraphs, passage(2, 0))).toEqual({ paragraph: 1, sentence: 0, token: 1 });
+		expect(turnPlace(paragraphs, passage(2, 2))).toEqual({ paragraph: 1, sentence: 0, token: 2 });
+		expect(turnPlace(paragraphs, passage(2, 4))).toEqual({ paragraph: 1, sentence: 0, token: 5 });
+	});
+
+	it('is after the whole Sentence when the passage isn’t there', () => {
+		expect(turnPlace(paragraphs, passage(2))).toEqual({ paragraph: 1, sentence: 0, token: 5 });
 	});
 
 	it('is nothing without a Highlight here, or past the Page’s end', () => {
-		expect(turnParagraph(paragraphs, undefined)).toBeUndefined();
-		expect(turnParagraph(paragraphs, on())).toBeUndefined();
+		expect(turnPlace(paragraphs, undefined)).toBeUndefined();
+		expect(turnPlace(paragraphs, on())).toBeUndefined();
+		expect(turnPlace(paragraphs, on(5))).toBeUndefined();
 	});
 });
