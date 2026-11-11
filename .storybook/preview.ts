@@ -30,6 +30,13 @@ export default definePreview({
 			delete document.documentElement.dataset.zen;
 		};
 	},
+	/** After each story, when run by `pnpm test:visual`: it is compared with its snapshots. */
+	async afterEach({ id, title, parameters }) {
+		// A story that changes by itself as time passes sets `parameters.snapshot` to false.
+		if (!import.meta.env.VITE_VISUAL || parameters.snapshot === false) return;
+		const { snapshot } = await import('../src/stories/snapshot');
+		await snapshot({ id, title });
+	},
 	parameters: {
 		layout: 'padded',
 		// The accessibility panel informs; it does not fail a story's test.

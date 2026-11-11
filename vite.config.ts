@@ -18,6 +18,8 @@ export default defineConfig({
 	],
 	test: {
 		expect: { requireAssertions: true },
+		// The stories' browser run leaves Vite's file watchers open; don't wait ten seconds for them.
+		teardownTimeout: 1500,
 		projects: [
 			{
 				extends: './vite.config.ts',
@@ -35,10 +37,17 @@ export default defineConfig({
 				test: {
 					name: 'stories',
 					expect: { requireAssertions: false },
+					// One story at a time: they share the browser window, whose size a snapshot sets.
+					fileParallelism: false,
+					testTimeout: 60_000,
 					browser: {
 						enabled: true,
 						headless: true,
-						provider: playwright(),
+						// Storybook's plugin turns file writes off unless asked; snapshots need them. Only this machine reaches the test server.
+						api: { host: '127.0.0.1', allowWrite: true },
+						// Vitest shrinks a story's frame to fit the browser window, so the window is larger than any story:
+						// a snapshot is then the story at its real size, however long the screen.
+						provider: playwright({ contextOptions: { viewport: { width: 1400, height: 10000 } } }),
 						instances: [{ browser: 'chromium' }],
 						viewport: { width: 1280, height: 900 },
 						expect: {

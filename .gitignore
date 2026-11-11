@@ -28,3 +28,4 @@ vite.config.ts.timestamp-*
 # Storybook
 /storybook-static
 debug-storybook.log
+.vitest-attachments

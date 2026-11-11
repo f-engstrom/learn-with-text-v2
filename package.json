@@ -19,7 +19,8 @@
 		"build-storybook": "storybook build",
 		"fixtures": "tsx src/fixtures/build.ts",
 		"test:stories": "vitest --run --project stories",
-		"test:visual": "VITE_VISUAL=1 vitest --run --project stories"
+		"test:visual": "VITE_VISUAL=1 vitest --run --project stories",
+		"test:visual:update": "VITE_VISUAL=1 vitest --run --project stories --update"
 	},
 	"devDependencies": {
 		"@storybook/addon-a11y": "11.0.0-beta.1",

@@ -16,12 +16,15 @@
 		parameters: { layout: 'fullscreen', ...at('/books/2/pages/1') }
 	});
 
-	type Play = { canvas: { getAllByRole: (role: string, options: { name: string | RegExp }) => HTMLElement[] }; userEvent: { click: (element: Element, init?: object) => Promise<void>; keyboard: (keys: string) => Promise<void> } };
+	type Play = { canvas: { getAllByRole: (role: string, options: { name: string | RegExp }) => HTMLElement[]; findByRole: (role: string) => Promise<HTMLElement> }; userEvent: { click: (element: Element, init?: object) => Promise<void>; keyboard: (keys: string) => Promise<void> } };
 	const word = (canvas: Play['canvas'], text: string, nth = 0) => canvas.getAllByRole('button', { name: text })[nth];
 	/** Opens the Term form on a Word. */
 	const choose = (text: string) => async ({ canvas, userEvent }: Play) => {
 		await userEvent.click(word(canvas, text));
 	};
+
+	/** Zen mode's controls leave after a couple of idle seconds; the story is of the screen once they have. */
+	const idle = () => new Promise((resolve) => setTimeout(resolve, 2800));
 
 	/** The Tutor asks while the Page is open: the screen's second look finds the question. */
 	let looks = 0;
@@ -99,6 +102,7 @@
 	name="Zen mode"
 	play={async ({ userEvent }: Play) => {
 		await userEvent.keyboard('z');
+		await idle();
 	}}
 />
 
@@ -107,6 +111,7 @@
 	play={async ({ canvas, userEvent }: Play) => {
 		await userEvent.keyboard('z');
 		await userEvent.click(word(canvas, 'привыкший'));
+		await idle();
 	}}
 />
 
@@ -118,7 +123,7 @@
 
 <Story name="From the Tutor: answered, waiting" args={{ data: { ...mixed, ...answered } }} />
 
-<Story name="From the Tutor: a question arrives while you read" parameters={{ server: arriving }} />
+<Story name="From the Tutor: a question arrives while you read" parameters={{ server: arriving, snapshot: false }} />
 
 <Story name="From the Tutor: its Highlight is on another Page" args={{ data: { ...lastPage, ...passage } }} parameters={at('/books/2/pages/3')} />
 
@@ -138,4 +143,6 @@
 		await userEvent.click(word(canvas, 'блондинка'));
 		await userEvent.keyboard('{Escape}');
 		await userEvent.keyboard('1');
+		// The server's refusal has come back.
+		await canvas.findByRole('alert');
 	}} parameters={{ server: { 'PUT /terms/status': { status: 400, body: { message: 'A Term is at most 7 Words.' } } } }} />

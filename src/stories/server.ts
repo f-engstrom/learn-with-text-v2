@@ -43,7 +43,8 @@ export const azure: AzureResult = {
 
 /** What the Reader's endpoints answer when all goes well. */
 export const defaults: Server = {
-	'GET /api/wiktionary': { body: wiktionary },
+	// The entry is always the same; its title is the Word that was looked up.
+	'GET /api/wiktionary': ({ url }) => ({ body: { ...wiktionary, title: url.searchParams.get('text') ?? wiktionary.title } }),
 	'GET /api/azure': { body: azure },
 	// The Tutor has nothing new: the screen keeps what its load gave it.
 	'GET /books/*/tutor': { status: 404 },

@@ -61,7 +61,19 @@ export interface Fixtures {
 	emptyRoutes: RouteData;
 }
 
-export const fixtures = json as unknown as Fixtures;
+/**
+ * A Dictionary's address in a story: a page of its own that names the Dictionary and the Term. The real
+ * ones would send every selected Word to another site, and put that site in the snapshots.
+ */
+const standIn = (dictionary: Dictionary): Dictionary => ({
+	...dictionary,
+	url: `data:text/html;charset=utf-8,${encodeURIComponent(`<body style="font: 15px system-ui; color: #7a6f61; padding: 1rem">${dictionary.name} would show <b>`)}[TERM]${encodeURIComponent('</b> here.</body>')}`
+});
+
+const loaded = json as unknown as Fixtures;
+for (const page of Object.values(loaded.reading)) page.dictionaries = page.dictionaries.map(standIn);
+
+export const fixtures = loaded;
 
 /** A copy to change in one story without touching the others'. */
 export const copy = <T>(value: T): T => structuredClone(value);
