@@ -177,8 +177,8 @@ The order Due Terms come up in: Frequency first, then Transfer (harder first), t
 **Practice**:
 Going through Due Terms on a Page with the cursor, in a subset you choose (by priority, a paragraph, the Highlight, most overdue), recalling each in its Sentence and grading it as a Review.
 
-**Wiktionary panel**:
-The built-in lookup that shows English Wiktionary definitions for the selected Word or Multi-word Term, each of which can be added as a Translation with one click.
+**Dictionary panel**:
+A built-in lookup beside the text for the selected Word or Multi-word Term, whose meanings can each be added as a Translation with one click, with the panel's Source. There are two: the **Wiktionary panel** (English Wiktionary definitions) and the **Azure panel** (Azure Translator's dictionary entries, or a machine translation when it has none).
 
 ### Progress
 

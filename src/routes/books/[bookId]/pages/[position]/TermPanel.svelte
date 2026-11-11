@@ -12,10 +12,9 @@
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import type { Status, TermView } from '#lib/server/domain/terms.ts';
 	import { statusLabels } from '#lib/terms.ts';
-	import AzurePanel from './AzurePanel.svelte';
 	import Dictionaries from './Dictionaries.svelte';
 	import PracticeCard from './PracticeCard.svelte';
-	import WiktionaryPanel from './WiktionaryPanel.svelte';
+	import DictionaryPanel from './DictionaryPanel.svelte';
 
 	interface Props {
 		language: Language;
@@ -112,14 +111,16 @@
 	{#if term?.practice}
 		<PracticeCard {term} onreview={(grade) => onreview(term.id, grade)} />
 	{/if}
-	<WiktionaryPanel
+	<DictionaryPanel
+		source="wiktionary"
 		{language}
 		termKey={selected.key}
 		text={selected.text}
 		{translations}
 		onadd={(definition) => termForm?.addTranslation(definition, 'wiktionary')}
 	/>
-	<AzurePanel
+	<DictionaryPanel
+		source="azure"
 		{language}
 		termKey={selected.key}
 		text={selected.text}
