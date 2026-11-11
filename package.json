@@ -41,7 +41,9 @@
 	},
 	"imports": {
 		"#lib": "./src/lib/index.js",
-		"#lib/*": "./src/lib/*"
+		"#lib/*": "./src/lib/*",
+		"#fixtures": "./src/fixtures/index.ts",
+		"#stories/*": "./src/stories/*"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "~1.32.2",
