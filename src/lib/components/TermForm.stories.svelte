@@ -16,6 +16,7 @@
 
 <Story name="An Unknown Word" args={{ text: 'блондинка', term: undefined }} />
 <Story name="Learning, from the Tutor" args={{ text: 'набережной', term: mixed.terms['набережной'] }} />
+<Story name="A Translation from every Source, one long" args={{ text: 'привыкший', term: mixed.terms['привыкший'] }} />
 <Story name="Two Translations, two Sources" args={{ text: 'интересоваться', term: mixed.terms['интересоваться'] }} />
 <Story name="Follows Parent" args={{ text: 'лицами', term: mixed.terms['лицами'] }} />
 <Story name="A Multi-word Term" args={{ text: 'дама с собачкой', term: mixed.terms['дама с собачкой'] }} />

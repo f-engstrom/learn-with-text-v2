@@ -3060,7 +3060,7 @@
 					},
 					"translations": [
 						{
-							"id": 8,
+							"id": 10,
 							"text": "the lady with the little dog",
 							"source": "you"
 						}
@@ -3243,7 +3243,7 @@
 					"frequency": "rare",
 					"translations": [
 						{
-							"id": 10,
+							"id": 12,
 							"text": "embankment, seafront",
 							"source": "tutor"
 						}
@@ -3308,7 +3308,7 @@
 					"frequency": "rare",
 					"translations": [
 						{
-							"id": 9,
+							"id": 11,
 							"text": "pavilion",
 							"source": "you"
 						}
@@ -3371,6 +3371,16 @@
 							"id": 7,
 							"text": "accustomed",
 							"source": "you"
+						},
+						{
+							"id": 8,
+							"text": "past active perfective participle of привыкнуть",
+							"source": "wiktionary"
+						},
+						{
+							"id": 9,
+							"text": "used",
+							"source": "azure"
 						}
 					]
 				},
@@ -3587,7 +3597,7 @@
 			],
 			"highlight": null,
 			"question": null,
-			"termsVersion": 66,
+			"termsVersion": 68,
 			"daySoFar": null
 		},
 		"lastPage": {
@@ -4095,7 +4105,7 @@
 			],
 			"highlight": null,
 			"question": null,
-			"termsVersion": 66,
+			"termsVersion": 68,
 			"daySoFar": null
 		},
 		"rightToLeft": {
@@ -4540,7 +4550,7 @@
 					"frequency": "top1k",
 					"translations": [
 						{
-							"id": 11,
+							"id": 13,
 							"text": "human, Adam",
 							"source": "you"
 						}
@@ -4560,7 +4570,7 @@
 					"frequency": "top20k",
 					"translations": [
 						{
-							"id": 13,
+							"id": 15,
 							"text": "creation",
 							"source": "you"
 						}
@@ -4580,7 +4590,7 @@
 					"frequency": "top5k",
 					"translations": [
 						{
-							"id": 12,
+							"id": 14,
 							"text": "limbs, members",
 							"source": "you"
 						}
@@ -4600,7 +4610,7 @@
 					"frequency": "top1k",
 					"translations": [
 						{
-							"id": 14,
+							"id": 16,
 							"text": "pain",
 							"source": "you"
 						}
@@ -4999,7 +5009,7 @@
 					"frequency": "top1k",
 					"translations": [
 						{
-							"id": 19,
+							"id": 21,
 							"text": "not",
 							"source": "you"
 						}
@@ -5014,7 +5024,7 @@
 					"frequency": "top1k",
 					"translations": [
 						{
-							"id": 18,
+							"id": 20,
 							"text": "today",
 							"source": "you"
 						}
@@ -5034,7 +5044,7 @@
 					"frequency": "top1k",
 					"translations": [
 						{
-							"id": 17,
+							"id": 19,
 							"text": "to like",
 							"source": "you"
 						}
@@ -5054,7 +5064,7 @@
 					"frequency": "top5k",
 					"translations": [
 						{
-							"id": 16,
+							"id": 18,
 							"text": "to learn",
 							"source": "you"
 						}
@@ -5074,7 +5084,7 @@
 					"frequency": "top5k",
 					"translations": [
 						{
-							"id": 15,
+							"id": 17,
 							"text": "to study",
 							"source": "you"
 						}
@@ -6166,7 +6176,7 @@
 			],
 			"highlight": null,
 			"question": null,
-			"termsVersion": 73,
+			"termsVersion": 75,
 			"daySoFar": {
 				"wordsRead": 108,
 				"newTerms": 2,
@@ -6184,7 +6194,7 @@
 				"at": "2026-11-10T12:00:00.000Z"
 			},
 			"question": null,
-			"termsVersion": 66
+			"termsVersion": 68
 		},
 		"passage": {
 			"highlight": {
@@ -6196,7 +6206,7 @@
 				"at": "2026-11-10T12:00:00.000Z"
 			},
 			"question": null,
-			"termsVersion": 66
+			"termsVersion": 68
 		},
 		"question": {
 			"highlight": {
@@ -6234,7 +6244,7 @@
 				],
 				"askedAt": "2026-11-10T12:00:00.000Z"
 			},
-			"termsVersion": 66
+			"termsVersion": 68
 		},
 		"answered": {
 			"highlight": {
@@ -6278,7 +6288,7 @@
 					]
 				}
 			},
-			"termsVersion": 66
+			"termsVersion": 68
 		}
 	},
 	"routes": {
@@ -6453,7 +6463,7 @@
 					"frequency": "top1k",
 					"translations": [
 						{
-							"id": 19,
+							"id": 21,
 							"text": "not",
 							"source": "you"
 						}
@@ -6470,7 +6480,7 @@
 					"frequency": "top1k",
 					"translations": [
 						{
-							"id": 18,
+							"id": 20,
 							"text": "today",
 							"source": "you"
 						}
@@ -6492,7 +6502,7 @@
 					"frequency": "top1k",
 					"translations": [
 						{
-							"id": 17,
+							"id": 19,
 							"text": "to like",
 							"source": "you"
 						}
@@ -6514,7 +6524,7 @@
 					"frequency": "top5k",
 					"translations": [
 						{
-							"id": 16,
+							"id": 18,
 							"text": "to learn",
 							"source": "you"
 						}
@@ -6536,7 +6546,7 @@
 					"frequency": "top5k",
 					"translations": [
 						{
-							"id": 15,
+							"id": 17,
 							"text": "to study",
 							"source": "you"
 						}
@@ -6558,7 +6568,7 @@
 					"frequency": "top1k",
 					"translations": [
 						{
-							"id": 14,
+							"id": 16,
 							"text": "pain",
 							"source": "you"
 						}
@@ -6580,7 +6590,7 @@
 					"frequency": "top20k",
 					"translations": [
 						{
-							"id": 13,
+							"id": 15,
 							"text": "creation",
 							"source": "you"
 						}
@@ -6602,7 +6612,7 @@
 					"frequency": "top5k",
 					"translations": [
 						{
-							"id": 12,
+							"id": 14,
 							"text": "limbs, members",
 							"source": "you"
 						}
@@ -6619,7 +6629,7 @@
 					"frequency": "top1k",
 					"translations": [
 						{
-							"id": 11,
+							"id": 13,
 							"text": "human, Adam",
 							"source": "you"
 						}
@@ -6641,7 +6651,7 @@
 					"frequency": "rare",
 					"translations": [
 						{
-							"id": 10,
+							"id": 12,
 							"text": "embankment, seafront",
 							"source": "tutor"
 						}
@@ -6663,7 +6673,7 @@
 					"frequency": "rare",
 					"translations": [
 						{
-							"id": 9,
+							"id": 11,
 							"text": "pavilion",
 							"source": "you"
 						}
@@ -6684,7 +6694,7 @@
 					},
 					"translations": [
 						{
-							"id": 8,
+							"id": 10,
 							"text": "the lady with the little dog",
 							"source": "you"
 						}
@@ -6714,6 +6724,16 @@
 							"id": 7,
 							"text": "accustomed",
 							"source": "you"
+						},
+						{
+							"id": 8,
+							"text": "past active perfective participle of привыкнуть",
+							"source": "wiktionary"
+						},
+						{
+							"id": 9,
+							"text": "used",
+							"source": "azure"
 						}
 					],
 					"languageId": 4,
@@ -7281,7 +7301,7 @@
 				"frequency": "rare",
 				"translations": [
 					{
-						"id": 9,
+						"id": 11,
 						"text": "pavilion",
 						"source": "you"
 					}

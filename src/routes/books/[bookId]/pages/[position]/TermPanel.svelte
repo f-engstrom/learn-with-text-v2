@@ -130,8 +130,12 @@
 <style>
 	.term-panel {
 		position: relative;
-		/* Taller than the window with a Dictionary open: the column beside the text scrolls it, so Save can stick to its bottom. */
-		min-height: 0;
+		/*
+		 * Taller than the window with a Dictionary open: the column beside the text scrolls it, so Save
+		 * can stick to its bottom. It keeps its content's height there; shrunk to the column, the card
+		 * would end while its form ran on below it.
+		 */
+		flex-shrink: 0;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
 		gap: 1rem;

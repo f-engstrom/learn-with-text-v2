@@ -278,24 +278,31 @@
 		margin: 0 0 0.5rem;
 		padding-inline-start: 1.25rem;
 	}
+	/*
+	 * The text box takes the room the buttons leave and wraps a long Translation; its Source sits
+	 * under it, so the box keeps that room in a narrow column and on a phone.
+	 */
 	.translations li {
-		display: flex;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) repeat(3, auto);
 		gap: 0.25rem;
-		align-items: flex-start;
+		align-items: start;
 	}
-	/* The text box takes the room the buttons leave, down to nothing on a phone, and wraps a long Translation. */
 	.translations li textarea {
-		flex: 1 1 8rem;
+		grid-area: 1 / 1;
 		min-width: 0;
 		resize: none;
 		overflow: hidden;
 		line-height: 1.4;
 	}
 	.translations li .source {
-		align-self: center;
+		grid-area: 2 / 1;
+		justify-self: start;
+		margin-top: -0.1rem;
+		font-size: 0.8rem;
 	}
 	.translations li button {
-		flex: none;
+		grid-row: 1;
 		padding-inline: 0.55rem;
 	}
 	.source {

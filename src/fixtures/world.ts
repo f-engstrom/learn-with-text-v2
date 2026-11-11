@@ -167,7 +167,14 @@ async function readerWorld() {
 		}),
 		lived: await save(russian, 'проживший', 'learning3', meaning('having lived', 'azure')),
 		appeared: await save(russian, 'появилось', 'learning2', meaning('appeared', 'wiktionary')),
-		used: await save(russian, 'привыкший', 'learning2', meaning('accustomed')),
+		// Added from the dictionaries beside your own: a long Wiktionary definition, and Azure's word.
+		used: await save(russian, 'привыкший', 'learning2', {
+			translations: [
+				{ text: 'accustomed' },
+				{ text: 'past active perfective participle of привыкнуть', source: 'wiktionary' },
+				{ text: 'used', source: 'azure' }
+			]
+		}),
 		lady: await save(russian, 'дама с собачкой', 'learning2', meaning('the lady with the little dog')),
 		pavilion: await save(russian, 'павильоне', 'learning1', meaning('pavilion'))
 	}));
