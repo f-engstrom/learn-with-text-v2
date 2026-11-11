@@ -28,6 +28,7 @@ Domain rules sit in `src/lib/server/domain`, which the web app and the Tutor's M
 | Dictionary, Wiktionary panel, Azure panel | `lib/dictionaries.ts`, `domain/wiktionary.ts`, `domain/azure.ts` |
 | Your languages | `domain/your-languages.ts` |
 | Words read, Milestone, Status history, The day so far | `domain/progress.ts` |
+| The design theme (colour, type, shape tokens; base controls) | `src/app.css`; shown in `src/stories/theme` |
 
 The reading screen is `routes/books/[bookId]/pages/[position]/+page.svelte`. Its logic moves out into `lib/reading/` (keys and their routing, Selection, Practice, zen mode, Highlight on the Page, From the Tutor); the page is markup and wiring, and new logic goes into one of these modules, where its tests go. A module there is constructed during server-side rendering too, so it does nothing that reaches the server until its first `sync` or `start`, which the page calls in the browser.
 
@@ -43,6 +44,17 @@ The reading screen is `routes/books/[bookId]/pages/[position]/+page.svelte`. Its
 - Status history and the Terms version are written by SQLite triggers (ADR 0005), not by domain code.
 - The Tutor's assessment is stored as `term.tutor_level` and is `tutorAssessment` everywhere above the database.
 
-## Checking a change in the browser
+## Checking how something looks
+
+Storybook (`pnpm storybook`, port 6006) shows the theme, the components and every screen in each of their states, with no server and no database (ADR 0007). Check a design change there first, in both themes (the toolbar, or `&globals=theme:dark` on a story's address) and at the widths the styles break at (40rem and 60rem).
+
+- A story sits beside what it shows: `Foo.stories.svelte` by `Foo.svelte`, `page.stories.svelte` by a route's `+page.svelte`. The theme's stories are in `src/stories/theme`, and read the tokens from `app.css`.
+- A screen's story is the route's page inside the layout (`src/stories/Screen.svelte`), given the data its load would return. A new state of a screen gets a story.
+- That data comes from `src/fixtures` (`#fixtures`): `world.ts` builds it with the domain, `pnpm fixtures` writes `fixtures.json`. After changing what a load returns, or a rule the fixtures pass through, run it and commit the result.
+- A `fetch` in a story is answered by `src/stories/server.ts`; a story sets its own answers in `parameters.server` (e.g. `{ 'GET /api/wiktionary': { status: 502 } }`). A new endpoint needs a default there.
+
+## Checking behaviour in the browser
+
+For what needs the server: saving, imports, the Tutor's tools.
 
 `data/reader.db` holds real reading progress, and a Tutor session may be using it. Point the dev server's `DATABASE_PATH` at a copy (`sqlite3 data/reader.db ".backup <copy>"`). `pnpm check` and `pnpm test` (and `vitest`) regenerate SvelteKit's env config, which switches a running dev server back to `.env`'s database. Run neither while it is up, and before anything that writes, confirm it is on the copy: give the copy a marker (e.g. rename a Book) and look for it.
