@@ -64,7 +64,7 @@
 <span
 	role="button"
 	tabindex={tabStop ? 0 : -1}
-	class="word status-mark status-{status}"
+	class="word status-mark status-{status} {due ? `due-${due}` : ''}"
 	class:current
 	class:phrase
 	class:multi
@@ -111,7 +111,7 @@
 		--fill: var(--highlight);
 		border-radius: 0;
 	}
-	/* A Due Word: a dot over its end, amber when just Due, red when long overdue. */
+	/* A Due Word: a dot over its end in its Due colour, amber when just Due, red when long overdue. */
 	.word[data-due]::after {
 		content: '';
 		position: absolute;
@@ -120,15 +120,9 @@
 		width: 0.36em;
 		height: 0.36em;
 		border-radius: 50%;
-		background: var(--due-1);
+		background: var(--due);
 		box-shadow: 0 0 0 1.5px var(--bg);
 		pointer-events: none;
-	}
-	.word[data-due='2']::after {
-		background: var(--due-2);
-	}
-	.word[data-due='3']::after {
-		background: var(--due-3);
 	}
 	/* Zen mode: the tapped Word's Translations, under it. */
 	.gloss {

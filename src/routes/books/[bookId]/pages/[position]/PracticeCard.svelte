@@ -1,7 +1,8 @@
 <script lang="ts">
 	import Grades from '#lib/components/Grades.svelte';
 	import { statusLabels } from '#lib/terms.ts';
-	import { dueLabel, holdsLabel } from '#lib/practice.ts';
+	import Due from '#lib/components/Due.svelte';
+	import { holdsLabel } from '#lib/practice.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import type { TermView } from '#lib/server/domain/terms.ts';
 
@@ -16,7 +17,7 @@
 
 <!-- A Learning Term's place in practice: when it's Due, its Recall strength, and a Review. -->
 <section class="practice" aria-label="Practice">
-	<p class="due due-{practice.overdue}">{dueLabel(practice)}</p>
+	<p><Due {practice} /></p>
 	{#if practice.recall}
 		<p class="recall">
 			Recall: <strong>{statusLabels[practice.recall.level]}</strong>
@@ -38,17 +39,5 @@
 	}
 	p {
 		margin: 0;
-	}
-	.due {
-		font-weight: 600;
-	}
-	.due-1 {
-		color: var(--due-1-text);
-	}
-	.due-2 {
-		color: var(--due-2-text);
-	}
-	.due-3 {
-		color: var(--due-3-text);
 	}
 </style>

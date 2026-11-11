@@ -7,7 +7,9 @@
 	import { page } from '$app/state';
 	import TermForm from '#lib/components/TermForm.svelte';
 	import { actionUrl } from '#lib/actions.ts';
-	import { dueLabel, frequencyLabels, transferLabel } from '#lib/practice.ts';
+	import Due from '#lib/components/Due.svelte';
+	import SourceTag from '#lib/components/SourceTag.svelte';
+	import { frequencyLabels, transferLabel } from '#lib/practice.ts';
 	import { LEVELS, sourceLabels, statusLabels } from '#lib/terms.ts';
 	import type { Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
@@ -157,7 +159,7 @@
 					</td>
 					<td class="translations">
 						{#each term.translations as translation, i (translation.id)}{#if i > 0}; {/if}{translation.text}{#if translation.source !== 'you'}
-								<small class="source">{sourceLabels[translation.source]}</small>{/if}{/each}
+								<SourceTag source={translation.source} />{/if}{/each}
 					</td>
 					<td class="parent">
 						{#if term.parent}<span lang={languageOf(term.languageId).code} dir={dirOf(term.languageId)}>{term.parent.text}</span>{/if}
@@ -165,7 +167,7 @@
 					</td>
 					<td class="practice">
 						{#if term.practice}
-							<span class="due due-{term.practice.overdue}">{dueLabel(term.practice)}</span>
+							<Due practice={term.practice} />
 							{#if term.practice.recall}<small>Recall {statusLabels[term.practice.recall.level]}</small>{/if}
 						{/if}
 						{#if term.tutorAssessment}<small>Tutor {statusLabels[term.tutorAssessment]}</small>{/if}
@@ -254,13 +256,6 @@
 		display: block;
 		color: var(--muted);
 	}
-	.source {
-		padding: 0 0.35rem;
-		border-radius: 999px;
-		background: var(--surface-2);
-		color: var(--muted);
-		font-size: 0.8rem;
-	}
 	.actions {
 		display: flex;
 		gap: 0.35rem;
@@ -319,16 +314,6 @@
 	.practice small {
 		display: block;
 		color: var(--muted);
-	}
-	.due-1 {
-		color: var(--due-1-text);
-	}
-	.due-2 {
-		color: var(--due-2-text);
-	}
-	.due-3 {
-		color: var(--due-3-text);
-		font-weight: 600;
 	}
 	.editor td {
 		padding: 1rem 1.25rem 1.25rem;

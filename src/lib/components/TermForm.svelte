@@ -1,4 +1,5 @@
 <script lang="ts">
+	import SourceTag from './SourceTag.svelte';
 	import Button from './Button.svelte';
 	import Tag from './Tag.svelte';
 	import { enhance } from '$app/forms';
@@ -7,7 +8,6 @@
 	import { actionUrl } from '#lib/actions.ts';
 	import type { Language } from '#lib/server/domain/languages.ts';
 	import type { Source, TermView } from '#lib/server/domain/terms.ts';
-	import { sourceLabels } from '#lib/terms.ts';
 	import { termFields } from '#lib/term-writes.ts';
 
 	interface Props {
@@ -148,7 +148,7 @@
 						aria-label="Translation {i + 1}"
 						autocomplete="off"
 					></textarea>
-					{#if row.source !== 'you'}<small class="source">{sourceLabels[row.source]}</small>{/if}
+					<SourceTag source={row.source} class="source" />
 					<Button type="button" aria-label="Move up" disabled={i === 0} onclick={() => move(i, i - 1)}>↑</Button>
 					<Button type="button" aria-label="Move down" disabled={i === rows.length - 1} onclick={() => move(i, i + 1)}
 						>↓</Button
@@ -314,23 +314,14 @@
 		overflow: hidden;
 		line-height: 1.4;
 	}
-	.translations li .source {
+	.translations li :global(.source) {
 		grid-area: 2 / 1;
 		justify-self: start;
 		margin-top: -0.1rem;
-		font-size: 0.8rem;
 	}
 	.translations li :global(button) {
 		grid-row: 1;
 		padding-inline: 0.55rem;
-	}
-	.source {
-		padding: 0 0.3rem;
-		border-radius: 0.25rem;
-		background: var(--surface-2);
-	}
-	.error {
-		color: var(--danger);
 	}
 	.follows {
 		display: flex;

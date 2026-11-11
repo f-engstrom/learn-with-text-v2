@@ -358,6 +358,21 @@ table.data tbody tr:hover td {
 	--status: var(--status-learning4);
 	--mark: var(--status);
 }
+/* Due marks: how overdue a Term is, wherever it shows — the dot on a Word, the Due label in the
+   Term list, Review and the Practice card. due-<n> sets --due (a mark) and --due-text (words on a surface). */
+.due-1 {
+	--due: var(--due-1);
+	--due-text: var(--due-1-text);
+}
+.due-2 {
+	--due: var(--due-2);
+	--due-text: var(--due-2-text);
+}
+.due-3 {
+	--due: var(--due-3);
+	--due-text: var(--due-3-text);
+}
+
 /* Only an Unknown Word is filled. A Learning Term is underlined with a band in its Status colour,
    so a page of Learning Terms still reads as text. */
 .status-mark {

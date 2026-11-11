@@ -5,7 +5,8 @@
 	import Grades from '#lib/components/Grades.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { statusLabels } from '#lib/terms.ts';
-	import { dueLabel, holdsLabel, wordAt } from '#lib/practice.ts';
+	import Due from '#lib/components/Due.svelte';
+	import { holdsLabel, wordAt } from '#lib/practice.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import { sendReview } from '#lib/reviews.ts';
 	import type { PageProps } from './$types';
@@ -97,7 +98,7 @@
 	<article class="card review">
 		<p class="meta">
 			<Tag>{term.language.name}</Tag>
-			{#if term.practice}<span class="due due-{term.practice.overdue}">{dueLabel(term.practice)}</span>{/if}
+			{#if term.practice}<Due practice={term.practice} />{/if}
 		</p>
 		{#if parts && data.example}
 			<blockquote class="example" lang={term.language.code} {dir}>
@@ -197,15 +198,5 @@
 		margin: 0;
 		padding-inline-start: 1.2rem;
 		font-size: 1.1rem;
-	}
-	.due-1 {
-		color: var(--due-1-text);
-	}
-	.due-2 {
-		color: var(--due-2-text);
-	}
-	.due-3 {
-		color: var(--due-3-text);
-		font-weight: 600;
 	}
 </style>
