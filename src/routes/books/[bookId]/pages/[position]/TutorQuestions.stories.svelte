@@ -10,7 +10,7 @@
 		title: 'Reading screen/Tutor questions',
 		component: TutorQuestions,
 		// As wide as the Page's text, where the Tutor's turn sits.
-		decorators: [() => Text],
+		decorators: [() => ({ Component: Text })],
 		args: { question, lang: 'ru', onanswer: fn(), onleave: fn() }
 	});
 </script>

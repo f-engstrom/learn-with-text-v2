@@ -10,7 +10,7 @@
 		title: 'Reading screen/Practice panel',
 		component: PracticePanel,
 		// As wide as the column beside the text.
-		decorators: [() => Column],
+		decorators: [() => ({ Component: Column })],
 		args: {
 			subsets: [
 				{ subset: 'priority', count: 7 },
@@ -26,7 +26,7 @@
 			onstop: fn()
 		}
 	});
-	const run = { stage: 'run', subset: 'priority', queue: [3, 9, 14, 20], at: 1, reviewed: 1 } as const;
+	const run = { stage: 'run' as const, subset: 'priority' as const, queue: [3, 9, 14, 20], at: 1, reviewed: 1 };
 </script>
 
 <Story name="Choosing a subset" args={{ state: { stage: 'choose' } }} />

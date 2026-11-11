@@ -10,7 +10,7 @@
 		title: 'Reading screen/Tutor turn',
 		component: TutorTurn,
 		// As wide as the Page's text, where the Tutor's turn sits.
-		decorators: [() => Text],
+		decorators: [() => ({ Component: Text })],
 		args: {
 			here: true,
 			folded: false,

@@ -13,11 +13,13 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest",
-		"test": "pnpm test:unit --run",
+		"test": "pnpm test:unit --run --project server",
 		"mcp": "tsx src/lib/server/mcp/main.ts",
 		"storybook": "storybook dev -p 6006 --ci",
 		"build-storybook": "storybook build",
-		"fixtures": "tsx src/fixtures/build.ts"
+		"fixtures": "tsx src/fixtures/build.ts",
+		"test:stories": "vitest --run --project stories",
+		"test:visual": "VITE_VISUAL=1 vitest --run --project stories"
 	},
 	"devDependencies": {
 		"@storybook/addon-a11y": "11.0.0-beta.1",

@@ -1,6 +1,8 @@
 import { defineConfig } from 'vitest/config';
 import adapter from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
+import { playwright } from '@vitest/browser-playwright';
 
 export default defineConfig({
 	plugins: [
@@ -23,6 +25,30 @@ export default defineConfig({
 					name: 'server',
 					environment: 'node',
 					include: ['src/**/*.{test,spec}.{js,ts}']
+				}
+			},
+			{
+				// Every story as a test, in Chromium: it renders and its play function runs (ADR 0007).
+				// `pnpm test:stories`; with VITE_VISUAL set (`pnpm test:visual`) each is also compared with its snapshot.
+				extends: './vite.config.ts',
+				plugins: [storybookTest({ configDir: '.storybook' })],
+				test: {
+					name: 'stories',
+					expect: { requireAssertions: false },
+					browser: {
+						enabled: true,
+						headless: true,
+						provider: playwright(),
+						instances: [{ browser: 'chromium' }],
+						viewport: { width: 1280, height: 900 },
+						expect: {
+							toMatchScreenshot: {
+								comparatorName: 'pixelmatch',
+								comparatorOptions: { threshold: 0.1, allowedMismatchedPixelRatio: 0 },
+								resolveScreenshotPath: ({ root, arg, ext }) => `${root}/src/stories/snapshots/${arg}${ext}`
+							}
+						}
+					}
 				}
 			}
 		]

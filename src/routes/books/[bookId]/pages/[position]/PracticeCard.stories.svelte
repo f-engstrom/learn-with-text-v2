@@ -10,7 +10,7 @@
 		title: 'Reading screen/Practice card',
 		component: PracticeCard,
 		// As wide as the column beside the text.
-		decorators: [() => Column],
+		decorators: [() => ({ Component: Column })],
 		args: { onreview: fn() }
 	});
 </script>

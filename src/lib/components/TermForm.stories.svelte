@@ -10,7 +10,7 @@
 		component: TermForm,
 		args: { language: mixed.language, error: undefined },
 		// As wide as the column beside the text.
-		decorators: [() => Column]
+		decorators: [() => ({ Component: Column })]
 	});
 </script>
 

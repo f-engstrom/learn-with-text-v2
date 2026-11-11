@@ -9,7 +9,7 @@
 		title: 'Reading screen/Wiktionary panel',
 		component: WiktionaryPanel,
 		// As wide as the column beside the text.
-		decorators: [() => Column],
+		decorators: [() => ({ Component: Column })],
 		args: { language: fixtures.reading.mixed.language, termKey: 'привыкший', text: 'привыкший', translations: [], onadd: fn() }
 	});
 </script>
