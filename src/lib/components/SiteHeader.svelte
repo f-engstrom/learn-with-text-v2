@@ -35,45 +35,46 @@
 		padding-inline: var(--gutter);
 	}
 	.site {
-		border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-		background: color-mix(in srgb, var(--bg) 85%, transparent);
-		backdrop-filter: blur(8px);
+		border-bottom: 1px solid var(--border);
+		background: var(--surface);
 	}
 	.site .inner {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.5rem 2rem;
-		min-height: 3.5rem;
+		gap: 0 2.5rem;
+		min-height: 4rem;
 	}
 	.brand {
 		color: var(--text);
 		font-family: var(--font-text);
-		font-style: italic;
 		font-weight: 600;
-		font-size: 1.3rem;
-		letter-spacing: -0.01em;
+		font-size: 1.25rem;
+		letter-spacing: -0.02em;
 		text-decoration: none;
 	}
 	nav {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.25rem;
+		align-self: stretch;
 	}
+	/* Each section is as tall as the bar, so the current one's underline sits on the bar's edge. */
 	nav a {
-		padding: 0.35rem 0.75rem;
-		border-radius: var(--radius);
+		display: flex;
+		align-items: center;
+		padding: 0 0.75rem;
 		color: var(--muted);
 		text-decoration: none;
+		font-size: 0.9375rem;
 		font-weight: 500;
 	}
 	nav a:hover {
 		color: var(--text);
-		background: var(--surface-2);
 	}
 	nav a[aria-current='page'] {
 		color: var(--text);
-		background: var(--surface-2);
+		box-shadow: inset 0 -2px 0 var(--accent);
 	}
 	/* A phone: brand and every section on one line, scrolling sideways only if a very narrow screen needs it. */
 	@media (max-width: 40rem) {
@@ -89,7 +90,7 @@
 			scrollbar-width: none;
 		}
 		nav a {
-			padding: 0.3rem 0.55rem;
+			padding: 0 0.55rem;
 			white-space: nowrap;
 		}
 		/* Books already leads home; the room goes to the sections. */
