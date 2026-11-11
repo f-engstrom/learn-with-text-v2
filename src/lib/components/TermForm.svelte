@@ -124,7 +124,7 @@
 	<fieldset class="statuses">
 		<legend>Status</legend>
 		{#each Object.entries(statusButtonLabels) as [value, label] (value)}
-			<label class="status-option {value}">
+			<label class="status-option status-{value}">
 				<input type="radio" name={termFields.status} {value} checked={(term?.status ?? 'learning1') === value} />
 				{label}
 			</label>
@@ -244,34 +244,51 @@
 		padding: 0;
 		margin-bottom: 0.4rem;
 	}
-	/* Rows that wrap on a phone get room between lines as well as between items. */
+	/*
+	 * One joined bar of segments, each in its Status colour; the chosen one is ringed in ink.
+	 * The radios stay in the form and take the keys, hidden behind their labels.
+	 */
 	.statuses {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem 0.4rem;
 	}
 	.status-option {
+		position: relative;
+		/* Each segment as wide as its label and the rest shared, so Known and Ignored fit a narrow panel. */
+		flex: 1 1 auto;
 		display: flex;
 		align-items: center;
-		gap: 0.3rem;
-		padding: 0.3rem 0.6rem;
-		border-radius: 0.25rem;
+		justify-content: center;
+		padding: 0.55rem 0.45rem;
+		background: var(--status, var(--surface));
+		border: 1px solid var(--text);
+		border-inline-start-width: 0;
+		cursor: pointer;
+		text-align: center;
 	}
-	.status-option.learning1 {
-		background: var(--status-learning1);
+	.status-option:first-of-type {
+		border-inline-start-width: 1px;
+		border-start-start-radius: 0.6rem;
+		border-end-start-radius: 0.6rem;
 	}
-	.status-option.learning2 {
-		background: var(--status-learning2);
+	.status-option:last-of-type {
+		border-start-end-radius: 0.6rem;
+		border-end-end-radius: 0.6rem;
 	}
-	.status-option.learning3 {
-		background: var(--status-learning3);
+	.status-option input {
+		position: absolute;
+		inset: 0;
+		margin: 0;
+		opacity: 0;
+		cursor: pointer;
 	}
-	.status-option.learning4 {
-		background: var(--status-learning4);
+	.status-option:has(input:checked) {
+		box-shadow: inset 0 0 0 2px var(--text);
+		font-weight: 600;
 	}
-	.status-option.known,
-	.status-option.ignored {
-		border: 1px solid var(--border);
+	.status-option:has(input:focus-visible) {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+		z-index: 1;
 	}
 	.translations ol {
 		display: grid;

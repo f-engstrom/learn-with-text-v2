@@ -26,15 +26,13 @@
 		0 2px 4px light-dark(rgb(70 50 20 / 0.06), rgb(0 0 0 / 0.35)),
 		0 18px 40px -12px light-dark(rgb(70 50 20 / 0.22), rgb(0 0 0 / 0.6));
 
-	/* Status colours: light tints so a page of Unknown Words still reads as text. */
-	--status-unknown: light-dark(#e3eaf3, #272d36);
-	--status-learning1: light-dark(#f5d5c6, #4e3128);
-	--status-learning2: light-dark(#f3e0c2, #4b3b26);
-	--status-learning3: light-dark(#ece6c2, #444027);
-	--status-learning4: light-dark(#dfe7cc, #363f2a);
-	--status-ignored: light-dark(#9a9183, #857b6c);
-	/* The underline under a Learning Term in the text, at full strength for Learning 1. */
-	--status-learning-mark: light-dark(#b4664e, #d9967a);
+	/* Status colours, shared by the reading screen, the Term form and the Term list. */
+	--status-unknown: light-dark(#d6e8fb, #1f3a5c);
+	--status-learning1: light-dark(#f8c2aa, #6e3424);
+	--status-learning2: light-dark(#f9d6a8, #6c4a20);
+	--status-learning3: light-dark(#f3e4a8, #5d5420);
+	--status-learning4: light-dark(#e0ebb8, #43522a);
+	--status-ignored: #8a8f96;
 
 	/* Due marks, from just Due to long overdue; the -text variants are for words on a surface. */
 	--due-1: light-dark(#d9a033, #e0ac47);
@@ -337,37 +335,34 @@ table.data tbody tr:hover td {
 	color: var(--muted);
 }
 
-/* Status marks: how a Status shows on a Word in the text, in the legend and on a Character part.
-   status-<Status> sets --status (a plain fill) and, for the text, --fill and --mark. */
+/* Status marks: how a Status shows wherever it shows — a Word in the text, the legend, a Character part,
+   the Term form's selector and the Term list. status-<Status> sets --status, the Status colour, and for
+   the text --fill (an Unknown Word) or --mark (the underline under a Learning Term), both that same colour. */
 .status-unknown {
 	--status: var(--status-unknown);
-	--fill: var(--status-unknown);
+	--fill: var(--status);
 }
 .status-learning1 {
 	--status: var(--status-learning1);
-	--mark: var(--status-learning-mark);
-	--mark-weight: 0.14em;
+	--mark: var(--status);
 }
 .status-learning2 {
 	--status: var(--status-learning2);
-	--mark: color-mix(in srgb, var(--status-learning-mark) 70%, transparent);
-	--mark-weight: 0.12em;
+	--mark: var(--status);
 }
 .status-learning3 {
 	--status: var(--status-learning3);
-	--mark: color-mix(in srgb, var(--status-learning-mark) 45%, transparent);
-	--mark-weight: 0.09em;
+	--mark: var(--status);
 }
 .status-learning4 {
 	--status: var(--status-learning4);
-	--mark: color-mix(in srgb, var(--status-learning-mark) 30%, transparent);
-	--mark-weight: 0.06em;
+	--mark: var(--status);
 }
-/* Only an Unknown Word is filled. A Learning Term is underlined, thinner and fainter from 1 to 4,
-   so the levels differ in weight and lightness and a page of Learning Terms still reads as text. */
+/* Only an Unknown Word is filled. A Learning Term is underlined with a band in its Status colour,
+   so a page of Learning Terms still reads as text. */
 .status-mark {
 	background:
-		linear-gradient(var(--mark, transparent) 0 0) bottom / 100% var(--mark-weight, 0) no-repeat,
+		linear-gradient(var(--mark, transparent) 0 0) bottom / 100% 0.22em no-repeat,
 		var(--fill, transparent);
 	transition:
 		background-color 0.6s,

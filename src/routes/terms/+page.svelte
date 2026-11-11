@@ -145,7 +145,7 @@
 					{#if !data.filter.language}<td class="language">{languageOf(term.languageId).name}</td>{/if}
 					<td class="status-cell">
 						<select
-							class="status {term.status}"
+							class="status status-{term.status}"
 							aria-label="Status of {term.text}"
 							value={term.status}
 							onchange={(e) => setStatus(term, e.currentTarget.value)}
@@ -338,16 +338,7 @@
 	.editor :global(form) {
 		max-width: 28rem;
 	}
-	.status.learning1 {
-		background: var(--status-learning1);
-	}
-	.status.learning2 {
-		background: var(--status-learning2);
-	}
-	.status.learning3 {
-		background: var(--status-learning3);
-	}
-	.status.learning4 {
-		background: var(--status-learning4);
+	.status {
+		background: var(--status, color-mix(in srgb, var(--surface) 70%, var(--bg)));
 	}
 </style>
