@@ -16,7 +16,8 @@
 		"test": "pnpm test:unit --run",
 		"mcp": "tsx src/lib/server/mcp/main.ts",
 		"storybook": "storybook dev -p 6006 --ci",
-		"build-storybook": "storybook build"
+		"build-storybook": "storybook build",
+		"fixtures": "tsx src/fixtures/build.ts"
 	},
 	"devDependencies": {
 		"@storybook/addon-a11y": "11.0.0-beta.1",

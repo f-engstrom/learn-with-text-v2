@@ -1,0 +1,8618 @@
+{
+	"now": "2026-11-10T12:00:00.000Z",
+	"reading": {
+		"fresh": {
+			"book": {
+				"id": 1,
+				"title": "Дама с собачкой",
+				"pageCount": 3,
+				"bookmark": {
+					"page": 1,
+					"sentence": 1
+				}
+			},
+			"language": {
+				"id": 4,
+				"name": "Russian",
+				"code": "ru",
+				"rightToLeft": false,
+				"characterMap": {
+					"́": "",
+					"̀": ""
+				}
+			},
+			"position": 1,
+			"read": false,
+			"paragraphs": [
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "Говорили",
+									"isWord": true,
+									"key": "говорили",
+									"index": 0,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "что",
+									"isWord": true,
+									"key": "что",
+									"index": 1,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "на",
+									"isWord": true,
+									"key": "на",
+									"index": 2,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "набережной",
+									"isWord": true,
+									"key": "набережной",
+									"index": 3,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "появилось",
+									"isWord": true,
+									"key": "появилось",
+									"index": 4,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "новое",
+									"isWord": true,
+									"key": "новое",
+									"index": 5,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "лицо",
+									"isWord": true,
+									"key": "лицо",
+									"index": 6,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ":",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "дама",
+									"isWord": true,
+									"key": "дама",
+									"index": 7,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "с",
+									"isWord": true,
+									"key": "с",
+									"index": 8,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "собачкой",
+									"isWord": true,
+									"key": "собачкой",
+									"index": 9,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								}
+							]
+						},
+						{
+							"tokens": [
+								{
+									"text": "Дмитрий",
+									"isWord": true,
+									"key": "дмитрий",
+									"index": 10,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "Дмитрич",
+									"isWord": true,
+									"key": "дмитрич",
+									"index": 11,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "Гуров",
+									"isWord": true,
+									"key": "гуров",
+									"index": 12,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "проживший",
+									"isWord": true,
+									"key": "проживший",
+									"index": 13,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 14,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "Ялте",
+									"isWord": true,
+									"key": "ялте",
+									"index": 15,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "уже",
+									"isWord": true,
+									"key": "уже",
+									"index": 16,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "две",
+									"isWord": true,
+									"key": "две",
+									"index": 17,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "недели",
+									"isWord": true,
+									"key": "недели",
+									"index": 18,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "и",
+									"isWord": true,
+									"key": "и",
+									"index": 19,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "привыкший",
+									"isWord": true,
+									"key": "привыкший",
+									"index": 20,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "тут",
+									"isWord": true,
+									"key": "тут",
+									"index": 21,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "тоже",
+									"isWord": true,
+									"key": "тоже",
+									"index": 22,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "стал",
+									"isWord": true,
+									"key": "стал",
+									"index": 23,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "интересоваться",
+									"isWord": true,
+									"key": "интересоваться",
+									"index": 24,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "новыми",
+									"isWord": true,
+									"key": "новыми",
+									"index": 25,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "лицами",
+									"isWord": true,
+									"key": "лицами",
+									"index": 26,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								}
+							]
+						},
+						{
+							"tokens": [
+								{
+									"text": "Сидя",
+									"isWord": true,
+									"key": "сидя",
+									"index": 27,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 28,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "павильоне",
+									"isWord": true,
+									"key": "павильоне",
+									"index": 29,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "у",
+									"isWord": true,
+									"key": "у",
+									"index": 30,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "Верне",
+									"isWord": true,
+									"key": "верне",
+									"index": 31,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "он",
+									"isWord": true,
+									"key": "он",
+									"index": 32,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "видел",
+									"isWord": true,
+									"key": "видел",
+									"index": 33,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "как",
+									"isWord": true,
+									"key": "как",
+									"index": 34,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "по",
+									"isWord": true,
+									"key": "по",
+									"index": 35,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "набережной",
+									"isWord": true,
+									"key": "набережной",
+									"index": 36,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "прошла",
+									"isWord": true,
+									"key": "прошла",
+									"index": 37,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "молодая",
+									"isWord": true,
+									"key": "молодая",
+									"index": 38,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "дама",
+									"isWord": true,
+									"key": "дама",
+									"index": 39,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "невысокого",
+									"isWord": true,
+									"key": "невысокого",
+									"index": 40,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "роста",
+									"isWord": true,
+									"key": "роста",
+									"index": 41,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "блондинка",
+									"isWord": true,
+									"key": "блондинка",
+									"index": 42,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 43,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "берете",
+									"isWord": true,
+									"key": "берете",
+									"index": 44,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ";",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "за",
+									"isWord": true,
+									"key": "за",
+									"index": 45,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "нею",
+									"isWord": true,
+									"key": "нею",
+									"index": 46,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "бежал",
+									"isWord": true,
+									"key": "бежал",
+									"index": 47,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "белый",
+									"isWord": true,
+									"key": "белый",
+									"index": 48,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "шпиц",
+									"isWord": true,
+									"key": "шпиц",
+									"index": 49,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								}
+							]
+						}
+					]
+				},
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "И",
+									"isWord": true,
+									"key": "и",
+									"index": 50,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "потом",
+									"isWord": true,
+									"key": "потом",
+									"index": 51,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "он",
+									"isWord": true,
+									"key": "он",
+									"index": 52,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "встречал",
+									"isWord": true,
+									"key": "встречал",
+									"index": 53,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "её",
+									"isWord": true,
+									"key": "её",
+									"index": 54,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 55,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "городском",
+									"isWord": true,
+									"key": "городском",
+									"index": 56,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "саду",
+									"isWord": true,
+									"key": "саду",
+									"index": 57,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "и",
+									"isWord": true,
+									"key": "и",
+									"index": 58,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "на",
+									"isWord": true,
+									"key": "на",
+									"index": 59,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "сквере",
+									"isWord": true,
+									"key": "сквере",
+									"index": 60,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "по",
+									"isWord": true,
+									"key": "по",
+									"index": 61,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "нескольку",
+									"isWord": true,
+									"key": "нескольку",
+									"index": 62,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "раз",
+									"isWord": true,
+									"key": "раз",
+									"index": 63,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 64,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "день",
+									"isWord": true,
+									"key": "день",
+									"index": 65,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								}
+							]
+						},
+						{
+							"tokens": [
+								{
+									"text": "Она",
+									"isWord": true,
+									"key": "она",
+									"index": 66,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "гуляла",
+									"isWord": true,
+									"key": "гуляла",
+									"index": 67,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "одна",
+									"isWord": true,
+									"key": "одна",
+									"index": 68,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "всё",
+									"isWord": true,
+									"key": "всё",
+									"index": 69,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 70,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "том",
+									"isWord": true,
+									"key": "том",
+									"index": 71,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "же",
+									"isWord": true,
+									"key": "же",
+									"index": 72,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "берете",
+									"isWord": true,
+									"key": "берете",
+									"index": 73,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "с",
+									"isWord": true,
+									"key": "с",
+									"index": 74,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "белым",
+									"isWord": true,
+									"key": "белым",
+									"index": 75,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "шпицем",
+									"isWord": true,
+									"key": "шпицем",
+									"index": 76,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": ";",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "никто",
+									"isWord": true,
+									"key": "никто",
+									"index": 77,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "не",
+									"isWord": true,
+									"key": "не",
+									"index": 78,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "знал",
+									"isWord": true,
+									"key": "знал",
+									"index": 79,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "кто",
+									"isWord": true,
+									"key": "кто",
+									"index": 80,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "она",
+									"isWord": true,
+									"key": "она",
+									"index": 81,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "и",
+									"isWord": true,
+									"key": "и",
+									"index": 82,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "называли",
+									"isWord": true,
+									"key": "называли",
+									"index": 83,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "её",
+									"isWord": true,
+									"key": "её",
+									"index": 84,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "просто",
+									"isWord": true,
+									"key": "просто",
+									"index": 85,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "так",
+									"isWord": true,
+									"key": "так",
+									"index": 86,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": ":",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "дама",
+									"isWord": true,
+									"key": "дама",
+									"index": 87,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "с",
+									"isWord": true,
+									"key": "с",
+									"index": 88,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "собачкой",
+									"isWord": true,
+									"key": "собачкой",
+									"index": 89,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								}
+							]
+						}
+					]
+				},
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "«",
+									"isWord": false
+								},
+								{
+									"text": "Если",
+									"isWord": true,
+									"key": "если",
+									"index": 90,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "она",
+									"isWord": true,
+									"key": "она",
+									"index": 91,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "здесь",
+									"isWord": true,
+									"key": "здесь",
+									"index": 92,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "без",
+									"isWord": true,
+									"key": "без",
+									"index": 93,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "мужа",
+									"isWord": true,
+									"key": "мужа",
+									"index": 94,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "и",
+									"isWord": true,
+									"key": "и",
+									"index": 95,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "без",
+									"isWord": true,
+									"key": "без",
+									"index": 96,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "знакомых",
+									"isWord": true,
+									"key": "знакомых",
+									"index": 97,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "—",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "соображал",
+									"isWord": true,
+									"key": "соображал",
+									"index": 98,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "Гуров",
+									"isWord": true,
+									"key": "гуров",
+									"index": 99,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "—",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "то",
+									"isWord": true,
+									"key": "то",
+									"index": 100,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "было",
+									"isWord": true,
+									"key": "было",
+									"index": 101,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "бы",
+									"isWord": true,
+									"key": "бы",
+									"index": 102,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "не",
+									"isWord": true,
+									"key": "не",
+									"index": 103,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "лишнее",
+									"isWord": true,
+									"key": "лишнее",
+									"index": 104,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "познакомиться",
+									"isWord": true,
+									"key": "познакомиться",
+									"index": 105,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "с",
+									"isWord": true,
+									"key": "с",
+									"index": 106,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "ней",
+									"isWord": true,
+									"key": "ней",
+									"index": 107,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": "»",
+									"isWord": false
+								},
+								{
+									"text": ".",
+									"isWord": false
+								}
+							]
+						}
+					]
+				}
+			],
+			"terms": {},
+			"frequency": {
+				"говорили": "top1k",
+				"что": "top1k",
+				"на": "top1k",
+				"набережной": "rare",
+				"появилось": "top20k",
+				"новое": "top5k",
+				"лицо": "top1k",
+				"дама": "top5k",
+				"с": "top1k",
+				"собачкой": "rare",
+				"дмитрий": "top20k",
+				"дмитрич": "rare",
+				"гуров": "rare",
+				"проживший": "rare",
+				"в": "top1k",
+				"ялте": "rare",
+				"уже": "top1k",
+				"две": "top1k",
+				"недели": "top1k",
+				"и": "top1k",
+				"привыкший": "rare",
+				"тут": "top1k",
+				"тоже": "top1k",
+				"стал": "top1k",
+				"интересоваться": "rare",
+				"новыми": "top20k",
+				"лицами": "rare",
+				"сидя": "top20k",
+				"павильоне": "rare",
+				"у": "top1k",
+				"верне": "rare",
+				"он": "top1k",
+				"видел": "top1k",
+				"как": "top1k",
+				"по": "top1k",
+				"прошла": "top5k",
+				"молодая": "top5k",
+				"невысокого": "rare",
+				"роста": "top20k",
+				"блондинка": "top20k",
+				"берете": "top20k",
+				"за": "top1k",
+				"нею": "top20k",
+				"бежал": "top20k",
+				"белый": "top5k",
+				"шпиц": "rare",
+				"потом": "top1k",
+				"встречал": "top5k",
+				"её": "top1k",
+				"городском": "rare",
+				"саду": "top5k",
+				"сквере": "rare",
+				"нескольку": "rare",
+				"раз": "top1k",
+				"день": "top1k",
+				"она": "top1k",
+				"гуляла": "rare",
+				"одна": "top1k",
+				"всё": "top1k",
+				"том": "top1k",
+				"же": "top1k",
+				"белым": "top20k",
+				"шпицем": "rare",
+				"никто": "top1k",
+				"не": "top1k",
+				"знал": "top1k",
+				"кто": "top1k",
+				"называли": "top5k",
+				"просто": "top1k",
+				"так": "top1k",
+				"если": "top1k",
+				"здесь": "top1k",
+				"без": "top1k",
+				"мужа": "top5k",
+				"знакомых": "top20k",
+				"соображал": "rare",
+				"то": "top1k",
+				"было": "top1k",
+				"бы": "top1k",
+				"лишнее": "top20k",
+				"познакомиться": "top5k",
+				"ней": "top1k"
+			},
+			"dictionaries": [
+				{
+					"id": 6,
+					"name": "Wiktionary",
+					"url": "https://en.m.wiktionary.org/wiki/[TERM]#Russian",
+					"display": "embedded"
+				},
+				{
+					"id": 7,
+					"name": "OpenRussian",
+					"url": "https://en.openrussian.org/ru/[TERM]",
+					"display": "embedded"
+				},
+				{
+					"id": 8,
+					"name": "Google Translate",
+					"url": "https://translate.google.com/?sl=ru&tl=en&text=[TERM]",
+					"display": "popup"
+				}
+			],
+			"highlight": null,
+			"question": null,
+			"termsVersion": 0,
+			"daySoFar": null
+		},
+		"mixed": {
+			"book": {
+				"id": 3,
+				"title": "Дама с собачкой",
+				"pageCount": 3,
+				"bookmark": {
+					"page": 1,
+					"sentence": 2,
+					"word": "привыкший"
+				}
+			},
+			"language": {
+				"id": 4,
+				"name": "Russian",
+				"code": "ru",
+				"rightToLeft": false,
+				"characterMap": {
+					"́": "",
+					"̀": ""
+				}
+			},
+			"position": 1,
+			"read": false,
+			"paragraphs": [
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "Говорили",
+									"isWord": true,
+									"key": "говорили",
+									"index": 0,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "что",
+									"isWord": true,
+									"key": "что",
+									"index": 1,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "на",
+									"isWord": true,
+									"key": "на",
+									"index": 2,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "набережной",
+									"isWord": true,
+									"key": "набережной",
+									"index": 3,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "появилось",
+									"isWord": true,
+									"key": "появилось",
+									"index": 4,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "новое",
+									"isWord": true,
+									"key": "новое",
+									"index": 5,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "лицо",
+									"isWord": true,
+									"key": "лицо",
+									"index": 6,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ":",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "дама с собачкой",
+									"isWord": true,
+									"key": "дама с собачкой",
+									"index": 7,
+									"sentence": 0,
+									"words": 3
+								},
+								{
+									"text": ".",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								}
+							]
+						},
+						{
+							"tokens": [
+								{
+									"text": "Дмитрий",
+									"isWord": true,
+									"key": "дмитрий",
+									"index": 8,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "Дмитрич",
+									"isWord": true,
+									"key": "дмитрич",
+									"index": 9,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "Гуров",
+									"isWord": true,
+									"key": "гуров",
+									"index": 10,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "проживший",
+									"isWord": true,
+									"key": "проживший",
+									"index": 11,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 12,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "Ялте",
+									"isWord": true,
+									"key": "ялте",
+									"index": 13,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "уже",
+									"isWord": true,
+									"key": "уже",
+									"index": 14,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "две",
+									"isWord": true,
+									"key": "две",
+									"index": 15,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "недели",
+									"isWord": true,
+									"key": "недели",
+									"index": 16,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "и",
+									"isWord": true,
+									"key": "и",
+									"index": 17,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "привыкший",
+									"isWord": true,
+									"key": "привыкший",
+									"index": 18,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "тут",
+									"isWord": true,
+									"key": "тут",
+									"index": 19,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "тоже",
+									"isWord": true,
+									"key": "тоже",
+									"index": 20,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "стал",
+									"isWord": true,
+									"key": "стал",
+									"index": 21,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "интересоваться",
+									"isWord": true,
+									"key": "интересоваться",
+									"index": 22,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "новыми",
+									"isWord": true,
+									"key": "новыми",
+									"index": 23,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "лицами",
+									"isWord": true,
+									"key": "лицами",
+									"index": 24,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								}
+							]
+						},
+						{
+							"tokens": [
+								{
+									"text": "Сидя",
+									"isWord": true,
+									"key": "сидя",
+									"index": 25,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 26,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "павильоне",
+									"isWord": true,
+									"key": "павильоне",
+									"index": 27,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "у",
+									"isWord": true,
+									"key": "у",
+									"index": 28,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "Верне",
+									"isWord": true,
+									"key": "верне",
+									"index": 29,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "он",
+									"isWord": true,
+									"key": "он",
+									"index": 30,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "видел",
+									"isWord": true,
+									"key": "видел",
+									"index": 31,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "как",
+									"isWord": true,
+									"key": "как",
+									"index": 32,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "по",
+									"isWord": true,
+									"key": "по",
+									"index": 33,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "набережной",
+									"isWord": true,
+									"key": "набережной",
+									"index": 34,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "прошла",
+									"isWord": true,
+									"key": "прошла",
+									"index": 35,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "молодая",
+									"isWord": true,
+									"key": "молодая",
+									"index": 36,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "дама",
+									"isWord": true,
+									"key": "дама",
+									"index": 37,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "невысокого",
+									"isWord": true,
+									"key": "невысокого",
+									"index": 38,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "роста",
+									"isWord": true,
+									"key": "роста",
+									"index": 39,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "блондинка",
+									"isWord": true,
+									"key": "блондинка",
+									"index": 40,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 41,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "берете",
+									"isWord": true,
+									"key": "берете",
+									"index": 42,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ";",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "за",
+									"isWord": true,
+									"key": "за",
+									"index": 43,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "нею",
+									"isWord": true,
+									"key": "нею",
+									"index": 44,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "бежал",
+									"isWord": true,
+									"key": "бежал",
+									"index": 45,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "белый",
+									"isWord": true,
+									"key": "белый",
+									"index": 46,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "шпиц",
+									"isWord": true,
+									"key": "шпиц",
+									"index": 47,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								}
+							]
+						}
+					]
+				},
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "И",
+									"isWord": true,
+									"key": "и",
+									"index": 48,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "потом",
+									"isWord": true,
+									"key": "потом",
+									"index": 49,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "он",
+									"isWord": true,
+									"key": "он",
+									"index": 50,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "встречал",
+									"isWord": true,
+									"key": "встречал",
+									"index": 51,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "её",
+									"isWord": true,
+									"key": "её",
+									"index": 52,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 53,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "городском",
+									"isWord": true,
+									"key": "городском",
+									"index": 54,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "саду",
+									"isWord": true,
+									"key": "саду",
+									"index": 55,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "и",
+									"isWord": true,
+									"key": "и",
+									"index": 56,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "на",
+									"isWord": true,
+									"key": "на",
+									"index": 57,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "сквере",
+									"isWord": true,
+									"key": "сквере",
+									"index": 58,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "по",
+									"isWord": true,
+									"key": "по",
+									"index": 59,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "нескольку",
+									"isWord": true,
+									"key": "нескольку",
+									"index": 60,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "раз",
+									"isWord": true,
+									"key": "раз",
+									"index": 61,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 62,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "день",
+									"isWord": true,
+									"key": "день",
+									"index": 63,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								}
+							]
+						},
+						{
+							"tokens": [
+								{
+									"text": "Она",
+									"isWord": true,
+									"key": "она",
+									"index": 64,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "гуляла",
+									"isWord": true,
+									"key": "гуляла",
+									"index": 65,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "одна",
+									"isWord": true,
+									"key": "одна",
+									"index": 66,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "всё",
+									"isWord": true,
+									"key": "всё",
+									"index": 67,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 68,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "том",
+									"isWord": true,
+									"key": "том",
+									"index": 69,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "же",
+									"isWord": true,
+									"key": "же",
+									"index": 70,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "берете",
+									"isWord": true,
+									"key": "берете",
+									"index": 71,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "с",
+									"isWord": true,
+									"key": "с",
+									"index": 72,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "белым",
+									"isWord": true,
+									"key": "белым",
+									"index": 73,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "шпицем",
+									"isWord": true,
+									"key": "шпицем",
+									"index": 74,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": ";",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "никто",
+									"isWord": true,
+									"key": "никто",
+									"index": 75,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "не",
+									"isWord": true,
+									"key": "не",
+									"index": 76,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "знал",
+									"isWord": true,
+									"key": "знал",
+									"index": 77,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "кто",
+									"isWord": true,
+									"key": "кто",
+									"index": 78,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "она",
+									"isWord": true,
+									"key": "она",
+									"index": 79,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "и",
+									"isWord": true,
+									"key": "и",
+									"index": 80,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "называли",
+									"isWord": true,
+									"key": "называли",
+									"index": 81,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "её",
+									"isWord": true,
+									"key": "её",
+									"index": 82,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "просто",
+									"isWord": true,
+									"key": "просто",
+									"index": 83,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "так",
+									"isWord": true,
+									"key": "так",
+									"index": 84,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": ":",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "дама с собачкой",
+									"isWord": true,
+									"key": "дама с собачкой",
+									"index": 85,
+									"sentence": 4,
+									"words": 3
+								},
+								{
+									"text": ".",
+									"isWord": false
+								}
+							]
+						}
+					]
+				},
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "«",
+									"isWord": false
+								},
+								{
+									"text": "Если",
+									"isWord": true,
+									"key": "если",
+									"index": 86,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "она",
+									"isWord": true,
+									"key": "она",
+									"index": 87,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "здесь",
+									"isWord": true,
+									"key": "здесь",
+									"index": 88,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "без",
+									"isWord": true,
+									"key": "без",
+									"index": 89,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "мужа",
+									"isWord": true,
+									"key": "мужа",
+									"index": 90,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "и",
+									"isWord": true,
+									"key": "и",
+									"index": 91,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "без",
+									"isWord": true,
+									"key": "без",
+									"index": 92,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "знакомых",
+									"isWord": true,
+									"key": "знакомых",
+									"index": 93,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "—",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "соображал",
+									"isWord": true,
+									"key": "соображал",
+									"index": 94,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "Гуров",
+									"isWord": true,
+									"key": "гуров",
+									"index": 95,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "—",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "то",
+									"isWord": true,
+									"key": "то",
+									"index": 96,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "было",
+									"isWord": true,
+									"key": "было",
+									"index": 97,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "бы",
+									"isWord": true,
+									"key": "бы",
+									"index": 98,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "не",
+									"isWord": true,
+									"key": "не",
+									"index": 99,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "лишнее",
+									"isWord": true,
+									"key": "лишнее",
+									"index": 100,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "познакомиться",
+									"isWord": true,
+									"key": "познакомиться",
+									"index": 101,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "с",
+									"isWord": true,
+									"key": "с",
+									"index": 102,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "ней",
+									"isWord": true,
+									"key": "ней",
+									"index": 103,
+									"sentence": 5,
+									"words": 1
+								},
+								{
+									"text": "»",
+									"isWord": false
+								},
+								{
+									"text": ".",
+									"isWord": false
+								}
+							]
+						}
+					]
+				}
+			],
+			"terms": {
+				"белый": {
+					"id": 19,
+					"text": "белый",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top5k",
+					"translations": []
+				},
+				"в": {
+					"id": 6,
+					"text": "в",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"верне": {
+					"id": 33,
+					"text": "верне",
+					"status": "ignored",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "rare",
+					"translations": []
+				},
+				"видел": {
+					"id": 22,
+					"text": "видел",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"говорили": {
+					"id": 1,
+					"text": "говорили",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"гуров": {
+					"id": 31,
+					"text": "гуров",
+					"status": "ignored",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "rare",
+					"translations": []
+				},
+				"дама с собачкой": {
+					"id": 40,
+					"text": "дама с собачкой",
+					"status": "learning2",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-10-12T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"translations": [
+						{
+							"id": 8,
+							"text": "the lady with the little dog",
+							"source": "you"
+						}
+					]
+				},
+				"две": {
+					"id": 8,
+					"text": "две",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"дмитрий": {
+					"id": 29,
+					"text": "дмитрий",
+					"status": "ignored",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top20k",
+					"translations": []
+				},
+				"дмитрич": {
+					"id": 30,
+					"text": "дмитрич",
+					"status": "ignored",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "rare",
+					"translations": []
+				},
+				"за": {
+					"id": 18,
+					"text": "за",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"и": {
+					"id": 10,
+					"text": "и",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"интересоваться": {
+					"id": 36,
+					"text": "интересоваться",
+					"status": "learning3",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-25T12:00:00.000Z",
+						"overdue": 0,
+						"reviews": 2,
+						"recall": {
+							"level": "learning3",
+							"holdsDays": 17.33231526,
+							"today": 0.98361017
+						}
+					},
+					"frequency": "rare",
+					"tutorAssessment": "learning4",
+					"transfer": {
+						"form": "easy",
+						"concept": "medium",
+						"reason": "Close to English \"interest\"; takes the instrumental."
+					},
+					"translations": [
+						{
+							"id": 3,
+							"text": "to be interested in",
+							"source": "you"
+						},
+						{
+							"id": 4,
+							"text": "to take an interest",
+							"source": "wiktionary"
+						}
+					]
+				},
+				"как": {
+					"id": 14,
+					"text": "как",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"лицами": {
+					"id": 35,
+					"text": "лицами",
+					"status": "learning4",
+					"pronunciation": "",
+					"parent": {
+						"id": 34,
+						"text": "лицо",
+						"status": "learning4"
+					},
+					"followsParent": true,
+					"practice": {
+						"due": "2026-11-02T12:00:00.000Z",
+						"overdue": 2,
+						"reviews": 2,
+						"recall": {
+							"level": "learning3",
+							"holdsDays": 16.17726312,
+							"today": 0.87070342
+						}
+					},
+					"frequency": "rare",
+					"translations": [
+						{
+							"id": 2,
+							"text": "faces (instrumental)",
+							"source": "you"
+						}
+					]
+				},
+				"лицо": {
+					"id": 34,
+					"text": "лицо",
+					"status": "learning4",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-02T12:00:00.000Z",
+						"overdue": 2,
+						"reviews": 2,
+						"recall": {
+							"level": "learning3",
+							"holdsDays": 16.17726312,
+							"today": 0.87070342
+						}
+					},
+					"frequency": "top1k",
+					"translations": [
+						{
+							"id": 1,
+							"text": "face; person",
+							"source": "you"
+						}
+					]
+				},
+				"молодая": {
+					"id": 17,
+					"text": "молодая",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top5k",
+					"translations": []
+				},
+				"на": {
+					"id": 3,
+					"text": "на",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"набережной": {
+					"id": 42,
+					"text": "набережной",
+					"status": "learning1",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-10-30T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "rare",
+					"translations": [
+						{
+							"id": 10,
+							"text": "embankment, seafront",
+							"source": "tutor"
+						}
+					]
+				},
+				"не": {
+					"id": 25,
+					"text": "не",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"недели": {
+					"id": 9,
+					"text": "недели",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"новое": {
+					"id": 4,
+					"text": "новое",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top5k",
+					"translations": []
+				},
+				"он": {
+					"id": 13,
+					"text": "он",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"она": {
+					"id": 23,
+					"text": "она",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"павильоне": {
+					"id": 41,
+					"text": "павильоне",
+					"status": "learning1",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-10-12T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "rare",
+					"translations": [
+						{
+							"id": 9,
+							"text": "pavilion",
+							"source": "you"
+						}
+					]
+				},
+				"по": {
+					"id": 15,
+					"text": "по",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"появилось": {
+					"id": 38,
+					"text": "появилось",
+					"status": "learning2",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-12T12:00:00.000Z",
+						"overdue": 0,
+						"reviews": 2,
+						"recall": {
+							"level": "learning2",
+							"holdsDays": 2.61544931,
+							"today": 0.95209887
+						}
+					},
+					"frequency": "top20k",
+					"tutorAssessment": "learning2",
+					"translations": [
+						{
+							"id": 6,
+							"text": "appeared",
+							"source": "wiktionary"
+						}
+					]
+				},
+				"привыкший": {
+					"id": 39,
+					"text": "привыкший",
+					"status": "learning2",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-04T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 1,
+						"recall": {
+							"level": "learning2",
+							"holdsDays": 2.3065,
+							"today": 0.78451304
+						}
+					},
+					"frequency": "rare",
+					"translations": [
+						{
+							"id": 7,
+							"text": "accustomed",
+							"source": "you"
+						}
+					]
+				},
+				"проживший": {
+					"id": 37,
+					"text": "проживший",
+					"status": "learning3",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-10T12:00:00.000Z",
+						"overdue": 1,
+						"reviews": 1,
+						"recall": {
+							"level": "learning2",
+							"holdsDays": 2.3065,
+							"today": 0.88094796
+						}
+					},
+					"frequency": "rare",
+					"translations": [
+						{
+							"id": 5,
+							"text": "having lived",
+							"source": "azure"
+						}
+					]
+				},
+				"прошла": {
+					"id": 16,
+					"text": "прошла",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top5k",
+					"translations": []
+				},
+				"с": {
+					"id": 5,
+					"text": "с",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"стал": {
+					"id": 12,
+					"text": "стал",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"тоже": {
+					"id": 11,
+					"text": "тоже",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"тут": {
+					"id": 20,
+					"text": "тут",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"у": {
+					"id": 21,
+					"text": "у",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"уже": {
+					"id": 7,
+					"text": "уже",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"что": {
+					"id": 2,
+					"text": "что",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"ялте": {
+					"id": 32,
+					"text": "ялте",
+					"status": "ignored",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "rare",
+					"translations": []
+				}
+			},
+			"frequency": {
+				"говорили": "top1k",
+				"что": "top1k",
+				"на": "top1k",
+				"набережной": "rare",
+				"появилось": "top20k",
+				"новое": "top5k",
+				"лицо": "top1k",
+				"дама": "top5k",
+				"с": "top1k",
+				"собачкой": "rare",
+				"дмитрий": "top20k",
+				"дмитрич": "rare",
+				"гуров": "rare",
+				"проживший": "rare",
+				"в": "top1k",
+				"ялте": "rare",
+				"уже": "top1k",
+				"две": "top1k",
+				"недели": "top1k",
+				"и": "top1k",
+				"привыкший": "rare",
+				"тут": "top1k",
+				"тоже": "top1k",
+				"стал": "top1k",
+				"интересоваться": "rare",
+				"новыми": "top20k",
+				"лицами": "rare",
+				"сидя": "top20k",
+				"павильоне": "rare",
+				"у": "top1k",
+				"верне": "rare",
+				"он": "top1k",
+				"видел": "top1k",
+				"как": "top1k",
+				"по": "top1k",
+				"прошла": "top5k",
+				"молодая": "top5k",
+				"невысокого": "rare",
+				"роста": "top20k",
+				"блондинка": "top20k",
+				"берете": "top20k",
+				"за": "top1k",
+				"нею": "top20k",
+				"бежал": "top20k",
+				"белый": "top5k",
+				"шпиц": "rare",
+				"потом": "top1k",
+				"встречал": "top5k",
+				"её": "top1k",
+				"городском": "rare",
+				"саду": "top5k",
+				"сквере": "rare",
+				"нескольку": "rare",
+				"раз": "top1k",
+				"день": "top1k",
+				"она": "top1k",
+				"гуляла": "rare",
+				"одна": "top1k",
+				"всё": "top1k",
+				"том": "top1k",
+				"же": "top1k",
+				"белым": "top20k",
+				"шпицем": "rare",
+				"никто": "top1k",
+				"не": "top1k",
+				"знал": "top1k",
+				"кто": "top1k",
+				"называли": "top5k",
+				"просто": "top1k",
+				"так": "top1k",
+				"если": "top1k",
+				"здесь": "top1k",
+				"без": "top1k",
+				"мужа": "top5k",
+				"знакомых": "top20k",
+				"соображал": "rare",
+				"то": "top1k",
+				"было": "top1k",
+				"бы": "top1k",
+				"лишнее": "top20k",
+				"познакомиться": "top5k",
+				"ней": "top1k"
+			},
+			"dictionaries": [
+				{
+					"id": 6,
+					"name": "Wiktionary",
+					"url": "https://en.m.wiktionary.org/wiki/[TERM]#Russian",
+					"display": "embedded"
+				},
+				{
+					"id": 7,
+					"name": "OpenRussian",
+					"url": "https://en.openrussian.org/ru/[TERM]",
+					"display": "embedded"
+				},
+				{
+					"id": 8,
+					"name": "Google Translate",
+					"url": "https://translate.google.com/?sl=ru&tl=en&text=[TERM]",
+					"display": "popup"
+				}
+			],
+			"highlight": null,
+			"question": null,
+			"termsVersion": 66,
+			"daySoFar": null
+		},
+		"lastPage": {
+			"book": {
+				"id": 3,
+				"title": "Дама с собачкой",
+				"pageCount": 3,
+				"bookmark": {
+					"page": 1,
+					"sentence": 2,
+					"word": "привыкший"
+				}
+			},
+			"language": {
+				"id": 4,
+				"name": "Russian",
+				"code": "ru",
+				"rightToLeft": false,
+				"characterMap": {
+					"́": "",
+					"̀": ""
+				}
+			},
+			"position": 3,
+			"read": true,
+			"paragraphs": [
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "Она",
+									"isWord": true,
+									"key": "она",
+									"index": 0,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "много",
+									"isWord": true,
+									"key": "много",
+									"index": 1,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "читала",
+									"isWord": true,
+									"key": "читала",
+									"index": 2,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "не",
+									"isWord": true,
+									"key": "не",
+									"index": 3,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "писала",
+									"isWord": true,
+									"key": "писала",
+									"index": 4,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 5,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "письмах",
+									"isWord": true,
+									"key": "письмах",
+									"index": 6,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "ъ",
+									"isWord": true,
+									"key": "ъ",
+									"index": 7,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "называла",
+									"isWord": true,
+									"key": "называла",
+									"index": 8,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "мужа",
+									"isWord": true,
+									"key": "мужа",
+									"index": 9,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "не",
+									"isWord": true,
+									"key": "не",
+									"index": 10,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "Дмитрием",
+									"isWord": true,
+									"key": "дмитрием",
+									"index": 11,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "а",
+									"isWord": true,
+									"key": "а",
+									"index": 12,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "Димитрием",
+									"isWord": true,
+									"key": "димитрием",
+									"index": 13,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "а",
+									"isWord": true,
+									"key": "а",
+									"index": 14,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "он",
+									"isWord": true,
+									"key": "он",
+									"index": 15,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "втайне",
+									"isWord": true,
+									"key": "втайне",
+									"index": 16,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "считал",
+									"isWord": true,
+									"key": "считал",
+									"index": 17,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "её",
+									"isWord": true,
+									"key": "её",
+									"index": 18,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "недалёкой",
+									"isWord": true,
+									"key": "недалёкой",
+									"index": 19,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "узкой",
+									"isWord": true,
+									"key": "узкой",
+									"index": 20,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "неизящной",
+									"isWord": true,
+									"key": "неизящной",
+									"index": 21,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "боялся",
+									"isWord": true,
+									"key": "боялся",
+									"index": 22,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "её",
+									"isWord": true,
+									"key": "её",
+									"index": 23,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "и",
+									"isWord": true,
+									"key": "и",
+									"index": 24,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "не",
+									"isWord": true,
+									"key": "не",
+									"index": 25,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "любил",
+									"isWord": true,
+									"key": "любил",
+									"index": 26,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "бывать",
+									"isWord": true,
+									"key": "бывать",
+									"index": 27,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "дома",
+									"isWord": true,
+									"key": "дома",
+									"index": 28,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								}
+							]
+						}
+					]
+				}
+			],
+			"terms": {
+				"в": {
+					"id": 6,
+					"text": "в",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"и": {
+					"id": 10,
+					"text": "и",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"не": {
+					"id": 25,
+					"text": "не",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"он": {
+					"id": 13,
+					"text": "он",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"она": {
+					"id": 23,
+					"text": "она",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				}
+			},
+			"frequency": {
+				"она": "top1k",
+				"много": "top1k",
+				"читала": "top5k",
+				"не": "top1k",
+				"писала": "top20k",
+				"в": "top1k",
+				"письмах": "rare",
+				"ъ": "top5k",
+				"называла": "top20k",
+				"мужа": "top5k",
+				"дмитрием": "rare",
+				"а": "top1k",
+				"димитрием": "rare",
+				"он": "top1k",
+				"втайне": "rare",
+				"считал": "top5k",
+				"её": "top1k",
+				"недалёкой": "rare",
+				"узкой": "rare",
+				"неизящной": "rare",
+				"боялся": "top5k",
+				"и": "top1k",
+				"любил": "top5k",
+				"бывать": "top20k",
+				"дома": "top1k"
+			},
+			"dictionaries": [
+				{
+					"id": 6,
+					"name": "Wiktionary",
+					"url": "https://en.m.wiktionary.org/wiki/[TERM]#Russian",
+					"display": "embedded"
+				},
+				{
+					"id": 7,
+					"name": "OpenRussian",
+					"url": "https://en.openrussian.org/ru/[TERM]",
+					"display": "embedded"
+				},
+				{
+					"id": 8,
+					"name": "Google Translate",
+					"url": "https://translate.google.com/?sl=ru&tl=en&text=[TERM]",
+					"display": "popup"
+				}
+			],
+			"highlight": null,
+			"question": null,
+			"termsVersion": 66,
+			"daySoFar": null
+		},
+		"rightToLeft": {
+			"book": {
+				"id": 4,
+				"title": "بنی آدم",
+				"pageCount": 1,
+				"bookmark": {
+					"page": 1,
+					"sentence": 1
+				}
+			},
+			"language": {
+				"id": 3,
+				"name": "Farsi",
+				"code": "fa",
+				"rightToLeft": true,
+				"characterMap": {
+					"ي": "ی",
+					"ك": "ک"
+				}
+			},
+			"position": 1,
+			"read": false,
+			"paragraphs": [
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "بنی",
+									"isWord": true,
+									"key": "بنی",
+									"index": 0,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "آدم",
+									"isWord": true,
+									"key": "آدم",
+									"index": 1,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "اعضای",
+									"isWord": true,
+									"key": "اعضای",
+									"index": 2,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "یکدیگرند",
+									"isWord": true,
+									"key": "یکدیگرند",
+									"index": 3,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": "،",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "که",
+									"isWord": true,
+									"key": "که",
+									"index": 4,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "در",
+									"isWord": true,
+									"key": "در",
+									"index": 5,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "آفرینش",
+									"isWord": true,
+									"key": "آفرینش",
+									"index": 6,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "ز",
+									"isWord": true,
+									"key": "ز",
+									"index": 7,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "یک",
+									"isWord": true,
+									"key": "یک",
+									"index": 8,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "گوهرند",
+									"isWord": true,
+									"key": "گوهرند",
+									"index": 9,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								}
+							]
+						}
+					]
+				},
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "چو",
+									"isWord": true,
+									"key": "چو",
+									"index": 10,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "عضوی",
+									"isWord": true,
+									"key": "عضوی",
+									"index": 11,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "به",
+									"isWord": true,
+									"key": "به",
+									"index": 12,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "درد",
+									"isWord": true,
+									"key": "درد",
+									"index": 13,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "آورد",
+									"isWord": true,
+									"key": "آورد",
+									"index": 14,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "روزگار",
+									"isWord": true,
+									"key": "روزگار",
+									"index": 15,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": "،",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "دگر",
+									"isWord": true,
+									"key": "دگر",
+									"index": 16,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "عضوها",
+									"isWord": true,
+									"key": "عضوها",
+									"index": 17,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "را",
+									"isWord": true,
+									"key": "را",
+									"index": 18,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "نماند",
+									"isWord": true,
+									"key": "نماند",
+									"index": 19,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "قرار",
+									"isWord": true,
+									"key": "قرار",
+									"index": 20,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								}
+							]
+						}
+					]
+				},
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "تو",
+									"isWord": true,
+									"key": "تو",
+									"index": 21,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "کز",
+									"isWord": true,
+									"key": "کز",
+									"index": 22,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "محنت",
+									"isWord": true,
+									"key": "محنت",
+									"index": 23,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "دیگران",
+									"isWord": true,
+									"key": "دیگران",
+									"index": 24,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "بی‌غمی",
+									"isWord": true,
+									"key": "بی‌غمی",
+									"index": 25,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": "،",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "نشاید",
+									"isWord": true,
+									"key": "نشاید",
+									"index": 26,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "که",
+									"isWord": true,
+									"key": "که",
+									"index": 27,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "نامت",
+									"isWord": true,
+									"key": "نامت",
+									"index": 28,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "نهند",
+									"isWord": true,
+									"key": "نهند",
+									"index": 29,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "آدمی",
+									"isWord": true,
+									"key": "آدمی",
+									"index": 30,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								}
+							]
+						}
+					]
+				}
+			],
+			"terms": {
+				"آدم": {
+					"id": 43,
+					"text": "آدم",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [
+						{
+							"id": 11,
+							"text": "human, Adam",
+							"source": "you"
+						}
+					]
+				},
+				"آفرینش": {
+					"id": 45,
+					"text": "آفرینش",
+					"status": "learning3",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-03T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "top20k",
+					"translations": [
+						{
+							"id": 13,
+							"text": "creation",
+							"source": "you"
+						}
+					]
+				},
+				"اعضای": {
+					"id": 44,
+					"text": "اعضای",
+					"status": "learning1",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-03T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "top5k",
+					"translations": [
+						{
+							"id": 12,
+							"text": "limbs, members",
+							"source": "you"
+						}
+					]
+				},
+				"درد": {
+					"id": 46,
+					"text": "درد",
+					"status": "learning2",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-03T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "top1k",
+					"translations": [
+						{
+							"id": 14,
+							"text": "pain",
+							"source": "you"
+						}
+					]
+				}
+			},
+			"frequency": {
+				"بنی": "top5k",
+				"آدم": "top1k",
+				"اعضای": "top5k",
+				"یکدیگرند": "rare",
+				"که": "top1k",
+				"در": "top1k",
+				"آفرینش": "top20k",
+				"ز": "top5k",
+				"یک": "top1k",
+				"گوهرند": "rare",
+				"چو": "top20k",
+				"عضوی": "top20k",
+				"به": "top1k",
+				"درد": "top1k",
+				"آورد": "top5k",
+				"روزگار": "top20k",
+				"دگر": "rare",
+				"عضوها": "rare",
+				"را": "top1k",
+				"نماند": "rare",
+				"قرار": "top1k",
+				"تو": "top1k",
+				"کز": "rare",
+				"محنت": "rare",
+				"دیگران": "top5k",
+				"بی‌غمی": "rare",
+				"نشاید": "rare",
+				"نامت": "top20k",
+				"نهند": "rare",
+				"آدمی": "top5k"
+			},
+			"dictionaries": [
+				{
+					"id": 3,
+					"name": "Wiktionary",
+					"url": "https://en.m.wiktionary.org/wiki/[TERM]#Persian",
+					"display": "embedded"
+				},
+				{
+					"id": 4,
+					"name": "Abadis",
+					"url": "https://abadis.ir/fatoen/[TERM]/",
+					"display": "embedded"
+				},
+				{
+					"id": 5,
+					"name": "Google Translate",
+					"url": "https://translate.google.com/?sl=fa&tl=en&text=[TERM]",
+					"display": "popup"
+				}
+			],
+			"highlight": null,
+			"question": null,
+			"termsVersion": 8,
+			"daySoFar": null
+		},
+		"characters": {
+			"book": {
+				"id": 5,
+				"title": "论语",
+				"pageCount": 1,
+				"bookmark": {
+					"page": 1,
+					"sentence": 1
+				}
+			},
+			"language": {
+				"id": 2,
+				"name": "Chinese",
+				"code": "zh",
+				"rightToLeft": false,
+				"characterMap": {}
+			},
+			"position": 1,
+			"read": false,
+			"paragraphs": [
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "学",
+									"isWord": true,
+									"key": "学",
+									"index": 0,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": "而",
+									"isWord": true,
+									"key": "而",
+									"index": 1,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": "时",
+									"isWord": true,
+									"key": "时",
+									"index": 2,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": "习",
+									"isWord": true,
+									"key": "习",
+									"index": 3,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": "之",
+									"isWord": true,
+									"key": "之",
+									"index": 4,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": "，",
+									"isWord": false
+								},
+								{
+									"text": "不亦",
+									"isWord": true,
+									"key": "不亦",
+									"index": 5,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": "说",
+									"isWord": true,
+									"key": "说",
+									"index": 6,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": "乎",
+									"isWord": true,
+									"key": "乎",
+									"index": 7,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": "？",
+									"isWord": false
+								}
+							]
+						},
+						{
+							"tokens": [
+								{
+									"text": "有朋",
+									"isWord": true,
+									"key": "有朋",
+									"index": 8,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": "自",
+									"isWord": true,
+									"key": "自",
+									"index": 9,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": "远方",
+									"isWord": true,
+									"key": "远方",
+									"index": 10,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": "来",
+									"isWord": true,
+									"key": "来",
+									"index": 11,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": "，",
+									"isWord": false
+								},
+								{
+									"text": "不亦乐乎",
+									"isWord": true,
+									"key": "不亦乐乎",
+									"index": 12,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": "？",
+									"isWord": false
+								}
+							]
+						},
+						{
+							"tokens": [
+								{
+									"text": "人",
+									"isWord": true,
+									"key": "人",
+									"index": 13,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": "不知",
+									"isWord": true,
+									"key": "不知",
+									"index": 14,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": "而不",
+									"isWord": true,
+									"key": "而不",
+									"index": 15,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": "愠",
+									"isWord": true,
+									"key": "愠",
+									"index": 16,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": "，",
+									"isWord": false
+								},
+								{
+									"text": "不亦",
+									"isWord": true,
+									"key": "不亦",
+									"index": 17,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": "君子",
+									"isWord": true,
+									"key": "君子",
+									"index": 18,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": "乎",
+									"isWord": true,
+									"key": "乎",
+									"index": 19,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": "？",
+									"isWord": false
+								}
+							]
+						}
+					]
+				},
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "我们",
+									"isWord": true,
+									"key": "我们",
+									"index": 20,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": "今天",
+									"isWord": true,
+									"key": "今天",
+									"index": 21,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": "学习",
+									"isWord": true,
+									"key": "学习",
+									"index": 22,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": "中文",
+									"isWord": true,
+									"key": "中文",
+									"index": 23,
+									"sentence": 3,
+									"words": 1
+								},
+								{
+									"text": "。",
+									"isWord": false
+								}
+							]
+						},
+						{
+							"tokens": [
+								{
+									"text": "老师",
+									"isWord": true,
+									"key": "老师",
+									"index": 24,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": "喜欢",
+									"isWord": true,
+									"key": "喜欢",
+									"index": 25,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": "读书",
+									"isWord": true,
+									"key": "读书",
+									"index": 26,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": "，",
+									"isWord": false
+								},
+								{
+									"text": "学生",
+									"isWord": true,
+									"key": "学生",
+									"index": 27,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": "也",
+									"isWord": true,
+									"key": "也",
+									"index": 28,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": "喜欢",
+									"isWord": true,
+									"key": "喜欢",
+									"index": 29,
+									"sentence": 4,
+									"words": 1
+								},
+								{
+									"text": "。",
+									"isWord": false
+								}
+							]
+						}
+					]
+				}
+			],
+			"terms": {
+				"不": {
+					"id": 51,
+					"text": "不",
+					"status": "known",
+					"pronunciation": "bù",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [
+						{
+							"id": 19,
+							"text": "not",
+							"source": "you"
+						}
+					]
+				},
+				"今天": {
+					"id": 50,
+					"text": "今天",
+					"status": "known",
+					"pronunciation": "jīntiān",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [
+						{
+							"id": 18,
+							"text": "today",
+							"source": "you"
+						}
+					]
+				},
+				"喜欢": {
+					"id": 49,
+					"text": "喜欢",
+					"status": "learning1",
+					"pronunciation": "xǐhuan",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-03T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "top1k",
+					"translations": [
+						{
+							"id": 17,
+							"text": "to like",
+							"source": "you"
+						}
+					]
+				},
+				"学": {
+					"id": 48,
+					"text": "学",
+					"status": "learning4",
+					"pronunciation": "xué",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-03T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "top5k",
+					"translations": [
+						{
+							"id": 16,
+							"text": "to learn",
+							"source": "you"
+						}
+					]
+				},
+				"学习": {
+					"id": 47,
+					"text": "学习",
+					"status": "learning2",
+					"pronunciation": "xuéxí",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-03T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "top5k",
+					"translations": [
+						{
+							"id": 15,
+							"text": "to study",
+							"source": "you"
+						}
+					]
+				}
+			},
+			"frequency": {
+				"学": "top5k",
+				"而": "top1k",
+				"时": "top1k",
+				"习": "rare",
+				"之": "top1k",
+				"不亦": "rare",
+				"说": "top1k",
+				"乎": "rare",
+				"有朋": "rare",
+				"自": "top5k",
+				"远方": "top20k",
+				"来": "top1k",
+				"不亦乐乎": "rare",
+				"人": "top1k",
+				"不知": "top5k",
+				"而不": "rare",
+				"愠": "rare",
+				"君子": "top20k",
+				"我们": "top1k",
+				"今天": "top1k",
+				"学习": "top5k",
+				"中文": "top20k",
+				"老师": "top1k",
+				"喜欢": "top1k",
+				"读书": "top5k",
+				"学生": "top5k",
+				"也": "top1k",
+				"学而": "rare",
+				"学而时": "rare",
+				"学而时习": "rare",
+				"学而时习之": "rare",
+				"而时": "rare",
+				"而时习": "rare",
+				"而时习之": "rare",
+				"时习": "rare",
+				"时习之": "rare",
+				"习之": "rare",
+				"不亦说": "rare",
+				"不亦说乎": "rare",
+				"说乎": "rare",
+				"有朋自": "rare",
+				"有朋自远方": "rare",
+				"有朋自远方来": "rare",
+				"自远方": "rare",
+				"自远方来": "rare",
+				"远方来": "rare",
+				"人不知": "rare",
+				"人不知而不": "rare",
+				"人不知而不愠": "rare",
+				"不知而不": "rare",
+				"不知而不愠": "rare",
+				"而不愠": "rare",
+				"不亦君子": "rare",
+				"不亦君子乎": "rare",
+				"君子乎": "rare",
+				"我们今天": "rare",
+				"我们今天学习": "rare",
+				"我们今天学习中文": "rare",
+				"今天学习": "rare",
+				"今天学习中文": "rare",
+				"学习中文": "rare",
+				"老师喜欢": "rare",
+				"老师喜欢读书": "rare",
+				"喜欢读书": "rare",
+				"学生也": "rare",
+				"学生也喜欢": "rare",
+				"也喜欢": "rare",
+				"不": "top1k",
+				"亦": "top5k",
+				"有": "top1k",
+				"朋": "rare",
+				"远": "top5k",
+				"方": "top20k",
+				"不亦乐": "rare",
+				"亦乐": "rare",
+				"亦乐乎": "rare",
+				"乐": "top20k",
+				"乐乎": "rare",
+				"知": "top5k",
+				"君": "top5k",
+				"子": "top5k",
+				"我": "top1k",
+				"们": "top1k",
+				"今": "top5k",
+				"天": "top1k",
+				"中": "top1k",
+				"文": "top20k",
+				"老": "top1k",
+				"师": "top20k",
+				"喜": "top20k",
+				"欢": "rare",
+				"读": "top5k",
+				"书": "top5k",
+				"生": "top5k",
+				"亦说": "rare",
+				"亦说乎": "rare",
+				"朋自": "rare",
+				"有朋自远": "rare",
+				"朋自远": "rare",
+				"朋自远方": "rare",
+				"自远": "rare",
+				"朋自远方来": "rare",
+				"方来": "rare",
+				"人不": "rare",
+				"人不知而": "rare",
+				"不知而": "rare",
+				"知而": "rare",
+				"知而不": "rare",
+				"知而不愠": "rare",
+				"不愠": "rare",
+				"不亦君": "rare",
+				"亦君": "rare",
+				"亦君子": "rare",
+				"亦君子乎": "rare",
+				"子乎": "rare",
+				"我们今": "rare",
+				"们今": "rare",
+				"们今天": "rare",
+				"我们今天学": "rare",
+				"们今天学": "rare",
+				"们今天学习": "rare",
+				"今天学": "rare",
+				"天学": "rare",
+				"天学习": "rare",
+				"我们今天学习中": "rare",
+				"们今天学习中": "rare",
+				"们今天学习中文": "rare",
+				"今天学习中": "rare",
+				"天学习中": "rare",
+				"天学习中文": "rare",
+				"学习中": "rare",
+				"习中": "rare",
+				"习中文": "rare",
+				"老师喜": "rare",
+				"师喜": "rare",
+				"师喜欢": "rare",
+				"老师喜欢读": "rare",
+				"师喜欢读": "rare",
+				"师喜欢读书": "rare",
+				"喜欢读": "rare",
+				"欢读": "rare",
+				"欢读书": "rare",
+				"生也": "rare",
+				"学生也喜": "rare",
+				"生也喜": "rare",
+				"生也喜欢": "rare",
+				"也喜": "rare"
+			},
+			"dictionaries": [
+				{
+					"id": 9,
+					"name": "MDBG",
+					"url": "https://www.mdbg.net/chinese/dictionary?wdqb=[TERM]",
+					"display": "embedded"
+				},
+				{
+					"id": 10,
+					"name": "Wiktionary",
+					"url": "https://en.m.wiktionary.org/wiki/[TERM]#Chinese",
+					"display": "embedded"
+				},
+				{
+					"id": 11,
+					"name": "Google Translate",
+					"url": "https://translate.google.com/?sl=zh-CN&tl=en&text=[TERM]",
+					"display": "popup"
+				}
+			],
+			"highlight": null,
+			"question": null,
+			"termsVersion": 10,
+			"daySoFar": null
+		},
+		"afterRead": {
+			"book": {
+				"id": 3,
+				"title": "Дама с собачкой",
+				"pageCount": 3,
+				"bookmark": {
+					"page": 2,
+					"sentence": 1
+				}
+			},
+			"language": {
+				"id": 4,
+				"name": "Russian",
+				"code": "ru",
+				"rightToLeft": false,
+				"characterMap": {
+					"́": "",
+					"̀": ""
+				}
+			},
+			"position": 2,
+			"read": false,
+			"paragraphs": [
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "Ему",
+									"isWord": true,
+									"key": "ему",
+									"index": 0,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "не",
+									"isWord": true,
+									"key": "не",
+									"index": 1,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "было",
+									"isWord": true,
+									"key": "было",
+									"index": 2,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "ещё",
+									"isWord": true,
+									"key": "ещё",
+									"index": 3,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "сорока",
+									"isWord": true,
+									"key": "сорока",
+									"index": 4,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "но",
+									"isWord": true,
+									"key": "но",
+									"index": 5,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "у",
+									"isWord": true,
+									"key": "у",
+									"index": 6,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "него",
+									"isWord": true,
+									"key": "него",
+									"index": 7,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "была",
+									"isWord": true,
+									"key": "была",
+									"index": 8,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "уже",
+									"isWord": true,
+									"key": "уже",
+									"index": 9,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "дочь",
+									"isWord": true,
+									"key": "дочь",
+									"index": 10,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "двенадцати",
+									"isWord": true,
+									"key": "двенадцати",
+									"index": 11,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "лет",
+									"isWord": true,
+									"key": "лет",
+									"index": 12,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "и",
+									"isWord": true,
+									"key": "и",
+									"index": 13,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "два",
+									"isWord": true,
+									"key": "два",
+									"index": 14,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "сына",
+									"isWord": true,
+									"key": "сына",
+									"index": 15,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": "-",
+									"isWord": false
+								},
+								{
+									"text": "гимназиста",
+									"isWord": true,
+									"key": "гимназиста",
+									"index": 16,
+									"sentence": 0,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								}
+							]
+						},
+						{
+							"tokens": [
+								{
+									"text": "Его",
+									"isWord": true,
+									"key": "его",
+									"index": 17,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "женили",
+									"isWord": true,
+									"key": "женили",
+									"index": 18,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "рано",
+									"isWord": true,
+									"key": "рано",
+									"index": 19,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "когда",
+									"isWord": true,
+									"key": "когда",
+									"index": 20,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "он",
+									"isWord": true,
+									"key": "он",
+									"index": 21,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "был",
+									"isWord": true,
+									"key": "был",
+									"index": 22,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "ещё",
+									"isWord": true,
+									"key": "ещё",
+									"index": 23,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "студентом",
+									"isWord": true,
+									"key": "студентом",
+									"index": 24,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "второго",
+									"isWord": true,
+									"key": "второго",
+									"index": 25,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "курса",
+									"isWord": true,
+									"key": "курса",
+									"index": 26,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "и",
+									"isWord": true,
+									"key": "и",
+									"index": 27,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "теперь",
+									"isWord": true,
+									"key": "теперь",
+									"index": 28,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "жена",
+									"isWord": true,
+									"key": "жена",
+									"index": 29,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "казалась",
+									"isWord": true,
+									"key": "казалась",
+									"index": 30,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "в",
+									"isWord": true,
+									"key": "в",
+									"index": 31,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "полтора",
+									"isWord": true,
+									"key": "полтора",
+									"index": 32,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "раза",
+									"isWord": true,
+									"key": "раза",
+									"index": 33,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "старше",
+									"isWord": true,
+									"key": "старше",
+									"index": 34,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "его",
+									"isWord": true,
+									"key": "его",
+									"index": 35,
+									"sentence": 1,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								}
+							]
+						}
+					]
+				},
+				{
+					"sentences": [
+						{
+							"tokens": [
+								{
+									"text": "Это",
+									"isWord": true,
+									"key": "это",
+									"index": 36,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "была",
+									"isWord": true,
+									"key": "была",
+									"index": 37,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "женщина",
+									"isWord": true,
+									"key": "женщина",
+									"index": 38,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "высокая",
+									"isWord": true,
+									"key": "высокая",
+									"index": 39,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "с",
+									"isWord": true,
+									"key": "с",
+									"index": 40,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "тёмными",
+									"isWord": true,
+									"key": "тёмными",
+									"index": 41,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "бровями",
+									"isWord": true,
+									"key": "бровями",
+									"index": 42,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "прямая",
+									"isWord": true,
+									"key": "прямая",
+									"index": 43,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "важная",
+									"isWord": true,
+									"key": "важная",
+									"index": 44,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "солидная",
+									"isWord": true,
+									"key": "солидная",
+									"index": 45,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "и",
+									"isWord": true,
+									"key": "и",
+									"index": 46,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "как",
+									"isWord": true,
+									"key": "как",
+									"index": 47,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "она",
+									"isWord": true,
+									"key": "она",
+									"index": 48,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "сама",
+									"isWord": true,
+									"key": "сама",
+									"index": 49,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "себя",
+									"isWord": true,
+									"key": "себя",
+									"index": 50,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "называла",
+									"isWord": true,
+									"key": "называла",
+									"index": 51,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ",",
+									"isWord": false
+								},
+								{
+									"text": " ",
+									"isWord": false
+								},
+								{
+									"text": "мыслящая",
+									"isWord": true,
+									"key": "мыслящая",
+									"index": 52,
+									"sentence": 2,
+									"words": 1
+								},
+								{
+									"text": ".",
+									"isWord": false
+								}
+							]
+						}
+					]
+				}
+			],
+			"terms": {
+				"был": {
+					"id": 26,
+					"text": "был",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"была": {
+					"id": 27,
+					"text": "была",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"в": {
+					"id": 6,
+					"text": "в",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"его": {
+					"id": 24,
+					"text": "его",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"и": {
+					"id": 10,
+					"text": "и",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"как": {
+					"id": 14,
+					"text": "как",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"не": {
+					"id": 25,
+					"text": "не",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"он": {
+					"id": 13,
+					"text": "он",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"она": {
+					"id": 23,
+					"text": "она",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"с": {
+					"id": 5,
+					"text": "с",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"у": {
+					"id": 21,
+					"text": "у",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"уже": {
+					"id": 7,
+					"text": "уже",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				},
+				"это": {
+					"id": 28,
+					"text": "это",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": []
+				}
+			},
+			"frequency": {
+				"ему": "top1k",
+				"не": "top1k",
+				"было": "top1k",
+				"ещё": "top1k",
+				"сорока": "top20k",
+				"но": "top1k",
+				"у": "top1k",
+				"него": "top1k",
+				"была": "top1k",
+				"уже": "top1k",
+				"дочь": "top1k",
+				"двенадцати": "rare",
+				"лет": "top1k",
+				"и": "top1k",
+				"два": "top1k",
+				"сына": "top1k",
+				"гимназиста": "rare",
+				"его": "top1k",
+				"женили": "rare",
+				"рано": "top1k",
+				"когда": "top1k",
+				"он": "top1k",
+				"был": "top1k",
+				"студентом": "top20k",
+				"второго": "top5k",
+				"курса": "top20k",
+				"теперь": "top1k",
+				"жена": "top1k",
+				"казалась": "top20k",
+				"в": "top1k",
+				"полтора": "top20k",
+				"раза": "top5k",
+				"старше": "top5k",
+				"это": "top1k",
+				"женщина": "top1k",
+				"высокая": "top20k",
+				"с": "top1k",
+				"тёмными": "rare",
+				"бровями": "rare",
+				"прямая": "top20k",
+				"важная": "top5k",
+				"солидная": "rare",
+				"как": "top1k",
+				"она": "top1k",
+				"сама": "top1k",
+				"себя": "top1k",
+				"называла": "top20k",
+				"мыслящая": "rare"
+			},
+			"dictionaries": [
+				{
+					"id": 6,
+					"name": "Wiktionary",
+					"url": "https://en.m.wiktionary.org/wiki/[TERM]#Russian",
+					"display": "embedded"
+				},
+				{
+					"id": 7,
+					"name": "OpenRussian",
+					"url": "https://en.openrussian.org/ru/[TERM]",
+					"display": "embedded"
+				},
+				{
+					"id": 8,
+					"name": "Google Translate",
+					"url": "https://translate.google.com/?sl=ru&tl=en&text=[TERM]",
+					"display": "popup"
+				}
+			],
+			"highlight": null,
+			"question": {
+				"feedback": "Right: появилось is neuter because лицо is.",
+				"glosses": [
+					{
+						"text": "набережная",
+						"gloss": "embankment, seafront"
+					},
+					{
+						"text": "привыкнуть",
+						"gloss": "to get used to"
+					}
+				],
+				"questions": [
+					{
+						"prompt": "Who is the new face on the seafront?",
+						"options": [
+							"A lady with a dog",
+							"Gurov",
+							"A student"
+						]
+					},
+					{
+						"prompt": "What does «привыкший тут» tell you about Gurov?"
+					}
+				],
+				"askedAt": "2026-11-10T12:00:00.000Z",
+				"answer": {
+					"answers": [
+						"A lady with a dog",
+						"He has settled in."
+					]
+				}
+			},
+			"termsVersion": 73,
+			"daySoFar": {
+				"wordsRead": 108,
+				"newTerms": 2,
+				"nowKnown": 1,
+				"reviews": 2
+			}
+		}
+	},
+	"tutor": {
+		"highlight": {
+			"highlight": {
+				"page": 1,
+				"first": 2,
+				"last": 2,
+				"at": "2026-11-10T12:00:00.000Z"
+			},
+			"question": null,
+			"termsVersion": 66
+		},
+		"passage": {
+			"highlight": {
+				"page": 1,
+				"first": 2,
+				"last": 2,
+				"text": "проживший в Ялте уже две недели и привыкший тут",
+				"note": "Two participles describe Gurov: проживший (having lived) and привыкший (having got used to).",
+				"at": "2026-11-10T12:00:00.000Z"
+			},
+			"question": null,
+			"termsVersion": 66
+		},
+		"question": {
+			"highlight": {
+				"page": 1,
+				"first": 2,
+				"last": 2,
+				"text": "проживший в Ялте уже две недели и привыкший тут",
+				"note": "Two participles describe Gurov: проживший (having lived) and привыкший (having got used to).",
+				"at": "2026-11-10T12:00:00.000Z"
+			},
+			"question": {
+				"feedback": "Right: появилось is neuter because лицо is.",
+				"glosses": [
+					{
+						"text": "набережная",
+						"gloss": "embankment, seafront"
+					},
+					{
+						"text": "привыкнуть",
+						"gloss": "to get used to"
+					}
+				],
+				"questions": [
+					{
+						"prompt": "Who is the new face on the seafront?",
+						"options": [
+							"A lady with a dog",
+							"Gurov",
+							"A student"
+						]
+					},
+					{
+						"prompt": "What does «привыкший тут» tell you about Gurov?"
+					}
+				],
+				"askedAt": "2026-11-10T12:00:00.000Z"
+			},
+			"termsVersion": 66
+		},
+		"answered": {
+			"highlight": {
+				"page": 1,
+				"first": 2,
+				"last": 2,
+				"text": "проживший в Ялте уже две недели и привыкший тут",
+				"note": "Two participles describe Gurov: проживший (having lived) and привыкший (having got used to).",
+				"at": "2026-11-10T12:00:00.000Z"
+			},
+			"question": {
+				"feedback": "Right: появилось is neuter because лицо is.",
+				"glosses": [
+					{
+						"text": "набережная",
+						"gloss": "embankment, seafront"
+					},
+					{
+						"text": "привыкнуть",
+						"gloss": "to get used to"
+					}
+				],
+				"questions": [
+					{
+						"prompt": "Who is the new face on the seafront?",
+						"options": [
+							"A lady with a dog",
+							"Gurov",
+							"A student"
+						]
+					},
+					{
+						"prompt": "What does «привыкший тут» tell you about Gurov?"
+					}
+				],
+				"askedAt": "2026-11-10T12:00:00.000Z",
+				"answer": {
+					"answers": [
+						"A lady with a dog",
+						"He has settled in."
+					]
+				}
+			},
+			"termsVersion": 66
+		}
+	},
+	"routes": {
+		"home": {
+			"languages": [
+				{
+					"id": 1,
+					"name": "Bosnian",
+					"code": "bs",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 2,
+					"name": "Chinese",
+					"code": "zh",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 3,
+					"name": "Farsi",
+					"code": "fa",
+					"rightToLeft": true,
+					"characterMap": {
+						"ي": "ی",
+						"ك": "ک"
+					}
+				},
+				{
+					"id": 4,
+					"name": "Russian",
+					"code": "ru",
+					"rightToLeft": false,
+					"characterMap": {
+						"́": "",
+						"̀": ""
+					}
+				}
+			],
+			"books": [
+				{
+					"id": 5,
+					"title": "论语",
+					"languageName": "Chinese",
+					"pageCount": 1,
+					"readCount": 0,
+					"bookmark": {
+						"page": 1,
+						"sentence": 1
+					},
+					"unknownShare": 0.8518518518518519
+				},
+				{
+					"id": 4,
+					"title": "بنی آدم",
+					"languageName": "Farsi",
+					"pageCount": 1,
+					"readCount": 0,
+					"bookmark": {
+						"page": 1,
+						"sentence": 1
+					},
+					"unknownShare": 0.8666666666666667
+				},
+				{
+					"id": 3,
+					"title": "Дама с собачкой",
+					"languageName": "Russian",
+					"pageCount": 3,
+					"readCount": 1,
+					"bookmark": {
+						"page": 1,
+						"sentence": 2,
+						"word": "привыкший"
+					},
+					"bookmarkedAt": "2026-11-10T12:00:00.000Z",
+					"unknownShare": 0.7007299270072993
+				},
+				{
+					"id": 2,
+					"title": "Рассказы",
+					"languageName": "Russian",
+					"pageCount": 330,
+					"readCount": 162,
+					"bookmark": {
+						"page": 163,
+						"sentence": 1
+					},
+					"bookmarkedAt": "2026-11-09T12:00:00.000Z",
+					"unknownShare": 0.7007299270072993
+				},
+				{
+					"id": 1,
+					"title": "Ванька",
+					"languageName": "Russian",
+					"pageCount": 2,
+					"readCount": 2,
+					"bookmark": {
+						"page": 2,
+						"sentence": 1
+					},
+					"bookmarkedAt": "2026-10-18T12:00:00.000Z",
+					"unknownShare": 0.8695652173913043
+				}
+			],
+			"latest": {
+				"bookId": 3,
+				"title": "Дама с собачкой",
+				"bookmark": {
+					"page": 1,
+					"sentence": 2,
+					"word": "привыкший"
+				},
+				"at": "2026-11-10T12:00:00.000Z"
+			},
+			"due": 13
+		},
+		"terms": {
+			"languages": [
+				{
+					"id": 1,
+					"name": "Bosnian",
+					"code": "bs",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 2,
+					"name": "Chinese",
+					"code": "zh",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 3,
+					"name": "Farsi",
+					"code": "fa",
+					"rightToLeft": true,
+					"characterMap": {
+						"ي": "ی",
+						"ك": "ک"
+					}
+				},
+				{
+					"id": 4,
+					"name": "Russian",
+					"code": "ru",
+					"rightToLeft": false,
+					"characterMap": {
+						"́": "",
+						"̀": ""
+					}
+				}
+			],
+			"filter": {
+				"language": "",
+				"status": "",
+				"source": "",
+				"q": "",
+				"due": "",
+				"recall": "",
+				"frequency": ""
+			},
+			"terms": [
+				{
+					"id": 51,
+					"text": "不",
+					"status": "known",
+					"pronunciation": "bù",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [
+						{
+							"id": 19,
+							"text": "not",
+							"source": "you"
+						}
+					],
+					"languageId": 2,
+					"children": 0
+				},
+				{
+					"id": 50,
+					"text": "今天",
+					"status": "known",
+					"pronunciation": "jīntiān",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [
+						{
+							"id": 18,
+							"text": "today",
+							"source": "you"
+						}
+					],
+					"languageId": 2,
+					"children": 0
+				},
+				{
+					"id": 49,
+					"text": "喜欢",
+					"status": "learning1",
+					"pronunciation": "xǐhuan",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-03T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "top1k",
+					"translations": [
+						{
+							"id": 17,
+							"text": "to like",
+							"source": "you"
+						}
+					],
+					"languageId": 2,
+					"children": 0
+				},
+				{
+					"id": 48,
+					"text": "学",
+					"status": "learning4",
+					"pronunciation": "xué",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-03T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "top5k",
+					"translations": [
+						{
+							"id": 16,
+							"text": "to learn",
+							"source": "you"
+						}
+					],
+					"languageId": 2,
+					"children": 0
+				},
+				{
+					"id": 47,
+					"text": "学习",
+					"status": "learning2",
+					"pronunciation": "xuéxí",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-03T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "top5k",
+					"translations": [
+						{
+							"id": 15,
+							"text": "to study",
+							"source": "you"
+						}
+					],
+					"languageId": 2,
+					"children": 0
+				},
+				{
+					"id": 46,
+					"text": "درد",
+					"status": "learning2",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-03T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "top1k",
+					"translations": [
+						{
+							"id": 14,
+							"text": "pain",
+							"source": "you"
+						}
+					],
+					"languageId": 3,
+					"children": 0
+				},
+				{
+					"id": 45,
+					"text": "آفرینش",
+					"status": "learning3",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-03T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "top20k",
+					"translations": [
+						{
+							"id": 13,
+							"text": "creation",
+							"source": "you"
+						}
+					],
+					"languageId": 3,
+					"children": 0
+				},
+				{
+					"id": 44,
+					"text": "اعضای",
+					"status": "learning1",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-03T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "top5k",
+					"translations": [
+						{
+							"id": 12,
+							"text": "limbs, members",
+							"source": "you"
+						}
+					],
+					"languageId": 3,
+					"children": 0
+				},
+				{
+					"id": 43,
+					"text": "آدم",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [
+						{
+							"id": 11,
+							"text": "human, Adam",
+							"source": "you"
+						}
+					],
+					"languageId": 3,
+					"children": 0
+				},
+				{
+					"id": 42,
+					"text": "набережной",
+					"status": "learning1",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-10-30T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "rare",
+					"translations": [
+						{
+							"id": 10,
+							"text": "embankment, seafront",
+							"source": "tutor"
+						}
+					],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 41,
+					"text": "павильоне",
+					"status": "learning1",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-10-12T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"frequency": "rare",
+					"translations": [
+						{
+							"id": 9,
+							"text": "pavilion",
+							"source": "you"
+						}
+					],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 40,
+					"text": "дама с собачкой",
+					"status": "learning2",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-10-12T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 0
+					},
+					"translations": [
+						{
+							"id": 8,
+							"text": "the lady with the little dog",
+							"source": "you"
+						}
+					],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 39,
+					"text": "привыкший",
+					"status": "learning2",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-04T12:00:00.000Z",
+						"overdue": 3,
+						"reviews": 1,
+						"recall": {
+							"level": "learning2",
+							"holdsDays": 2.3065,
+							"today": 0.78451304
+						}
+					},
+					"frequency": "rare",
+					"translations": [
+						{
+							"id": 7,
+							"text": "accustomed",
+							"source": "you"
+						}
+					],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 38,
+					"text": "появилось",
+					"status": "learning2",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-12T12:00:00.000Z",
+						"overdue": 0,
+						"reviews": 2,
+						"recall": {
+							"level": "learning2",
+							"holdsDays": 2.61544931,
+							"today": 0.95209887
+						}
+					},
+					"frequency": "top20k",
+					"tutorAssessment": "learning2",
+					"translations": [
+						{
+							"id": 6,
+							"text": "appeared",
+							"source": "wiktionary"
+						}
+					],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 37,
+					"text": "проживший",
+					"status": "learning3",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-10T12:00:00.000Z",
+						"overdue": 1,
+						"reviews": 1,
+						"recall": {
+							"level": "learning2",
+							"holdsDays": 2.3065,
+							"today": 0.88094796
+						}
+					},
+					"frequency": "rare",
+					"translations": [
+						{
+							"id": 5,
+							"text": "having lived",
+							"source": "azure"
+						}
+					],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 36,
+					"text": "интересоваться",
+					"status": "learning3",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-25T12:00:00.000Z",
+						"overdue": 0,
+						"reviews": 2,
+						"recall": {
+							"level": "learning3",
+							"holdsDays": 17.33231526,
+							"today": 0.98361017
+						}
+					},
+					"frequency": "rare",
+					"tutorAssessment": "learning4",
+					"transfer": {
+						"form": "easy",
+						"concept": "medium",
+						"reason": "Close to English \"interest\"; takes the instrumental."
+					},
+					"translations": [
+						{
+							"id": 3,
+							"text": "to be interested in",
+							"source": "you"
+						},
+						{
+							"id": 4,
+							"text": "to take an interest",
+							"source": "wiktionary"
+						}
+					],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 35,
+					"text": "лицами",
+					"status": "learning4",
+					"pronunciation": "",
+					"parent": {
+						"id": 34,
+						"text": "лицо",
+						"status": "learning4"
+					},
+					"followsParent": true,
+					"practice": {
+						"due": "2026-11-02T12:00:00.000Z",
+						"overdue": 2,
+						"reviews": 2,
+						"recall": {
+							"level": "learning3",
+							"holdsDays": 16.17726312,
+							"today": 0.87070342
+						}
+					},
+					"frequency": "rare",
+					"translations": [
+						{
+							"id": 2,
+							"text": "faces (instrumental)",
+							"source": "you"
+						}
+					],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 34,
+					"text": "лицо",
+					"status": "learning4",
+					"pronunciation": "",
+					"followsParent": false,
+					"practice": {
+						"due": "2026-11-02T12:00:00.000Z",
+						"overdue": 2,
+						"reviews": 2,
+						"recall": {
+							"level": "learning3",
+							"holdsDays": 16.17726312,
+							"today": 0.87070342
+						}
+					},
+					"frequency": "top1k",
+					"translations": [
+						{
+							"id": 1,
+							"text": "face; person",
+							"source": "you"
+						}
+					],
+					"languageId": 4,
+					"children": 1
+				},
+				{
+					"id": 33,
+					"text": "верне",
+					"status": "ignored",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "rare",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 32,
+					"text": "ялте",
+					"status": "ignored",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "rare",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 31,
+					"text": "гуров",
+					"status": "ignored",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "rare",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 30,
+					"text": "дмитрич",
+					"status": "ignored",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "rare",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 29,
+					"text": "дмитрий",
+					"status": "ignored",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top20k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 28,
+					"text": "это",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 27,
+					"text": "была",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 26,
+					"text": "был",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 25,
+					"text": "не",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 24,
+					"text": "его",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 23,
+					"text": "она",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 22,
+					"text": "видел",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 21,
+					"text": "у",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 20,
+					"text": "тут",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 19,
+					"text": "белый",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top5k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 18,
+					"text": "за",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 17,
+					"text": "молодая",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top5k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 16,
+					"text": "прошла",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top5k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 15,
+					"text": "по",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 14,
+					"text": "как",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 13,
+					"text": "он",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 12,
+					"text": "стал",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 11,
+					"text": "тоже",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 10,
+					"text": "и",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 9,
+					"text": "недели",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 8,
+					"text": "две",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 7,
+					"text": "уже",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 6,
+					"text": "в",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 5,
+					"text": "с",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 4,
+					"text": "новое",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top5k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 3,
+					"text": "на",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				},
+				{
+					"id": 2,
+					"text": "что",
+					"status": "known",
+					"pronunciation": "",
+					"followsParent": false,
+					"frequency": "top1k",
+					"translations": [],
+					"languageId": 4,
+					"children": 0
+				}
+			],
+			"total": 51,
+			"page": 1,
+			"pageSize": 50
+		},
+		"review": {
+			"languages": [
+				{
+					"id": 1,
+					"name": "Bosnian",
+					"code": "bs",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 2,
+					"name": "Chinese",
+					"code": "zh",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 3,
+					"name": "Farsi",
+					"code": "fa",
+					"rightToLeft": true,
+					"characterMap": {
+						"ي": "ی",
+						"ك": "ک"
+					}
+				},
+				{
+					"id": 4,
+					"name": "Russian",
+					"code": "ru",
+					"rightToLeft": false,
+					"characterMap": {
+						"́": "",
+						"̀": ""
+					}
+				}
+			],
+			"languageId": "",
+			"remaining": 13,
+			"term": {
+				"id": 41,
+				"text": "павильоне",
+				"status": "learning1",
+				"pronunciation": "",
+				"followsParent": false,
+				"practice": {
+					"due": "2026-10-12T12:00:00.000Z",
+					"overdue": 3,
+					"reviews": 0
+				},
+				"frequency": "rare",
+				"translations": [
+					{
+						"id": 9,
+						"text": "pavilion",
+						"source": "you"
+					}
+				],
+				"languageId": 4,
+				"children": 0,
+				"language": {
+					"id": 4,
+					"name": "Russian",
+					"code": "ru",
+					"rightToLeft": false,
+					"characterMap": {
+						"́": "",
+						"̀": ""
+					}
+				}
+			},
+			"example": {
+				"text": "Сидя в павильоне у Верне, он видел, как по набережной прошла молодая дама, невысокого роста блондинка, в берете; за нею бежал белый шпиц.",
+				"bookId": 2,
+				"title": "Рассказы",
+				"page": 1
+			}
+		},
+		"progress": {
+			"languages": [
+				{
+					"language": {
+						"id": 2,
+						"name": "Chinese",
+						"code": "zh",
+						"rightToLeft": false,
+						"characterMap": {}
+					},
+					"wordsRead": 0,
+					"milestone": {
+						"next": 10000
+					},
+					"week": [
+						{
+							"day": "2026-11-04",
+							"words": 0,
+							"reading": false
+						},
+						{
+							"day": "2026-11-05",
+							"words": 0,
+							"reading": false
+						},
+						{
+							"day": "2026-11-06",
+							"words": 0,
+							"reading": false
+						},
+						{
+							"day": "2026-11-07",
+							"words": 0,
+							"reading": false
+						},
+						{
+							"day": "2026-11-08",
+							"words": 0,
+							"reading": false
+						},
+						{
+							"day": "2026-11-09",
+							"words": 0,
+							"reading": false
+						},
+						{
+							"day": "2026-11-10",
+							"words": 0,
+							"reading": false
+						}
+					],
+					"weeks": [
+						{
+							"start": "2026-08-24",
+							"words": 0
+						},
+						{
+							"start": "2026-08-31",
+							"words": 0
+						},
+						{
+							"start": "2026-09-07",
+							"words": 0
+						},
+						{
+							"start": "2026-09-14",
+							"words": 0
+						},
+						{
+							"start": "2026-09-21",
+							"words": 0
+						},
+						{
+							"start": "2026-09-28",
+							"words": 0
+						},
+						{
+							"start": "2026-10-05",
+							"words": 0
+						},
+						{
+							"start": "2026-10-12",
+							"words": 0
+						},
+						{
+							"start": "2026-10-19",
+							"words": 0
+						},
+						{
+							"start": "2026-10-26",
+							"words": 0
+						},
+						{
+							"start": "2026-11-02",
+							"words": 0
+						},
+						{
+							"start": "2026-11-09",
+							"words": 0
+						}
+					],
+					"known": 2,
+					"learning": 3,
+					"knownHistory": [
+						{
+							"day": "2026-11-02",
+							"known": 2
+						},
+						{
+							"day": "2026-11-03",
+							"known": 2
+						},
+						{
+							"day": "2026-11-04",
+							"known": 2
+						},
+						{
+							"day": "2026-11-05",
+							"known": 2
+						},
+						{
+							"day": "2026-11-06",
+							"known": 2
+						},
+						{
+							"day": "2026-11-07",
+							"known": 2
+						},
+						{
+							"day": "2026-11-08",
+							"known": 2
+						},
+						{
+							"day": "2026-11-09",
+							"known": 2
+						},
+						{
+							"day": "2026-11-10",
+							"known": 2
+						}
+					],
+					"forecast": [
+						{
+							"day": "2026-11-10",
+							"due": 3
+						},
+						{
+							"day": "2026-11-11",
+							"due": 0
+						},
+						{
+							"day": "2026-11-12",
+							"due": 0
+						},
+						{
+							"day": "2026-11-13",
+							"due": 0
+						},
+						{
+							"day": "2026-11-14",
+							"due": 0
+						},
+						{
+							"day": "2026-11-15",
+							"due": 0
+						},
+						{
+							"day": "2026-11-16",
+							"due": 0
+						},
+						{
+							"day": "2026-11-17",
+							"due": 0
+						},
+						{
+							"day": "2026-11-18",
+							"due": 0
+						},
+						{
+							"day": "2026-11-19",
+							"due": 0
+						},
+						{
+							"day": "2026-11-20",
+							"due": 0
+						},
+						{
+							"day": "2026-11-21",
+							"due": 0
+						},
+						{
+							"day": "2026-11-22",
+							"due": 0
+						},
+						{
+							"day": "2026-11-23",
+							"due": 0
+						}
+					]
+				},
+				{
+					"language": {
+						"id": 3,
+						"name": "Farsi",
+						"code": "fa",
+						"rightToLeft": true,
+						"characterMap": {
+							"ي": "ی",
+							"ك": "ک"
+						}
+					},
+					"wordsRead": 0,
+					"milestone": {
+						"next": 10000
+					},
+					"week": [
+						{
+							"day": "2026-11-04",
+							"words": 0,
+							"reading": false
+						},
+						{
+							"day": "2026-11-05",
+							"words": 0,
+							"reading": false
+						},
+						{
+							"day": "2026-11-06",
+							"words": 0,
+							"reading": false
+						},
+						{
+							"day": "2026-11-07",
+							"words": 0,
+							"reading": false
+						},
+						{
+							"day": "2026-11-08",
+							"words": 0,
+							"reading": false
+						},
+						{
+							"day": "2026-11-09",
+							"words": 0,
+							"reading": false
+						},
+						{
+							"day": "2026-11-10",
+							"words": 0,
+							"reading": false
+						}
+					],
+					"weeks": [
+						{
+							"start": "2026-08-24",
+							"words": 0
+						},
+						{
+							"start": "2026-08-31",
+							"words": 0
+						},
+						{
+							"start": "2026-09-07",
+							"words": 0
+						},
+						{
+							"start": "2026-09-14",
+							"words": 0
+						},
+						{
+							"start": "2026-09-21",
+							"words": 0
+						},
+						{
+							"start": "2026-09-28",
+							"words": 0
+						},
+						{
+							"start": "2026-10-05",
+							"words": 0
+						},
+						{
+							"start": "2026-10-12",
+							"words": 0
+						},
+						{
+							"start": "2026-10-19",
+							"words": 0
+						},
+						{
+							"start": "2026-10-26",
+							"words": 0
+						},
+						{
+							"start": "2026-11-02",
+							"words": 0
+						},
+						{
+							"start": "2026-11-09",
+							"words": 0
+						}
+					],
+					"known": 1,
+					"learning": 3,
+					"knownHistory": [
+						{
+							"day": "2026-11-02",
+							"known": 1
+						},
+						{
+							"day": "2026-11-03",
+							"known": 1
+						},
+						{
+							"day": "2026-11-04",
+							"known": 1
+						},
+						{
+							"day": "2026-11-05",
+							"known": 1
+						},
+						{
+							"day": "2026-11-06",
+							"known": 1
+						},
+						{
+							"day": "2026-11-07",
+							"known": 1
+						},
+						{
+							"day": "2026-11-08",
+							"known": 1
+						},
+						{
+							"day": "2026-11-09",
+							"known": 1
+						},
+						{
+							"day": "2026-11-10",
+							"known": 1
+						}
+					],
+					"forecast": [
+						{
+							"day": "2026-11-10",
+							"due": 3
+						},
+						{
+							"day": "2026-11-11",
+							"due": 0
+						},
+						{
+							"day": "2026-11-12",
+							"due": 0
+						},
+						{
+							"day": "2026-11-13",
+							"due": 0
+						},
+						{
+							"day": "2026-11-14",
+							"due": 0
+						},
+						{
+							"day": "2026-11-15",
+							"due": 0
+						},
+						{
+							"day": "2026-11-16",
+							"due": 0
+						},
+						{
+							"day": "2026-11-17",
+							"due": 0
+						},
+						{
+							"day": "2026-11-18",
+							"due": 0
+						},
+						{
+							"day": "2026-11-19",
+							"due": 0
+						},
+						{
+							"day": "2026-11-20",
+							"due": 0
+						},
+						{
+							"day": "2026-11-21",
+							"due": 0
+						},
+						{
+							"day": "2026-11-22",
+							"due": 0
+						},
+						{
+							"day": "2026-11-23",
+							"due": 0
+						}
+					]
+				},
+				{
+					"language": {
+						"id": 4,
+						"name": "Russian",
+						"code": "ru",
+						"rightToLeft": false,
+						"characterMap": {
+							"́": "",
+							"̀": ""
+						}
+					},
+					"wordsRead": 10339,
+					"milestone": {
+						"passed": 10000,
+						"next": 25000
+					},
+					"week": [
+						{
+							"day": "2026-11-04",
+							"words": 0,
+							"reading": false
+						},
+						{
+							"day": "2026-11-05",
+							"words": 409,
+							"reading": true
+						},
+						{
+							"day": "2026-11-06",
+							"words": 137,
+							"reading": true
+						},
+						{
+							"day": "2026-11-07",
+							"words": 272,
+							"reading": true
+						},
+						{
+							"day": "2026-11-08",
+							"words": 0,
+							"reading": true
+						},
+						{
+							"day": "2026-11-09",
+							"words": 190,
+							"reading": true
+						},
+						{
+							"day": "2026-11-10",
+							"words": 0,
+							"reading": false
+						}
+					],
+					"weeks": [
+						{
+							"start": "2026-08-24",
+							"words": 0
+						},
+						{
+							"start": "2026-08-31",
+							"words": 0
+						},
+						{
+							"start": "2026-09-07",
+							"words": 0
+						},
+						{
+							"start": "2026-09-14",
+							"words": 0
+						},
+						{
+							"start": "2026-09-21",
+							"words": 0
+						},
+						{
+							"start": "2026-09-28",
+							"words": 0
+						},
+						{
+							"start": "2026-10-05",
+							"words": 1871
+						},
+						{
+							"start": "2026-10-12",
+							"words": 2628
+						},
+						{
+							"start": "2026-10-19",
+							"words": 2172
+						},
+						{
+							"start": "2026-10-26",
+							"words": 2227
+						},
+						{
+							"start": "2026-11-02",
+							"words": 1251
+						},
+						{
+							"start": "2026-11-09",
+							"words": 190
+						}
+					],
+					"known": 28,
+					"learning": 9,
+					"knownHistory": [
+						{
+							"day": "2026-10-01",
+							"known": 28
+						},
+						{
+							"day": "2026-10-02",
+							"known": 28
+						},
+						{
+							"day": "2026-10-03",
+							"known": 28
+						},
+						{
+							"day": "2026-10-04",
+							"known": 28
+						},
+						{
+							"day": "2026-10-05",
+							"known": 28
+						},
+						{
+							"day": "2026-10-06",
+							"known": 28
+						},
+						{
+							"day": "2026-10-07",
+							"known": 28
+						},
+						{
+							"day": "2026-10-08",
+							"known": 28
+						},
+						{
+							"day": "2026-10-09",
+							"known": 28
+						},
+						{
+							"day": "2026-10-10",
+							"known": 28
+						},
+						{
+							"day": "2026-10-11",
+							"known": 28
+						},
+						{
+							"day": "2026-10-12",
+							"known": 28
+						},
+						{
+							"day": "2026-10-13",
+							"known": 28
+						},
+						{
+							"day": "2026-10-14",
+							"known": 28
+						},
+						{
+							"day": "2026-10-15",
+							"known": 28
+						},
+						{
+							"day": "2026-10-16",
+							"known": 28
+						},
+						{
+							"day": "2026-10-17",
+							"known": 28
+						},
+						{
+							"day": "2026-10-18",
+							"known": 28
+						},
+						{
+							"day": "2026-10-19",
+							"known": 28
+						},
+						{
+							"day": "2026-10-20",
+							"known": 28
+						},
+						{
+							"day": "2026-10-21",
+							"known": 28
+						},
+						{
+							"day": "2026-10-22",
+							"known": 28
+						},
+						{
+							"day": "2026-10-23",
+							"known": 28
+						},
+						{
+							"day": "2026-10-24",
+							"known": 28
+						},
+						{
+							"day": "2026-10-25",
+							"known": 28
+						},
+						{
+							"day": "2026-10-26",
+							"known": 28
+						},
+						{
+							"day": "2026-10-27",
+							"known": 28
+						},
+						{
+							"day": "2026-10-28",
+							"known": 28
+						},
+						{
+							"day": "2026-10-29",
+							"known": 28
+						},
+						{
+							"day": "2026-10-30",
+							"known": 28
+						},
+						{
+							"day": "2026-10-31",
+							"known": 28
+						},
+						{
+							"day": "2026-11-01",
+							"known": 28
+						},
+						{
+							"day": "2026-11-02",
+							"known": 28
+						},
+						{
+							"day": "2026-11-03",
+							"known": 28
+						},
+						{
+							"day": "2026-11-04",
+							"known": 28
+						},
+						{
+							"day": "2026-11-05",
+							"known": 28
+						},
+						{
+							"day": "2026-11-06",
+							"known": 28
+						},
+						{
+							"day": "2026-11-07",
+							"known": 28
+						},
+						{
+							"day": "2026-11-08",
+							"known": 28
+						},
+						{
+							"day": "2026-11-09",
+							"known": 28
+						},
+						{
+							"day": "2026-11-10",
+							"known": 28
+						}
+					],
+					"forecast": [
+						{
+							"day": "2026-11-10",
+							"due": 7
+						},
+						{
+							"day": "2026-11-11",
+							"due": 0
+						},
+						{
+							"day": "2026-11-12",
+							"due": 1
+						},
+						{
+							"day": "2026-11-13",
+							"due": 0
+						},
+						{
+							"day": "2026-11-14",
+							"due": 0
+						},
+						{
+							"day": "2026-11-15",
+							"due": 0
+						},
+						{
+							"day": "2026-11-16",
+							"due": 0
+						},
+						{
+							"day": "2026-11-17",
+							"due": 0
+						},
+						{
+							"day": "2026-11-18",
+							"due": 0
+						},
+						{
+							"day": "2026-11-19",
+							"due": 0
+						},
+						{
+							"day": "2026-11-20",
+							"due": 0
+						},
+						{
+							"day": "2026-11-21",
+							"due": 0
+						},
+						{
+							"day": "2026-11-22",
+							"due": 0
+						},
+						{
+							"day": "2026-11-23",
+							"due": 0
+						}
+					]
+				}
+			]
+		},
+		"feeds": {
+			"languages": [
+				{
+					"id": 1,
+					"name": "Bosnian",
+					"code": "bs",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 2,
+					"name": "Chinese",
+					"code": "zh",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 3,
+					"name": "Farsi",
+					"code": "fa",
+					"rightToLeft": true,
+					"characterMap": {
+						"ي": "ی",
+						"ك": "ک"
+					}
+				},
+				{
+					"id": 4,
+					"name": "Russian",
+					"code": "ru",
+					"rightToLeft": false,
+					"characterMap": {
+						"́": "",
+						"̀": ""
+					}
+				}
+			],
+			"feeds": [
+				{
+					"id": 2,
+					"languageId": 1,
+					"name": "Al Jazeera Balkans",
+					"url": "https://balkans.aljazeera.net/rss.xml"
+				},
+				{
+					"id": 1,
+					"languageId": 1,
+					"name": "Klix.ba",
+					"url": "https://www.klix.ba/rss"
+				},
+				{
+					"id": 3,
+					"languageId": 1,
+					"name": "N1 BiH",
+					"url": "https://n1info.ba/feed/"
+				},
+				{
+					"id": 9,
+					"languageId": 2,
+					"name": "BBC Chinese",
+					"url": "https://feeds.bbci.co.uk/zhongwen/simp/rss.xml"
+				},
+				{
+					"id": 10,
+					"languageId": 2,
+					"name": "DW Chinese",
+					"url": "https://rss.dw.com/rdf/rss-chi-all"
+				},
+				{
+					"id": 4,
+					"languageId": 3,
+					"name": "BBC Persian",
+					"url": "https://feeds.bbci.co.uk/persian/rss.xml"
+				},
+				{
+					"id": 5,
+					"languageId": 3,
+					"name": "DW Persian",
+					"url": "https://rss.dw.com/rdf/rss-per-all"
+				},
+				{
+					"id": 6,
+					"languageId": 4,
+					"name": "BBC Russian",
+					"url": "https://feeds.bbci.co.uk/russian/rss.xml"
+				},
+				{
+					"id": 8,
+					"languageId": 4,
+					"name": "DW Russian",
+					"url": "https://rss.dw.com/rdf/rss-ru-all"
+				},
+				{
+					"id": 7,
+					"languageId": 4,
+					"name": "Meduza",
+					"url": "https://meduza.io/rss/all"
+				},
+				{
+					"id": 11,
+					"languageId": 4,
+					"name": "Новости науки",
+					"url": "https://example.org/science.xml"
+				}
+			]
+		},
+		"you": {
+			"languages": [
+				{
+					"name": "Swedish",
+					"level": "native"
+				},
+				{
+					"name": "English",
+					"level": "fluent"
+				},
+				{
+					"name": "Bosnian",
+					"level": "some"
+				}
+			]
+		},
+		"topics": {
+			"topics": [
+				{
+					"id": 1,
+					"text": "история"
+				},
+				{
+					"id": 2,
+					"text": "космос"
+				}
+			]
+		},
+		"newBook": {
+			"languages": [
+				{
+					"id": 1,
+					"name": "Bosnian",
+					"code": "bs",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 2,
+					"name": "Chinese",
+					"code": "zh",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 3,
+					"name": "Farsi",
+					"code": "fa",
+					"rightToLeft": true,
+					"characterMap": {
+						"ي": "ی",
+						"ك": "ک"
+					}
+				},
+				{
+					"id": 4,
+					"name": "Russian",
+					"code": "ru",
+					"rightToLeft": false,
+					"characterMap": {
+						"́": "",
+						"̀": ""
+					}
+				}
+			]
+		},
+		"suggestions": {
+			"language": {
+				"id": 4,
+				"name": "Russian",
+				"code": "ru",
+				"rightToLeft": false,
+				"characterMap": {
+					"́": "",
+					"̀": ""
+				}
+			},
+			"fitRange": {
+				"min": 0.05,
+				"max": 0.15
+			},
+			"topics": [
+				{
+					"id": 1,
+					"text": "история"
+				},
+				{
+					"id": 2,
+					"text": "космос"
+				}
+			],
+			"feeds": [
+				{
+					"id": 6,
+					"languageId": 4,
+					"name": "BBC Russian",
+					"url": "https://feeds.bbci.co.uk/russian/rss.xml"
+				},
+				{
+					"id": 8,
+					"languageId": 4,
+					"name": "DW Russian",
+					"url": "https://rss.dw.com/rdf/rss-ru-all"
+				},
+				{
+					"id": 7,
+					"languageId": 4,
+					"name": "Meduza",
+					"url": "https://meduza.io/rss/all"
+				},
+				{
+					"id": 11,
+					"languageId": 4,
+					"name": "Новости науки",
+					"url": "https://example.org/science.xml"
+				}
+			],
+			"classics": 12
+		}
+	},
+	"emptyRoutes": {
+		"home": {
+			"languages": [
+				{
+					"id": 1,
+					"name": "Bosnian",
+					"code": "bs",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 2,
+					"name": "Chinese",
+					"code": "zh",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 3,
+					"name": "Farsi",
+					"code": "fa",
+					"rightToLeft": true,
+					"characterMap": {
+						"ي": "ی",
+						"ك": "ک"
+					}
+				},
+				{
+					"id": 4,
+					"name": "Russian",
+					"code": "ru",
+					"rightToLeft": false,
+					"characterMap": {
+						"́": "",
+						"̀": ""
+					}
+				}
+			],
+			"books": [],
+			"due": 0
+		},
+		"terms": {
+			"languages": [
+				{
+					"id": 1,
+					"name": "Bosnian",
+					"code": "bs",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 2,
+					"name": "Chinese",
+					"code": "zh",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 3,
+					"name": "Farsi",
+					"code": "fa",
+					"rightToLeft": true,
+					"characterMap": {
+						"ي": "ی",
+						"ك": "ک"
+					}
+				},
+				{
+					"id": 4,
+					"name": "Russian",
+					"code": "ru",
+					"rightToLeft": false,
+					"characterMap": {
+						"́": "",
+						"̀": ""
+					}
+				}
+			],
+			"filter": {
+				"language": "",
+				"status": "",
+				"source": "",
+				"q": "",
+				"due": "",
+				"recall": "",
+				"frequency": ""
+			},
+			"terms": [],
+			"total": 0,
+			"page": 1,
+			"pageSize": 50
+		},
+		"review": {
+			"languages": [
+				{
+					"id": 1,
+					"name": "Bosnian",
+					"code": "bs",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 2,
+					"name": "Chinese",
+					"code": "zh",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 3,
+					"name": "Farsi",
+					"code": "fa",
+					"rightToLeft": true,
+					"characterMap": {
+						"ي": "ی",
+						"ك": "ک"
+					}
+				},
+				{
+					"id": 4,
+					"name": "Russian",
+					"code": "ru",
+					"rightToLeft": false,
+					"characterMap": {
+						"́": "",
+						"̀": ""
+					}
+				}
+			],
+			"languageId": "",
+			"remaining": 0
+		},
+		"progress": {
+			"languages": []
+		},
+		"feeds": {
+			"languages": [
+				{
+					"id": 1,
+					"name": "Bosnian",
+					"code": "bs",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 2,
+					"name": "Chinese",
+					"code": "zh",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 3,
+					"name": "Farsi",
+					"code": "fa",
+					"rightToLeft": true,
+					"characterMap": {
+						"ي": "ی",
+						"ك": "ک"
+					}
+				},
+				{
+					"id": 4,
+					"name": "Russian",
+					"code": "ru",
+					"rightToLeft": false,
+					"characterMap": {
+						"́": "",
+						"̀": ""
+					}
+				}
+			],
+			"feeds": [
+				{
+					"id": 2,
+					"languageId": 1,
+					"name": "Al Jazeera Balkans",
+					"url": "https://balkans.aljazeera.net/rss.xml"
+				},
+				{
+					"id": 1,
+					"languageId": 1,
+					"name": "Klix.ba",
+					"url": "https://www.klix.ba/rss"
+				},
+				{
+					"id": 3,
+					"languageId": 1,
+					"name": "N1 BiH",
+					"url": "https://n1info.ba/feed/"
+				},
+				{
+					"id": 9,
+					"languageId": 2,
+					"name": "BBC Chinese",
+					"url": "https://feeds.bbci.co.uk/zhongwen/simp/rss.xml"
+				},
+				{
+					"id": 10,
+					"languageId": 2,
+					"name": "DW Chinese",
+					"url": "https://rss.dw.com/rdf/rss-chi-all"
+				},
+				{
+					"id": 4,
+					"languageId": 3,
+					"name": "BBC Persian",
+					"url": "https://feeds.bbci.co.uk/persian/rss.xml"
+				},
+				{
+					"id": 5,
+					"languageId": 3,
+					"name": "DW Persian",
+					"url": "https://rss.dw.com/rdf/rss-per-all"
+				},
+				{
+					"id": 6,
+					"languageId": 4,
+					"name": "BBC Russian",
+					"url": "https://feeds.bbci.co.uk/russian/rss.xml"
+				},
+				{
+					"id": 8,
+					"languageId": 4,
+					"name": "DW Russian",
+					"url": "https://rss.dw.com/rdf/rss-ru-all"
+				},
+				{
+					"id": 7,
+					"languageId": 4,
+					"name": "Meduza",
+					"url": "https://meduza.io/rss/all"
+				}
+			]
+		},
+		"you": {
+			"languages": []
+		},
+		"topics": {
+			"topics": []
+		},
+		"newBook": {
+			"languages": [
+				{
+					"id": 1,
+					"name": "Bosnian",
+					"code": "bs",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 2,
+					"name": "Chinese",
+					"code": "zh",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 3,
+					"name": "Farsi",
+					"code": "fa",
+					"rightToLeft": true,
+					"characterMap": {
+						"ي": "ی",
+						"ك": "ک"
+					}
+				},
+				{
+					"id": 4,
+					"name": "Russian",
+					"code": "ru",
+					"rightToLeft": false,
+					"characterMap": {
+						"́": "",
+						"̀": ""
+					}
+				}
+			]
+		},
+		"suggestions": {
+			"language": {
+				"id": 4,
+				"name": "Russian",
+				"code": "ru",
+				"rightToLeft": false,
+				"characterMap": {
+					"́": "",
+					"̀": ""
+				}
+			},
+			"fitRange": {
+				"min": 0.05,
+				"max": 0.15
+			},
+			"topics": [],
+			"feeds": [
+				{
+					"id": 6,
+					"languageId": 4,
+					"name": "BBC Russian",
+					"url": "https://feeds.bbci.co.uk/russian/rss.xml"
+				},
+				{
+					"id": 8,
+					"languageId": 4,
+					"name": "DW Russian",
+					"url": "https://rss.dw.com/rdf/rss-ru-all"
+				},
+				{
+					"id": 7,
+					"languageId": 4,
+					"name": "Meduza",
+					"url": "https://meduza.io/rss/all"
+				}
+			],
+			"classics": 12
+		}
+	}
+}
