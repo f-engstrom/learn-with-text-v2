@@ -1,4 +1,6 @@
 <script lang="ts">
+	import PageHeader from '#lib/components/PageHeader.svelte';
+	import Meter from '#lib/components/Meter.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -29,9 +31,7 @@
 	<title>Progress · Reader</title>
 </svelte:head>
 
-<div class="page-header">
-	<h1>Progress</h1>
-</div>
+<PageHeader title="Progress" />
 
 {#if data.languages.length === 0}
 	<p class="note">Nothing yet. Progress fills in as you read Books and save Terms.</p>
@@ -51,9 +51,7 @@
 				{#if p.milestone.next}
 					{@const from = p.milestone.passed ?? 0}
 					{@const share = (p.wordsRead - from) / (p.milestone.next - from)}
-					<span class="bar" role="img" aria-label="{percent.format(share)} of the way to {number.format(p.milestone.next)}">
-						<span style:width="{share * 100}%"></span>
-					</span>
+					<Meter value={share} label="{percent.format(share)} of the way to {number.format(p.milestone.next)}" />
 					<small>
 						{#if p.milestone.passed}Passed {number.format(p.milestone.passed)} · {/if}next {number.format(p.milestone.next)}
 					</small>
@@ -170,19 +168,6 @@
 		font-weight: 600;
 		line-height: 1.1;
 		font-variant-numeric: tabular-nums;
-	}
-	.bar {
-		display: block;
-		height: 0.3rem;
-		border-radius: 999px;
-		background: var(--surface-2);
-		overflow: hidden;
-	}
-	.bar span {
-		display: block;
-		height: 100%;
-		border-radius: 999px;
-		background: var(--accent);
 	}
 	/* Reading days: ink dots; a day without reading is an empty ring, never a warning. */
 	.days {

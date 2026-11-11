@@ -1,4 +1,7 @@
 <script lang="ts">
+	import PageHeader from '#lib/components/PageHeader.svelte';
+	import Tag from '#lib/components/Tag.svelte';
+	import Grades from '#lib/components/Grades.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { statusLabels } from '#lib/terms.ts';
 	import { dueLabel, holdsLabel, wordAt } from '#lib/practice.ts';
@@ -63,8 +66,7 @@
 	<title>Review · Reader</title>
 </svelte:head>
 
-<header class="page-header">
-	<h1>Review</h1>
+<PageHeader title="Review">
 	<form method="GET" class="language">
 		<label>
 			<span class="visually-hidden">Language</span>
@@ -76,11 +78,11 @@
 			</select>
 		</label>
 	</form>
-</header>
-<p class="lede">
+	{#snippet lede()}
 	{data.remaining} Due {data.remaining === 1 ? 'Term' : 'Terms'}{#if reviewed > 0}, {reviewed} reviewed this time{/if}.
 	<a href="/terms?due=due{data.languageId ? `&language=${data.languageId}` : ''}">See them in the list</a>
-</p>
+	{/snippet}
+</PageHeader>
 
 {#if error}<p class="error" role="alert">{error}</p>{/if}
 
@@ -93,7 +95,7 @@
 	{@const term = data.term}
 	<article class="card review">
 		<p class="meta">
-			<span class="tag">{term.language.name}</span>
+			<Tag>{term.language.name}</Tag>
 			{#if term.practice}<span class="due due-{term.practice.overdue}">{dueLabel(term.practice)}</span>{/if}
 		</p>
 		{#if parts && data.example}
@@ -127,11 +129,7 @@
 					<p class="muted">Recall: {statusLabels[term.practice.recall.level]} ({holdsLabel(term.practice.recall)})</p>
 				{/if}
 			</div>
-			<div class="grades" role="group" aria-label="How did it go?">
-				<button type="button" onclick={() => grade('missed')}><kbd>1</kbd> Missed</button>
-				<button type="button" onclick={() => grade('hard')}><kbd>2</kbd> Hard</button>
-				<button type="button" onclick={() => grade('got')}><kbd>3</kbd> Got it</button>
-			</div>
+			<Grades ongrade={grade} keys />
 		{/if}
 	</article>
 {/if}
@@ -198,11 +196,6 @@
 		margin: 0;
 		padding-inline-start: 1.2rem;
 		font-size: 1.1rem;
-	}
-	.grades {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
 	}
 	.due-1 {
 		color: var(--due-1-text);

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Tag from '#lib/components/Tag.svelte';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { fits, goodLength, rankSuggestions, type FitRange } from '#lib/suggestions.ts';
@@ -75,9 +76,9 @@
 				<li class:fits={fits(suggestion, range)}>
 					<div class="title">
 						<a href={suggestion.url} target="_blank" rel="noreferrer" lang={data.language.code} {dir}>{suggestion.title}</a>
-						{#if suggestion.topic}<small class="tag">{suggestion.topic}</small>{/if}
-						{#if suggestion.feed}<small class="tag feed">{suggestion.feed}</small>{/if}
-						{#if suggestion.author}<small class="tag classic" lang={data.language.code} {dir}>{suggestion.author}</small>{/if}
+						{#if suggestion.topic}<Tag>{suggestion.topic}</Tag>{/if}
+						{#if suggestion.feed}<Tag tone="accent">{suggestion.feed}</Tag>{/if}
+						{#if suggestion.author}<Tag class="classic" lang={data.language.code} {dir}>{suggestion.author}</Tag>{/if}
 					</div>
 					<div class="facts">
 						<span class="share" title="Share of its distinct Words that are Unknown">{percent.format(suggestion.unknownShare)} Unknown</span>
@@ -166,14 +167,10 @@
 	.off {
 		color: var(--muted);
 	}
-	.tag {
+	.title :global(.tag) {
 		margin-inline-start: 0.4rem;
 	}
-	.tag.feed {
-		background: var(--accent-soft);
-		color: var(--accent);
-	}
-	.tag.classic {
+	.title :global(.tag.classic) {
 		font-style: italic;
 	}
 	@media (max-width: 40rem) {

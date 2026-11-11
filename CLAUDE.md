@@ -28,7 +28,8 @@ Domain rules sit in `src/lib/server/domain`, which the web app and the Tutor's M
 | Dictionary, Wiktionary panel, Azure panel | `lib/dictionaries.ts`, `domain/wiktionary.ts`, `domain/azure.ts` |
 | Your languages | `domain/your-languages.ts` |
 | Words read, Milestone, Status history, The day so far | `domain/progress.ts` |
-| The design theme (colour, type, shape tokens; base controls; how a Status marks a Word) | `src/app.css`; shown in `src/stories/theme` |
+| The design theme (colour, type, shape tokens; base controls and button variants `quiet`, `link`, `toggle`; how a Status marks a Word) | `src/app.css`; shown in `src/stories/theme` |
+| Shared pieces of the screens: Site header, Page header, Tag, Count, Meter, Avatar, Close button, Grades | `src/lib/components/`, each with its story; use one before restyling its look in a screen |
 
 The reading screen is `routes/books/[bookId]/pages/[position]/+page.svelte`, and its parts are components beside it: `PageText` and `Word` (the text), `TermPanel` (beside the text when something is selected), `Help` (the Keys and the legend), `PracticePanel`, `TutorTurn`. Its logic moves out into `lib/reading/` (keys and their routing, Selection, Practice, zen mode, Highlight on the Page, From the Tutor); the page is markup and wiring, and new logic goes into one of these modules, where its tests go. A module there is constructed during server-side rendering too, so it does nothing that reaches the server until its first `sync` or `start`, which the page calls in the browser.
 

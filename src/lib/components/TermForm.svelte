@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Tag from './Tag.svelte';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { tick } from 'svelte';
@@ -109,7 +110,7 @@
 
 <header class="heading">
 	<h2 lang={language.code} {dir}>{term?.text ?? text}</h2>
-	<span class="tag">{term ? 'Term' : 'Unknown'}</span>
+	<Tag>{term ? 'Term' : 'Unknown'}</Tag>
 	{#if term?.pronunciation}
 		<p class="pronunciation">{term.pronunciation}</p>
 	{/if}

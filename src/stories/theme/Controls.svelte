@@ -1,4 +1,9 @@
 <!-- The base controls and classes of app.css, as every screen gets them. -->
+<script lang="ts">
+	import Tag from '#lib/components/Tag.svelte';
+	import PageHeader from '#lib/components/PageHeader.svelte';
+</script>
+
 <h2>Buttons</h2>
 <p class="row">
 	<button>Button</button>
@@ -8,6 +13,12 @@
 	<button class="primary" disabled>Primary disabled</button>
 	<a class="button" href="#top">Link as button</a>
 	<button>Next <kbd>→</kbd></button>
+</p>
+<p class="row">
+	<button class="quiet">Quiet</button>
+	<button class="link">Link-like</button>
+	<button class="toggle" aria-pressed="false">Toggle off</button>
+	<button class="toggle" aria-pressed="true">Toggle on</button>
 </p>
 
 <h2>Fields</h2>
@@ -28,16 +39,15 @@ of text</textarea></label>
 
 <h2>Card, tags and keys</h2>
 <div class="card">
-	<p>A card. <span class="tag">Tag</span> <span class="tag">Wiktionary</span></p>
+	<p>A card. <Tag>Tag</Tag> <Tag tone="accent">Wiktionary</Tag></p>
 	<p class="muted">Press <kbd>Space</kbd> or <kbd>Esc</kbd>.</p>
 </div>
 
 <h2>Page header</h2>
-<div class="page-header">
-	<h1>Terms</h1>
+<PageHeader title="Terms">
 	<button class="primary">Review</button>
-</div>
-<p class="lede">The lede says what the screen is for.</p>
+	{#snippet lede()}The lede says what the screen is for.{/snippet}
+</PageHeader>
 
 <h2>Data table</h2>
 <div class="table-wrap">

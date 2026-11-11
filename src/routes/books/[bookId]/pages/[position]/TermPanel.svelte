@@ -1,5 +1,6 @@
 <!-- Beside the text when a Word, phrase or Character part is selected: its Term form, what is known about the Term, practice, and the dictionaries. -->
 <script lang="ts">
+	import CloseButton from '#lib/components/CloseButton.svelte';
 	import TermForm from '#lib/components/TermForm.svelte';
 	import type { Dictionary } from '#lib/dictionaries.ts';
 	import { termKey } from '#lib/normalise.ts';
@@ -71,7 +72,7 @@
 </script>
 
 <div class="term-panel card">
-	<button type="button" class="close" aria-label="Close the Term form" onclick={onclose}>✕</button>
+	<CloseButton label="Close the Term form" onclick={onclose} />
 	{#if parts}
 		<div class="parts" role="group" aria-label="The whole Word or some of its characters">
 			<button type="button" class="part status-{statusOf(parts.word.key)}" aria-pressed={!parts.picked} onclick={onwholeword}
@@ -150,12 +151,6 @@
 		padding: 0.6rem 0.5rem;
 		background: var(--surface);
 		box-shadow: 0 -10px 12px -10px color-mix(in srgb, var(--text) 25%, transparent);
-	}
-	.close {
-		position: absolute;
-		top: 0.75rem;
-		inset-inline-end: 0.75rem;
-		padding: 0.2rem 0.5rem;
 	}
 	/* Leaves room for the close button. */
 	.parts {

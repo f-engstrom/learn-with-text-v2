@@ -141,7 +141,7 @@
 					{#if current.options}
 						<div class="options">
 							{#each current.options as option, o (option)}
-								<button type="button" aria-pressed={drafts[step] === option} onclick={() => pick(option)}
+								<button type="button" class="toggle" aria-pressed={drafts[step] === option} onclick={() => pick(option)}
 									><kbd class="hint">{o + 1}</kbd>{option}</button
 								>
 							{/each}
@@ -273,11 +273,6 @@
 			min-height: 3rem;
 		}
 	}
-	.options button[aria-pressed='true'] {
-		background: var(--accent-soft);
-		border-color: var(--accent);
-		color: var(--accent);
-	}
 	.options kbd {
 		margin-inline-end: 0.4rem;
 	}
@@ -286,14 +281,6 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: 0.75rem;
-	}
-	.link {
-		padding: 0;
-		border: none;
-		background: none;
-		box-shadow: none;
-		color: var(--accent);
-		text-decoration: underline;
 	}
 	.keys {
 		margin: 0;

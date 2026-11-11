@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Grades from '#lib/components/Grades.svelte';
 	import { statusLabels } from '#lib/terms.ts';
 	import { dueLabel, holdsLabel } from '#lib/practice.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
@@ -24,11 +25,7 @@
 	{:else}
 		<p class="recall muted">No Reviews yet.</p>
 	{/if}
-	<div class="grades" role="group" aria-label="Review">
-		<button type="button" onclick={() => onreview('missed')}>Missed</button>
-		<button type="button" onclick={() => onreview('hard')}>Hard</button>
-		<button type="button" onclick={() => onreview('got')}>Got it</button>
-	</div>
+	<Grades ongrade={onreview} label="Review" />
 </section>
 
 <style>
@@ -53,10 +50,5 @@
 	}
 	.due-3 {
 		color: var(--due-3-text);
-	}
-	.grades {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
 	}
 </style>

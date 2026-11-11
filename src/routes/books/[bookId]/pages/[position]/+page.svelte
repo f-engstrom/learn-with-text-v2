@@ -1,4 +1,7 @@
 <script lang="ts">
+	import Tag from '#lib/components/Tag.svelte';
+	import Count from '#lib/components/Count.svelte';
+	import CloseButton from '#lib/components/CloseButton.svelte';
 	import { enhance } from '$app/forms';
 	import { sendStatus } from '#lib/term-writes.ts';
 	import { invalidateAll, replaceState } from '$app/navigation';
@@ -370,7 +373,7 @@
 		{/if}
 		<span class="position">
 			Page {data.position} of {data.book.pageCount}
-			{#if data.read}<span class="tag read">Read</span>{/if}
+			{#if data.read}<Tag tone="ok">Read</Tag>{/if}
 		</span>
 		{#if data.position < data.book.pageCount}
 			<a class="button" href="/books/{data.book.id}/pages/{data.position + 1}">Next →</a>
@@ -383,13 +386,13 @@
 <div class="chrome" class:zen>
 	<header class="book">
 		<h1 lang={data.language.code} {dir}>{data.book.title}</h1>
-		<span class="tag">{data.language.name}</span>
+		<Tag>{data.language.name}</Tag>
 		<span class="toggles">
 			<button type="button" onclick={startPractice} title="Practise the Due Words (R)"
-				>Practice{#if dueOnPage > 0}<span class="count">{dueOnPage}</span>{/if}</button
+				>Practice{#if dueOnPage > 0}<Count value={dueOnPage} />{/if}</button
 			>
-			<button type="button" aria-pressed={showDue} onclick={toggleDue} title="Due marks on the top {TOP} by priority (D)">Due</button>
-			<button type="button" aria-pressed={zen} onclick={toggleZen} title="Zen mode (Z)">Zen</button>
+			<button type="button" class="toggle" aria-pressed={showDue} onclick={toggleDue} title="Due marks on the top {TOP} by priority (D)">Due</button>
+			<button type="button" class="toggle" aria-pressed={zen} onclick={toggleZen} title="Zen mode (Z)">Zen</button>
 		</span>
 	</header>
 	{@render pages()}
@@ -397,7 +400,7 @@
 		<p class="day-so-far" role="status">
 			<span><strong>Today</strong> · {daySoFarParts.join(' · ')}</span>
 			<a href="/progress">Progress</a>
-			<button type="button" class="close" aria-label="Dismiss" onclick={dismissDaySoFar}>✕</button>
+			<CloseButton label="Dismiss" onclick={dismissDaySoFar} inline />
 		</p>
 	{/if}
 	{#if error}
@@ -518,10 +521,6 @@
 		font-size: 0.95rem;
 		font-variant-numeric: tabular-nums;
 	}
-	.tag.read {
-		background: color-mix(in srgb, var(--ok) 18%, transparent);
-		color: var(--ok);
-	}
 	/* The text, and beside it the Term panel or Practice; on a phone the panel comes below the text. */
 	.reader {
 		display: grid;
@@ -612,20 +611,6 @@
 		padding-block: 0.2rem;
 		font-size: 0.85rem;
 	}
-	.toggles .count {
-		margin-inline-start: 0.4rem;
-		padding: 0 0.4rem;
-		border-radius: 999px;
-		background: var(--due-2);
-		color: #fff;
-		font-size: 0.75rem;
-		font-weight: 600;
-	}
-	.toggles button[aria-pressed='true'] {
-		background: var(--accent-soft);
-		border-color: var(--accent);
-		color: var(--accent);
-	}
 	.side {
 		display: flex;
 		flex-direction: column;
@@ -638,12 +623,6 @@
 		font-size: 1rem;
 		line-height: 1.55;
 		letter-spacing: normal;
-	}
-	.close {
-		position: absolute;
-		top: 0.75rem;
-		inset-inline-end: 0.75rem;
-		padding: 0.2rem 0.5rem;
 	}
 	.end {
 		display: grid;
@@ -672,13 +651,6 @@
 	}
 	.day-so-far span {
 		flex: 1;
-	}
-	.day-so-far .close {
-		padding: 0.15rem 0.45rem;
-		border: none;
-		background: none;
-		box-shadow: none;
-		color: var(--muted);
 	}
 	.mark-read {
 		display: flex;

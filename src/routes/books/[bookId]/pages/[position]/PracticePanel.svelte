@@ -1,4 +1,6 @@
 <script lang="ts">
+	import CloseButton from '#lib/components/CloseButton.svelte';
+	import Grades from '#lib/components/Grades.svelte';
 	import { statusLabels } from '#lib/terms.ts';
 	import { subsetLabels, type PracticeState, type Subset } from '#lib/reading/practice.svelte.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
@@ -22,7 +24,7 @@
 </script>
 
 <div class="practice-panel card" aria-live="polite">
-	<button type="button" class="close" aria-label="Stop practising" onclick={onstop}>✕</button>
+	<CloseButton label="Stop practising" onclick={onstop} />
 	{#if state.stage === 'choose'}
 		<h2>Practice</h2>
 		{#if available.length === 0}
@@ -60,11 +62,7 @@
 					<p class="muted">Recall: {statusLabels[term.practice.recall.level]}</p>
 				{/if}
 			{/if}
-			<div class="grades" role="group" aria-label="How did it go?">
-				<button type="button" onclick={() => ongrade('missed')}><kbd>1</kbd> Missed</button>
-				<button type="button" onclick={() => ongrade('hard')}><kbd>2</kbd> Hard</button>
-				<button type="button" onclick={() => ongrade('got')}><kbd>3</kbd> Got it</button>
-			</div>
+			<Grades {ongrade} keys />
 		{/if}
 	{:else}
 		<h2>Practice done</h2>
@@ -87,12 +85,6 @@
 	}
 	p {
 		margin: 0;
-	}
-	.close {
-		position: absolute;
-		top: 0.75rem;
-		inset-inline-end: 0.75rem;
-		padding: 0.2rem 0.5rem;
 	}
 	.subsets {
 		display: grid;
@@ -121,11 +113,6 @@
 		margin: 0;
 		padding-inline-start: 1.2rem;
 		font-size: 1.05rem;
-	}
-	.grades {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
 	}
 	/* One column: the side column sits below the text, so the panel docks to the bottom of the window. */
 	@media (max-width: 60rem) {

@@ -178,6 +178,33 @@ button.danger {
 	color: var(--danger);
 }
 
+/* A quiet button: no frame, muted, for what stands aside (Later, ✕ in a row). */
+button.quiet {
+	padding: 0.2rem 0.55rem;
+	border: none;
+	background: none;
+	box-shadow: none;
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+/* A button that reads as a link, for a step aside within a card. */
+button.link {
+	padding: 0;
+	border: none;
+	background: none;
+	box-shadow: none;
+	color: var(--accent);
+	text-decoration: underline;
+}
+
+/* A toggle (aria-pressed) or a chosen option, while on. */
+button.toggle[aria-pressed='true'] {
+	background: var(--accent-soft);
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
 input:not([type='checkbox'], [type='radio'], [type='file']),
 select,
 textarea {
@@ -296,19 +323,6 @@ table.data tbody tr:hover td {
 
 /* Page furniture */
 
-.page-header {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0.75rem 1.5rem;
-	margin-bottom: 1.5rem;
-}
-
-.page-header h1 {
-	margin: 0;
-}
-
 .lede {
 	margin: -0.75rem 0 1.5rem;
 	color: var(--muted);
@@ -321,20 +335,6 @@ table.data tbody tr:hover td {
 
 .note {
 	color: var(--muted);
-}
-
-.tag {
-	display: inline-block;
-	padding: 0.1rem 0.55rem;
-	border-radius: 999px;
-	background: var(--surface-2);
-	color: var(--muted);
-	font-family: var(--font-ui);
-	font-size: 0.72rem;
-	font-weight: 600;
-	letter-spacing: 0.05em;
-	text-transform: uppercase;
-	white-space: nowrap;
 }
 
 /* Status marks: how a Status shows on a Word in the text, in the legend and on a Character part.

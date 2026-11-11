@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Avatar from '#lib/components/Avatar.svelte';
+	import CloseButton from '#lib/components/CloseButton.svelte';
 	import { tick } from 'svelte';
 	import type { Answer, TutorQuestion } from '#lib/server/domain/from-tutor.ts';
 	import type { Highlight } from '#lib/server/domain/reading.ts';
@@ -76,23 +78,21 @@
 
 {#if elsewhere !== undefined}
 	<a class="elsewhere" href="/books/{bookId}/pages/{elsewhere}" bind:this={link}
-		><span class="avatar" aria-hidden="true">T</span><span class="about">{about}</span><span class="go">Go →</span></a
+		><Avatar size="large" /><span class="about">{about}</span><span class="go">Go →</span></a
 	>
 {:else if folded}
 	<button type="button" class="pill" onclick={focus}
-		><span class="avatar" aria-hidden="true">T</span>{waitingOn} · <span class="open">Open</span>{#if yourTurn}<kbd class="t-hint">T</kbd>{/if}</button
+		><Avatar />{waitingOn} · <span class="open">Open</span>{#if yourTurn}<kbd class="t-hint">T</kbd>{/if}</button
 	>
 {:else}
 	<section class="tutor-turn" class:here aria-label="From the Tutor" role="status">
 		<header>
-			<span class="avatar" aria-hidden="true">T</span>
+			<Avatar />
 			<span class="who">Tutor</span>
 			{#if yourTurn}<kbd class="t-hint" title="Press T to answer">T</kbd>{/if}
 			<span class="spacer"></span>
 			{#if question}<button type="button" class="quiet" title="Fold it away until you’re ready" onclick={later}>Later</button>{/if}
-			<button type="button" class="quiet close" aria-label="Put the Tutor aside" title="Until the Tutor asks again" onclick={ondismiss}
-				>✕</button
-			>
+			<CloseButton label="Put the Tutor aside" title="Until the Tutor asks again" onclick={ondismiss} inline />
 		</header>
 		{#if question?.answer}
 			<div class="sent">
@@ -147,31 +147,11 @@
 		gap: 0.5rem;
 		justify-self: stretch;
 	}
-	.avatar {
-		display: inline-grid;
-		place-items: center;
-		flex: none;
-		width: 1.6rem;
-		height: 1.6rem;
-		border-radius: 50%;
-		background: var(--accent-soft);
-		color: var(--accent);
-		font-size: 0.8rem;
-		font-weight: 700;
-	}
 	.who {
 		font-weight: 600;
 	}
 	.spacer {
 		flex: 1;
-	}
-	.quiet {
-		padding: 0.2rem 0.55rem;
-		border: none;
-		background: none;
-		box-shadow: none;
-		color: var(--muted);
-		font-size: 0.9rem;
 	}
 	.note-text {
 		font-size: 1.05rem;
@@ -269,10 +249,6 @@
 		background: var(--surface);
 		color: var(--text);
 		text-decoration: none;
-	}
-	.elsewhere .avatar {
-		width: 1.75rem;
-		height: 1.75rem;
 	}
 	.elsewhere .about {
 		flex: 1;

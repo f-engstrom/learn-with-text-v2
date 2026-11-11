@@ -1,4 +1,5 @@
 <script lang="ts">
+	import PageHeader from '#lib/components/PageHeader.svelte';
 	import { enhance } from '$app/forms';
 	import { sendStatus } from '#lib/term-writes.ts';
 	import { invalidateAll } from '$app/navigation';
@@ -38,10 +39,9 @@
 	<title>Terms · Reader</title>
 </svelte:head>
 
-<header class="page-header">
-	<h1>Terms</h1>
+<PageHeader title="Terms">
 	<a class="button primary" href="/terms/review{data.filter.language ? `?language=${data.filter.language}` : ''}">Review Due Terms</a>
-</header>
+</PageHeader>
 
 <form method="GET" class="filters card" data-sveltekit-keepfocus data-sveltekit-replacestate>
 	<label>

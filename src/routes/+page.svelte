@@ -1,4 +1,6 @@
 <script lang="ts">
+	import PageHeader from '#lib/components/PageHeader.svelte';
+	import Meter from '#lib/components/Meter.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -10,10 +12,9 @@
 	<title>Reader</title>
 </svelte:head>
 
-<div class="page-header">
-	<h1>Books</h1>
+<PageHeader title="Books">
 	<a class="button primary" href="/books/new">New Book</a>
-</div>
+</PageHeader>
 
 {#if data.latest || data.due > 0}
 	<div class="now">
@@ -81,7 +82,7 @@
 						<td>Page {book.bookmark.page}</td>
 						<td class="number" title="Share of the Book's distinct Words that are Unknown">
 							<span class="share">
-								<span class="bar" aria-hidden="true"><span style:width="{Math.round(book.unknownShare * 100)}%"></span></span>
+								<Meter value={Math.round(book.unknownShare * 100) / 100} inline />
 								{percent.format(book.unknownShare)}
 							</span>
 						</td>
@@ -160,20 +161,6 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.6rem;
-	}
-	.bar {
-		display: inline-block;
-		width: 4rem;
-		height: 0.35rem;
-		border-radius: 999px;
-		background: var(--surface-2);
-		overflow: hidden;
-	}
-	.bar span {
-		display: block;
-		height: 100%;
-		background: var(--accent);
-		opacity: 0.6;
 	}
 	/* A phone: one line per Book, its details folded under the title, no sideways scroll. */
 	@media (max-width: 40rem) {
