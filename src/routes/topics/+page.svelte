@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AddForm from '#lib/components/AddForm.svelte';
 	import Button from '#lib/components/Button.svelte';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
@@ -30,13 +31,9 @@
 	</ul>
 {/if}
 
-<form method="POST" action="?/add" class="add" use:enhance>
+<AddForm action="?/add" label="Add Topic" message={form?.message}>
 	<input name="text" placeholder="e.g. football, Roman history" aria-label="New Topic" autocomplete="off" required />
-	<Button>Add Topic</Button>
-</form>
-{#if form?.message}
-	<p class="error" role="alert">{form.message}</p>
-{/if}
+</AddForm>
 </div>
 
 <style>
@@ -64,22 +61,7 @@
 		background: none;
 		color: inherit;
 	}
-	.add {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-	}
-	.add input {
-		flex: 1 1 16rem;
-		max-width: 28rem;
-	}
 	.card > .note {
 		margin-top: 0;
-	}
-	.note {
-		color: var(--muted);
-	}
-	.error {
-		color: var(--danger);
 	}
 </style>

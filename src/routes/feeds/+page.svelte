@@ -107,10 +107,4 @@
 	.add :global(button) {
 		justify-self: start;
 	}
-	.note {
-		color: var(--muted);
-	}
-	.error {
-		color: var(--danger);
-	}
 </style>

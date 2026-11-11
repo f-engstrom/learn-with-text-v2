@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AddForm from '#lib/components/AddForm.svelte';
 	import Button from '#lib/components/Button.svelte';
 	import { enhance } from '$app/forms';
 	import type { YourLanguageLevel } from '#lib/server/domain/your-languages.ts';
@@ -45,18 +46,14 @@
 		</ul>
 	{/if}
 
-	<form method="POST" action="?/set" class="add" use:enhance>
+	<AddForm action="?/set" label="Add" message={form?.message}>
 		<input name="name" placeholder="e.g. Swedish" aria-label="Language" autocomplete="off" required />
 		<select name="level" aria-label="How well">
 			{#each levels as level (level)}
 				<option value={level} selected={level === 'fluent'}>{levelLabels[level]}</option>
 			{/each}
 		</select>
-		<Button>Add</Button>
-	</form>
-	{#if form?.message}
-		<p class="error" role="alert">{form.message}</p>
-	{/if}
+	</AddForm>
 </div>
 
 <style>
@@ -80,19 +77,7 @@
 	.languages :global(button) {
 		padding: 0.2rem 0.5rem;
 	}
-	.add {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-	}
-	.add input {
-		flex: 1 1 12rem;
-		max-width: 20rem;
-	}
 	.card > .note {
 		margin-top: 0;
-	}
-	.note {
-		color: var(--muted);
 	}
 </style>

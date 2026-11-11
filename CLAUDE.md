@@ -25,11 +25,11 @@ Domain rules sit in `src/lib/server/domain`, which the web app and the Tutor's M
 | Which key goes where in the reading screen | `routeKey` in `lib/reading/keys.ts` |
 | Frequency | `domain/frequency.ts` |
 | Suggestion, Unknown share, Fit range, Topic | `domain/suggestions.ts`, `lib/suggestions.ts`, `domain/topics.ts` |
-| Dictionary, Wiktionary panel, Azure panel | `lib/dictionaries.ts`, `domain/wiktionary.ts`, `domain/azure.ts` |
+| Dictionary, Wiktionary panel, Azure panel | `lib/dictionaries.ts`, `domain/wiktionary.ts`, `domain/azure.ts`; both panels draw their entries with `DictionaryEntries` beside the reading screen |
 | Your languages | `domain/your-languages.ts` |
 | Words read, Milestone, Status history, The day so far | `domain/progress.ts` |
-| The design theme (colour, type, shape tokens; base controls and button variants `quiet`, `link`, `toggle`; how a Status marks a Word) | `src/app.css`; shown in `src/stories/theme` |
-| Shared pieces of the screens: Button (and a link that looks like one), Site header, Page header, Tag, Count, Meter, Avatar, Close button, Grades | `src/lib/components/`, each with its story; use one before restyling its look in a screen |
+| The design theme (colour, type, shape tokens; base controls and button variants `quiet`, `link`, `toggle`; `.note`, `.error`, `.card`; the Status and Due marks, `status-<Status>` and `due-<n>`, used wherever a Status or Due shows) | `src/app.css`; shown in `src/stories/theme` |
+| Shared pieces of the screens: Button (and a link that looks like one), Site header, Page header, Tag, Source tag, Due, Caption, Add form, Count, Meter, Avatar, Close button, Grades | `src/lib/components/`, each with its story; use one before restyling its look in a screen |
 
 The reading screen is `routes/books/[bookId]/pages/[position]/+page.svelte`, and its parts are components beside it: `PageText` and `Word` (the text), `TermPanel` (beside the text when something is selected), `Help` (the Keys and the legend), `PracticePanel`, `TutorTurn`. Its logic moves out into `lib/reading/` (keys and their routing, Selection, Practice, zen mode, Highlight on the Page, From the Tutor); the page is markup and wiring, and new logic goes into one of these modules, where its tests go. A module there is constructed during server-side rendering too, so it does nothing that reaches the server until its first `sync` or `start`, which the page calls in the browser.
 
