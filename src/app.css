@@ -2,10 +2,10 @@
 
 /* Calm paper: warm page, ink text, a serif for reading and headings, soft surfaces. */
 :root {
-	/* Follows the system; data-theme on the root element forces one scheme (Storybook's theme switch uses it). */
+	/* Follows the system; data-theme on the root element forces one scheme (Storybook's theme switch uses it).
+	   Each colour is light-dark(light, dark), so both values of a token sit side by side. */
 	color-scheme: light dark;
 
-	/* Each colour is light-dark(light, dark), so both values of a token sit side by side. */
 	--bg: light-dark(#f6f1e7, #1a1815);
 	--surface: light-dark(#fffcf6, #221f1b);
 	--surface-2: light-dark(#f1eadc, #2b2722);

@@ -24,3 +24,7 @@ vite.config.ts.timestamp-*
 
 # Local database
 /data
+
+# Storybook
+/storybook-static
+debug-storybook.log
