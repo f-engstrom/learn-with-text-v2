@@ -7,7 +7,7 @@
 
 	const terms = fixtures.reading.mixed.terms;
 	const { Story } = preview.meta({
-		title: 'Reading screen/Practice card',
+		title: 'Components/Reading/Practice card',
 		component: PracticeCard,
 		// As wide as the column beside the text.
 		decorators: [() => ({ Component: Column })],

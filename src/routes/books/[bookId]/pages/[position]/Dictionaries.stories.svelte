@@ -5,7 +5,7 @@
 	import Dictionaries from './Dictionaries.svelte';
 
 	const { Story } = preview.meta({
-		title: 'Reading screen/Dictionaries',
+		title: 'Components/Reading/Dictionaries',
 		component: Dictionaries,
 		// As wide as the column beside the text.
 		decorators: [() => ({ Component: Column })],

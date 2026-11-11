@@ -5,7 +5,7 @@
 	import Word from './Word.svelte';
 
 	const { Story } = preview.meta({
-		title: 'Reading screen/Word',
+		title: 'Components/Reading/Word',
 		component: Word,
 		// In the reading text's type.
 		decorators: [() => ({ Component: Reading })],

@@ -6,7 +6,7 @@
 	import WiktionaryPanel from './WiktionaryPanel.svelte';
 
 	const { Story } = preview.meta({
-		title: 'Reading screen/Wiktionary panel',
+		title: 'Components/Reading/Wiktionary panel',
 		component: WiktionaryPanel,
 		// As wide as the column beside the text.
 		decorators: [() => ({ Component: Column })],

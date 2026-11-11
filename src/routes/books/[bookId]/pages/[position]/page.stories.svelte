@@ -16,7 +16,16 @@
 		parameters: { layout: 'fullscreen', ...at('/books/2/pages/1') }
 	});
 
-	type Play = { canvas: { getAllByRole: (role: string, options: { name: string | RegExp }) => HTMLElement[]; findByRole: (role: string) => Promise<HTMLElement> }; userEvent: { click: (element: Element, init?: object) => Promise<void>; keyboard: (keys: string) => Promise<void> } };
+	type Play = {
+		canvas: {
+			getAllByRole: (role: string, options: { name: string | RegExp }) => HTMLElement[];
+			getByRole: (role: string, options: { name: string | RegExp }) => HTMLElement;
+			queryByRole: (role: string, options: { name: string | RegExp }) => HTMLElement | null;
+			findByRole: (role: string, options?: { name: string | RegExp }) => Promise<HTMLElement>;
+			getByText: (text: string) => HTMLElement;
+		};
+		userEvent: { click: (element: Element, init?: object) => Promise<void>; keyboard: (keys: string) => Promise<void>; type: (element: Element, text: string) => Promise<void> };
+	};
 	const word = (canvas: Play['canvas'], text: string, nth = 0) => canvas.getAllByRole('button', { name: text })[nth];
 	/** Opens the Term form on a Word. */
 	const choose = (text: string) => async ({ canvas, userEvent }: Play) => {
@@ -34,6 +43,13 @@
 <Story name="A fresh Page, every Word Unknown" args={{ data: fresh }} parameters={at('/books/1/pages/1')} />
 
 <Story name="Words in every Status" />
+
+<Story
+	name="The Keys open"
+	play={async ({ canvas, userEvent }: Play) => {
+		await userEvent.click(canvas.getByText('Keys'));
+	}}
+/>
 
 <Story name="A Word selected" play={choose('привыкший')} />
 
@@ -99,6 +115,20 @@
 />
 
 <Story
+	name="Practice: done"
+	play={async ({ canvas, userEvent }: Play) => {
+		await userEvent.keyboard('r');
+		await userEvent.keyboard('1');
+		// Every Word in the subset revealed and got.
+		for (let i = 0; i < 20 && canvas.queryByRole('button', { name: /Reveal/ }); i++) {
+			await userEvent.keyboard(' ');
+			await userEvent.keyboard('3');
+		}
+		await canvas.findByRole('heading', { name: 'Practice done' });
+	}}
+/>
+
+<Story
 	name="Zen mode"
 	play={async ({ userEvent }: Play) => {
 		await userEvent.keyboard('z');
@@ -122,6 +152,32 @@
 <Story name="From the Tutor: a question" args={{ data: { ...mixed, ...question } }} />
 
 <Story name="From the Tutor: answered, waiting" args={{ data: { ...mixed, ...answered } }} />
+
+<Story
+	name="From the Tutor: answering by typing"
+	args={{ data: { ...mixed, ...question } }}
+	play={async ({ canvas, userEvent }: Play) => {
+		await userEvent.click(await canvas.findByRole('button', { name: /A lady with a dog/ }));
+		await userEvent.type(await canvas.findByRole('textbox', { name: 'Your answer' }), 'Он здесь уже давно');
+	}}
+/>
+
+<Story
+	name="From the Tutor: asking instead"
+	args={{ data: { ...mixed, ...question } }}
+	play={async ({ canvas, userEvent }: Play) => {
+		await userEvent.click(await canvas.findByRole('button', { name: 'Ask the Tutor instead' }));
+		await userEvent.type(await canvas.findByRole('textbox', { name: 'Your question for the Tutor' }), 'Is «привыкший» from привыкнуть?');
+	}}
+/>
+
+<Story
+	name="From the Tutor: put off with Later"
+	args={{ data: { ...mixed, ...question } }}
+	play={async ({ canvas, userEvent }: Play) => {
+		await userEvent.click(await canvas.findByRole('button', { name: 'Later' }));
+	}}
+/>
 
 <Story name="From the Tutor: a question arrives while you read" parameters={{ server: arriving, snapshot: false }} />
 

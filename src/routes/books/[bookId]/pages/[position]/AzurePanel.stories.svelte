@@ -6,7 +6,7 @@
 	import AzurePanel from './AzurePanel.svelte';
 
 	const { Story } = preview.meta({
-		title: 'Reading screen/Azure panel',
+		title: 'Components/Reading/Azure panel',
 		component: AzurePanel,
 		// As wide as the column beside the text.
 		decorators: [() => ({ Component: Column })],

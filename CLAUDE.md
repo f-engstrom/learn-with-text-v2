@@ -49,6 +49,7 @@ The reading screen is `routes/books/[bookId]/pages/[position]/+page.svelte`, and
 
 Storybook (`pnpm storybook`, port 6006) shows the theme, the components and every screen in each of their states, with no server and no database (ADR 0007). Check a design change there first, in both themes (the toolbar, or `&globals=theme:dark` on a story's address) and at the widths the styles break at (40rem and 60rem).
 
+- Storybook has three groups. **Theme** is `app.css`. **Components** holds the shared pieces, with a screen's own parts under `Components/<Screen>` (`Components/Reading/Word`). **Screens** holds every view of each screen. A view of the whole screen (a mode, a panel's stage, an interaction) is a story in `Screens/…`, not in a part's own story; a part's story shows the part alone, in states the screen can't easily reach.
 - A story sits beside what it shows: `Foo.stories.svelte` by `Foo.svelte`, `page.stories.svelte` by a route's `+page.svelte`. The theme's stories are in `src/stories/theme`, and read the tokens from `app.css`.
 - A screen's story is the route's page inside the layout (`src/stories/Screen.svelte`), given the data its load would return. A new state of a screen gets a story.
 - That data comes from `src/fixtures` (`#fixtures`): `world.ts` builds it with the domain, `pnpm fixtures` writes `fixtures.json`. After changing what a load returns, or a rule the fixtures pass through, run it and commit the result.

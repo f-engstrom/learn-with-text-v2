@@ -7,7 +7,7 @@
 
 	const question = fixtures.tutor.question.question!;
 	const { Story } = preview.meta({
-		title: 'Reading screen/Tutor questions',
+		title: 'Components/Reading/Tutor questions',
 		component: TutorQuestions,
 		// As wide as the Page's text, where the Tutor's turn sits.
 		decorators: [() => ({ Component: Text })],

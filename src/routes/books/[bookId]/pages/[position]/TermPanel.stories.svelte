@@ -9,7 +9,7 @@
 	const statusOf = (terms: typeof mixed.terms) => (key: string) => terms[key]?.status ?? 'unknown';
 	const of = (key: string, text = key) => ({ selected: { key, text, sentence: 0 }, term: mixed.terms[key], band: mixed.frequency[key] });
 	const { Story } = preview.meta({
-		title: 'Reading screen/Term panel',
+		title: 'Components/Reading/Term panel',
 		component: TermPanel,
 		// As wide as the column beside the text.
 		decorators: [() => ({ Component: Column })],
