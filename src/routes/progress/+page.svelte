@@ -1,5 +1,6 @@
 <script lang="ts">
 	import PageHeader from '#lib/components/PageHeader.svelte';
+	import Caption from '#lib/components/Caption.svelte';
 	import Meter from '#lib/components/Meter.svelte';
 	import type { PageProps } from './$types';
 
@@ -46,7 +47,7 @@
 
 		<div class="figures">
 			<div class="figure">
-				<span class="label">Words read</span>
+				<Caption>Words read</Caption>
 				<strong>{number.format(p.wordsRead)}</strong>
 				{#if p.milestone.next}
 					{@const from = p.milestone.passed ?? 0}
@@ -60,12 +61,12 @@
 				{/if}
 			</div>
 			<div class="figure">
-				<span class="label">Known Terms</span>
+				<Caption>Known Terms</Caption>
 				<strong>{number.format(p.known)}</strong>
 				<small>{number.format(p.learning)} Learning</small>
 			</div>
 			<div class="figure">
-				<span class="label">This week</span>
+				<Caption>This week</Caption>
 				<ol class="days" aria-label="Reading days this week">
 					{#each p.week as d (d.day)}
 						<li
@@ -83,7 +84,7 @@
 
 		<div class="charts">
 			<figure>
-				<figcaption>Words read per week</figcaption>
+				<Caption element="figcaption">Words read per week</Caption>
 				<ol class="bars" aria-label="Words read per week, oldest first">
 					{#each p.weeks as w, i (w.start)}
 						<li title="Week of {date.format(local(w.start))}: {plural(w.words, 'Word', 'Words')}">
@@ -100,7 +101,7 @@
 			</figure>
 
 			<figure>
-				<figcaption>Known Terms</figcaption>
+				<Caption element="figcaption">Known Terms</Caption>
 				{#if p.knownHistory.length > 1}
 					<svg class="line" viewBox="0 0 100 40" preserveAspectRatio="none" role="img"
 						aria-label="Known Terms from {number.format(first.known)} on {date.format(local(first.day))} to {number.format(p.known)} today"
@@ -117,7 +118,7 @@
 			</figure>
 
 			<figure>
-				<figcaption>Due forecast</figcaption>
+				<Caption element="figcaption">Due forecast</Caption>
 				<ol class="bars forecast" aria-label="Terms coming Due on each of the next 14 days, today first">
 					{#each p.forecast as d, i (d.day)}
 						<li title="{i === 0 ? 'Today, with everything already Due' : fullDate.format(local(d.day))}: {plural(d.due, 'Term', 'Terms')}">
@@ -153,14 +154,6 @@
 		display: grid;
 		align-content: start;
 		gap: 0.3rem;
-	}
-	.label,
-	figcaption {
-		color: var(--muted);
-		font-size: 0.8rem;
-		font-weight: 600;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
 	}
 	.figure strong {
 		font-family: var(--font-text);

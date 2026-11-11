@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from '#lib/components/Button.svelte';
 	import PageHeader from '#lib/components/PageHeader.svelte';
+	import Caption from '#lib/components/Caption.svelte';
 	import Meter from '#lib/components/Meter.svelte';
 	import type { PageProps } from './$types';
 
@@ -22,7 +23,7 @@
 		{#if data.latest}
 			{@const book = data.books.find((b) => b.id === data.latest?.bookId)}
 			<a class="card continue" href="/books/{data.latest.bookId}">
-				<span class="label">Continue</span>
+				<Caption>Continue</Caption>
 				<strong dir="auto">{data.latest.title}</strong>
 				<span class="muted">
 					{[`Page ${data.latest.bookmark.page}${book ? ` of ${book.pageCount}` : ''}`, data.latest.bookmark.word && `at ${data.latest.bookmark.word}`]
@@ -33,7 +34,7 @@
 		{/if}
 		{#if data.due > 0}
 			<a class="card due" href="/terms/review">
-				<span class="label">Practice</span>
+				<Caption>Practice</Caption>
 				<strong>{data.due} Due {data.due === 1 ? 'Term' : 'Terms'}</strong>
 				<span class="muted">Review them, or press R while reading</span>
 			</a>
@@ -114,13 +115,6 @@
 		font-family: var(--font-text);
 		font-size: 1.3rem;
 		font-weight: 600;
-	}
-	.now .label {
-		color: var(--muted);
-		font-size: 0.8rem;
-		font-weight: 600;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
 	}
 	.now .due {
 		border-inline-start: 4px solid var(--due-2);
