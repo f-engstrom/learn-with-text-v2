@@ -106,12 +106,10 @@
 	.word.status-ignored {
 		color: var(--status-ignored);
 	}
-	/* In the Tutor's Highlight: the same accent underline as the text around it (see PageText). */
-	.word.in-passage,
-	.word.multi.in-passage {
-		text-decoration: underline var(--accent) 0.16em;
-		text-underline-offset: 0.35em;
-		text-decoration-skip-ink: none;
+	/* In the Tutor's Highlight: the same band as the text around it (see PageText); an Unknown Word keeps its fill. */
+	.word.in-passage:not(.status-unknown) {
+		--fill: var(--highlight);
+		border-radius: 0;
 	}
 	/* A Due Word: a dot over its end, amber when just Due, red when long overdue. */
 	.word[data-due]::after {

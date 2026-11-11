@@ -15,6 +15,8 @@
 	--accent: light-dark(#2e4f7c, #9db6dc);
 	--accent-soft: light-dark(#e4e9f1, #2a3342);
 	--on-accent: light-dark(#fffcf6, #16140f);
+	/* The Tutor's Highlight: a warm band behind the text, apart from the Status underlines and the Unknown fill. */
+	--highlight: light-dark(#f0e2c6, #3d3324);
 	--danger: light-dark(#a33a2c, #e79a8c);
 	--ok: light-dark(#4a6b3a, #a9c48f);
 	--shadow:

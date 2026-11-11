@@ -108,12 +108,16 @@
 	.page:not(.zen) :global(.word:hover) {
 		filter: brightness(0.96);
 	}
-	/* The Tutor's Highlight, whole Sentences or a passage: a continuous accent underline, apart from the Status colours. */
-	.sentence.highlighted,
+	/* The Tutor's Highlight, whole Sentences or a passage: a warm band behind the text, each line's piece rounded. */
+	.sentence.highlighted {
+		padding: 0.12em 0.2em;
+		border-radius: 0.3em;
+		background: var(--highlight);
+		box-decoration-break: clone;
+		-webkit-box-decoration-break: clone;
+	}
 	.in-passage {
-		text-decoration: underline var(--accent) 0.16em;
-		text-underline-offset: 0.35em;
-		text-decoration-skip-ink: none;
+		background: var(--highlight);
 	}
 	.highlight-start {
 		scroll-margin: 6rem;
@@ -134,10 +138,12 @@
 		background: transparent;
 		color: inherit;
 	}
-	.page.zen :global(.word.multi),
+	.page.zen :global(.word.multi) {
+		text-decoration: none;
+	}
 	.page.zen :global(.in-passage),
 	.page.zen .sentence.highlighted {
-		text-decoration: none;
+		background: transparent;
 	}
 	.page.zen :global(.word[data-due]::after) {
 		display: none;
