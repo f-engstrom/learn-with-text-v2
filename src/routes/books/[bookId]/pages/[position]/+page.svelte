@@ -7,7 +7,6 @@
 	import { commandFor, routeKey, type Command } from '#lib/reading/keys.ts';
 	import { PersistedFlag } from '#lib/reading/persisted-flag.svelte.ts';
 	import { Zen } from '#lib/reading/zen.svelte.ts';
-	import { termKey } from '#lib/normalise.ts';
 	import { sendReview } from '#lib/reviews.ts';
 	import { Selection, type Selected, type Word } from '#lib/reading/selection.svelte.ts';
 	import type { Answer } from '#lib/server/domain/from-tutor.ts';
@@ -15,17 +14,13 @@
 	import type { DaySoFar } from '#lib/server/domain/progress.ts';
 	import type { Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
-	import Dictionaries from './Dictionaries.svelte';
-	import TermForm from '#lib/components/TermForm.svelte';
 	import type { Grade } from '#lib/server/domain/practice.ts';
-	import PracticeCard from './PracticeCard.svelte';
 	import PracticePanel from './PracticePanel.svelte';
 	import { Practice, TOP } from '#lib/reading/practice.svelte.ts';
 	import { highlightOnPage, turnParagraph } from '#lib/reading/highlight.ts';
-	import { frequencyLabels, suggestedStatus, transferLabel } from '#lib/practice.ts';
-	import { statusLabels } from '#lib/terms.ts';
-	import WiktionaryPanel from './WiktionaryPanel.svelte';
-	import AzurePanel from './AzurePanel.svelte';
+	import Help from './Help.svelte';
+	import PageText from './PageText.svelte';
+	import TermPanel from './TermPanel.svelte';
 	import TutorTurn from './TutorTurn.svelte';
 
 
@@ -65,8 +60,8 @@
 		{
 			onMoved: async (index, how) => {
 				await tick();
-				if (how === 'resume') wordElements[index]?.scrollIntoView({ block: 'center' });
-				else wordElements[index]?.focus();
+				if (how === 'resume') text?.word(index)?.scrollIntoView({ block: 'center' });
+				else text?.word(index)?.focus();
 			}
 		}
 	);
@@ -98,22 +93,21 @@
 	function revealRail() {
 		if (!rail || getComputedStyle(rail).display === 'contents') return;
 		const overflow = rail.getBoundingClientRect().bottom - innerHeight;
-		const word = current === undefined ? undefined : wordElements[current]?.getBoundingClientRect();
+		const word = current === undefined ? undefined : text?.word(current)?.getBoundingClientRect();
 		const by = Math.min(overflow, word ? word.top - 16 : overflow);
 		// Not smooth: focusing the Word, which happens alongside, would cancel a smooth scroll.
 		if (by > 0) window.scrollBy({ top: by });
 	}
 	let term = $derived(selected && data.terms[selected.key]);
 	let band = $derived(selected && data.frequency[selected.key]);
-	/** A Status the Tutor's assessment and Recall strength agree on, if it isn't yours. */
-	let suggestion = $derived(term && suggestedStatus(term.status, term.tutorAssessment, term.practice));
 	/** Statuses set by keyboard that the server hasn't confirmed yet, so the colour changes at once. */
 	let pending = $state<Record<string, Status>>({});
 	let error = $state<string | undefined>();
-	let termForm = $state<ReturnType<typeof TermForm>>();
+	let termPanel = $state<TermPanel>();
 	/** The open Dictionary tab, kept while you move between Words. */
 	let dictionary = $state<number | undefined>();
-	let wordElements = $state<HTMLElement[]>([]);
+	/** The Page's text, for reaching a Word's element. */
+	let text = $state<PageText>();
 	let dir: 'rtl' | 'ltr' = $derived(data.language.rightToLeft ? 'rtl' : 'ltr');
 
 	/** Due marks on the Words of the Top by priority Terms, on unless you turn them off (D). */
@@ -121,7 +115,7 @@
 	onMount(() => dueMarks.load());
 	let showDue = $derived(dueMarks.value);
 	const toggleDue = () => dueMarks.toggle();
-	const overdueOf = (key: string) => (showDue && practice.marked.has(key) ? (data.terms[key]?.practice?.overdue ?? 0) : 0);
+	const overdueOf = (key: string): 0 | 1 | 2 | 3 => (showDue && practice.marked.has(key) ? (data.terms[key]?.practice?.overdue ?? 0) : 0);
 
 	/** The 1-based paragraph each Sentence (by 0-based index) is in. */
 	let paragraphOf = $derived(data.paragraphs.flatMap((p, i) => p.sentences.map(() => i + 1)));
@@ -147,7 +141,7 @@
 			onShow: async (index) => {
 				selection.moveTo(index);
 				await tick();
-				wordElements[index]?.scrollIntoView({ block: 'nearest' });
+				text?.word(index)?.scrollIntoView({ block: 'nearest' });
 			},
 			onStop: () => selection.refocus()
 		}
@@ -191,24 +185,6 @@
 		else delete document.documentElement.dataset.zen;
 	});
 
-	/** Shifts the zen tooltip sideways so it stays on screen under a Word near either edge. */
-	function keepInView(node: HTMLElement, _text: string) {
-		// A margin, not a transform: a transformed box still widens the page from where it was laid out.
-		const side = getComputedStyle(node).direction === 'rtl' ? 'marginRight' : 'marginLeft';
-		const place = () => {
-			node.style[side] = '';
-			const box = node.getBoundingClientRect();
-			const margin = 8;
-			const width = document.documentElement.clientWidth;
-			let shift = 0;
-			if (box.right > width - margin) shift = width - margin - box.right;
-			if (box.left + shift < margin) shift = margin - box.left;
-			node.style[side] = `${side === 'marginRight' ? -shift : shift}px`;
-		};
-		place();
-		return { update: place };
-	}
-
 	/** In zen mode a tap outside the text dismisses the tooltip and shows the controls. */
 	function onpointerdown(e: PointerEvent) {
 		if (e.target instanceof Element && e.target.closest('.word, .zen-controls')) return;
@@ -223,7 +199,7 @@
 		onNewHighlight: async (h) => {
 			if (h.page !== data.position) return;
 			await tick();
-			highlightElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			text?.highlightStart()?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 		}
 	});
 	function tutorState() {
@@ -238,17 +214,12 @@
 	/** TutorQuestions keeps what you write, per `askedAt`. */
 	let question = $derived(fromTutor.question);
 	let tutorTurn = $state<TutorTurn>();
-	let sentenceIndex = $derived(new Map(sentences.map((s, i) => [s, i])));
 	let highlightHere = $derived(highlight?.page === data.position ? highlight : undefined);
 	/** Due Terms on this Page, each counted once. */
 	let dueOnPage = $derived(showDue ? practice.dueCount : 0);
 
 	/** Where the Highlight falls on this Page: its Sentences, or its passage's tokens. */
 	let onPage = $derived(highlightOnPage(sentences, highlightHere, data.position));
-	/** A whole Sentence underlined: when the Highlight has no passage. */
-	const highlighted = (sentence: (typeof sentences)[number]) => !onPage?.tokens && !!onPage?.sentences.has(sentenceIndex.get(sentence)!);
-	const inPassage = (sentence: (typeof sentences)[number], t: number) => !!onPage?.tokens?.has(`${sentenceIndex.get(sentence)}:${t}`);
-	let highlightElement = $state<HTMLElement>();
 	/** The Tutor's turn follows the paragraph its Highlight ends in; with no Highlight here it opens the Page. */
 	let turnAt = $derived(turnParagraph(data.paragraphs, onPage));
 
@@ -261,7 +232,7 @@
 		fromTutor.dismiss();
 	}
 
-	const statusOf = (key: string) => pending[key] ?? data.terms[key]?.status ?? 'unknown';
+	const statusOf = (key: string): Status | 'unknown' => pending[key] ?? data.terms[key]?.status ?? 'unknown';
 
 	async function setStatus(word: Selected, status: Status) {
 		pending[word.key] = status;
@@ -340,7 +311,7 @@
 	async function pasteTranslation(copied?: string) {
 		open = true;
 		await tick();
-		await (copied === undefined ? termForm?.pasteFromClipboard() : termForm?.pasteText(copied));
+		await (copied === undefined ? termPanel?.pasteFromClipboard() : termPanel?.pasteText(copied));
 	}
 
 	// ⌘V / Ctrl+V on the Page (not in a field) pastes as a Translation; unlike P it needs no permission.
@@ -360,7 +331,7 @@
 		}
 		open = true;
 		// On a phone the Term panel is a sheet over the bottom of the screen; keep the Word above it.
-		tick().then(() => wordElements[word.index]?.scrollIntoView({ block: 'nearest' }));
+		tick().then(() => text?.word(word.index)?.scrollIntoView({ block: 'nearest' }));
 	}
 </script>
 
@@ -369,37 +340,6 @@
 <svelte:head>
 	<title>{data.book.title} · Reader</title>
 </svelte:head>
-
-{#snippet keys()}
-	<dl class="keys">
-		<dt><kbd>←</kbd> <kbd>→</kbd></dt>
-		<dd>Previous or next Word</dd>
-		<dt><kbd>↑</kbd> <kbd>↓</kbd></dt>
-		<dd>Previous or next Sentence</dd>
-		<dt><kbd>Shift</kbd> + <kbd>←</kbd> <kbd>→</kbd></dt>
-		<dd>Select a phrase (or Shift-click)</dd>
-		<dt>Characters</dt>
-		<dd>In the Term form, pick part of a Chinese Word</dd>
-		<dt><kbd>1</kbd>–<kbd>4</kbd></dt>
-		<dd>Learning 1–4</dd>
-		<dt><kbd>K</kbd> <kbd>I</kbd></dt>
-		<dd>Known, Ignored</dd>
-		<dt><kbd>Enter</kbd></dt>
-		<dd>Open the Term form</dd>
-		<dt><kbd>P</kbd> <kbd>⌘V</kbd></dt>
-		<dd>Paste as Translation</dd>
-		<dt><kbd>Esc</kbd></dt>
-		<dd>Close</dd>
-		<dt><kbd>Z</kbd></dt>
-		<dd>Zen mode</dd>
-		<dt><kbd>D</kbd></dt>
-		<dd>Due marks on or off</dd>
-		<dt><kbd>R</kbd></dt>
-		<dd>Practise the Due Words</dd>
-		<dt><kbd>T</kbd></dt>
-		<dd>Answer the Tutor (<kbd>1</kbd>–<kbd>4</kbd> pick, <kbd>←</kbd> <kbd>→</kbd> questions, <kbd>Esc</kbd> back)</dd>
-	</dl>
-{/snippet}
 
 {#snippet turn()}
 	<div class="turn" lang="en" dir="ltr">
@@ -466,39 +406,25 @@
 </div>
 
 <div class="reader" class:zen class:sheet-open={open && !!selected && !practising}>
-	<article class="page" class:zen class:practising={practising?.stage === 'run'} lang={data.language.code} {dir}>
-		{#if (highlight || question) && turnAt === undefined}{@render turn()}{/if}
-		{#each data.paragraphs as paragraph, p (p)}
-			<p class:anchor={p === turnAt}>
-				{#each paragraph.sentences as sentence, s (s)}
-					{@const isHighlighted = highlighted(sentence)}
-					{#if sentenceIndex.get(sentence) === onPage?.first}<span
-							class="highlight-start"
-							bind:this={highlightElement}
-						></span>{/if}<span class="sentence" class:highlighted={isHighlighted}>
-						{#each sentence.tokens as token, t (t)}
-							{#if token.key !== undefined && token.index !== undefined}{@const word = token as Word}<span
-									role="button"
-									tabindex={word.index === (current ?? 0) ? 0 : -1}
-									class="word {statusOf(word.key)}"
-									class:current={current === word.index}
-									class:phrase={selection.inPhrase(word.index)}
-									class:multi={(word.words ?? 1) > 1}
-									class:in-passage={inPassage(sentence, t)}
-									data-due={overdueOf(word.key) || undefined}
-									bind:this={wordElements[word.index]}
-									onmousedown={(e) => e.shiftKey && e.preventDefault()}
-									onclick={(e) => choose(word, e.shiftKey)}
-									onkeydown={(e) => !practising && (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), choose(word, false))}
-									>{word.text}{#if gloss && range?.[0] === word.index}<span class="gloss" aria-hidden="true" use:keepInView={gloss}>{gloss}</span>{/if}</span
-								>{:else if inPassage(sentence, t)}<span class="in-passage">{token.text}</span>{:else}{token.text}{/if}
-						{/each}
-					</span>
-				{/each}
-			</p>
-			{#if p === turnAt}{@render turn()}{/if}
-		{/each}
-	</article>
+	<PageText
+		bind:this={text}
+		paragraphs={data.paragraphs}
+		lang={data.language.code}
+		{dir}
+		{zen}
+		practising={practising?.stage === 'run'}
+		wordKeys={!practising}
+		{statusOf}
+		{overdueOf}
+		{current}
+		inPhrase={(index) => selection.inPhrase(index)}
+		{onPage}
+		{gloss}
+		glossAt={range?.[0]}
+		turn={highlight || question ? turn : undefined}
+		{turnAt}
+		onchoose={choose}
+	/>
 
 	<!-- One sticky column beside the text; on a phone it dissolves below the Page. -->
 	<div class="rail" bind:this={rail}>
@@ -515,79 +441,25 @@
 					onstop={() => practice.stop()}
 				/>
 			{:else if open && selected}
-				<div class="term-panel card">
-					<button type="button" class="close" aria-label="Close the Term form" onclick={() => (open = false)}>✕</button>
-					{#if characters && range}
-						<div class="parts" role="group" aria-label="The whole Word or some of its characters">
-							<button type="button" class="part {statusOf(words[range[0]].key)}" aria-pressed={!picked} onclick={() => selection.wholeWord()}
-								>{words[range[0]].text}</button
-							>
-							{#each characters as character, i (i)}
-								<button
-									type="button"
-									class="part {statusOf(termKey(character, data.language))}"
-									aria-pressed={picked !== undefined && i >= picked[0] && i <= picked[1]}
-									onmousedown={(e) => e.shiftKey && e.preventDefault()}
-									onclick={(e) => selection.pickCharacter(i, e.shiftKey)}>{character}</button
-								>
-							{/each}
-						</div>
-					{/if}
-					{#key `${selected.key}:${JSON.stringify(term)}`}
-						<TermForm bind:this={termForm} language={data.language} text={selected.text} {term} error={form?.message} />
-					{/key}
-					{#if band || term?.transfer || term?.tutorAssessment}
-						<dl class="facts">
-							{#if band}<dt>Frequency</dt><dd>{frequencyLabels[band]}</dd>{/if}
-							{#if term?.transfer}
-								<dt>Transfer</dt>
-								<dd>{transferLabel(term.transfer)}{#if term.transfer.reason}<small>{term.transfer.reason}</small>{/if}</dd>
-							{/if}
-							{#if term?.tutorAssessment}<dt>Tutor</dt><dd>{statusLabels[term.tutorAssessment]}</dd>{/if}
-						</dl>
-					{/if}
-					{#if selected && term && suggestion}
-						<p class="suggestion">
-							{suggestion.from} to <strong>{statusLabels[suggestion.level]}</strong>; your Status is {statusLabels[term.status]}.
-							<button type="button" onclick={() => setStatus(selected, suggestion.level)}>Set {statusLabels[suggestion.level]}</button>
-						</p>
-					{/if}
-					{#if term?.practice}
-						<PracticeCard {term} onreview={(grade) => review(term.id, grade)} />
-					{/if}
-					<WiktionaryPanel
-						language={data.language}
-						termKey={selected.key}
-						text={selected.text}
-						translations={term?.translations.map((t) => t.text) ?? []}
-						onadd={(definition) => termForm?.addTranslation(definition, 'wiktionary')}
-					/>
-					<AzurePanel
-						language={data.language}
-						termKey={selected.key}
-						text={selected.text}
-						translations={term?.translations.map((t) => t.text) ?? []}
-						onadd={(translation) => termForm?.addTranslation(translation, 'azure')}
-					/>
-					<Dictionaries dictionaries={data.dictionaries} term={selected.key} bind:chosen={dictionary} />
-				</div>
+				<TermPanel
+					bind:this={termPanel}
+					language={data.language}
+					{selected}
+					{term}
+					{band}
+					parts={characters && range ? { word: words[range[0]], characters, picked } : undefined}
+					{statusOf}
+					dictionaries={data.dictionaries}
+					bind:dictionary
+					error={form?.message}
+					onclose={() => (open = false)}
+					onwholeword={() => selection.wholeWord()}
+					onpickcharacter={(i, shift) => selection.pickCharacter(i, shift)}
+					onstatus={(status) => setStatus(selected, status)}
+					onreview={review}
+				/>
 			{:else}
-				<div class="help card">
-					<p class="start"><span class="pointer">Click a Word, or press <kbd>→</kbd> to start.</span><span class="touch">Tap a Word to open it.</span></p>
-					<details>
-						<summary>Keys</summary>
-						{@render keys()}
-					</details>
-					<p class="legend">
-						<span class="swatch unknown"></span> Unknown
-						<span class="swatch learning1"></span> 1
-						<span class="swatch learning2"></span> 2
-						<span class="swatch learning3"></span> 3
-						<span class="swatch learning4"></span> 4
-						<span class="swatch known"></span> Known
-						<span class="due-dot"></span> Due, top {TOP}
-					</p>
-				</div>
+				<Help />
 			{/if}
 		</aside>
 	</div>
@@ -659,9 +531,6 @@
 		align-items: start;
 		margin-top: 1.5rem;
 	}
-	.page {
-		grid-area: page;
-	}
 	.rail {
 		grid-area: rail;
 		position: sticky;
@@ -677,126 +546,6 @@
 		min-height: 0;
 		overflow-y: auto;
 	}
-	/* Save and Delete stay in reach at the bottom of the scrolling panel while the form is in view. */
-	.term-panel :global(.form-actions) {
-		position: sticky;
-		bottom: 0;
-		z-index: 1;
-		margin-inline: -0.5rem;
-		padding: 0.6rem 0.5rem;
-		background: var(--surface);
-		box-shadow: 0 -10px 12px -10px color-mix(in srgb, var(--text) 25%, transparent);
-	}
-	.page {
-		font-family: var(--font-text);
-		font-size: 1.32rem;
-		line-height: 2;
-		letter-spacing: 0.003em;
-	}
-	.page p {
-		margin: 0 0 1.1em;
-	}
-	/* Inline spans, not buttons: a button would let a line break before the punctuation after it. */
-	.word {
-		padding: 0.02em 0.06em;
-		border-radius: 0.2em;
-		cursor: pointer;
-	}
-	.page:not(.zen) .word:hover {
-		filter: brightness(0.96);
-	}
-	.word:focus {
-		outline: none;
-	}
-	/* Above its neighbours, so a tooltip under it isn't covered by the next line's Words. */
-	.word.current {
-		z-index: 2;
-		outline: 2px solid var(--accent);
-		outline-offset: 2px;
-	}
-	.word.phrase {
-		box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
-	}
-	/* A Multi-word Term reads as one unit. */
-	.word.multi {
-		text-decoration: underline dotted var(--muted);
-		text-underline-offset: 0.25em;
-	}
-	/* --status fills a Character part; a Word in the text uses --fill and --mark below. */
-	.unknown {
-		--status: var(--status-unknown);
-		--fill: var(--status-unknown);
-	}
-	.learning1 {
-		--status: var(--status-learning1);
-		--mark: var(--status-learning-mark);
-		--mark-weight: 0.14em;
-	}
-	.learning2 {
-		--status: var(--status-learning2);
-		--mark: color-mix(in srgb, var(--status-learning-mark) 70%, transparent);
-		--mark-weight: 0.12em;
-	}
-	.learning3 {
-		--status: var(--status-learning3);
-		--mark: color-mix(in srgb, var(--status-learning-mark) 45%, transparent);
-		--mark-weight: 0.09em;
-	}
-	.learning4 {
-		--status: var(--status-learning4);
-		--mark: color-mix(in srgb, var(--status-learning-mark) 30%, transparent);
-		--mark-weight: 0.06em;
-	}
-	/* Only an Unknown Word is filled. A Learning Term is underlined, thinner and fainter from 1 to 4,
-	   so the levels differ in weight and lightness and a page of Learning Terms still reads as text. */
-	.word,
-	.swatch {
-		background:
-			linear-gradient(var(--mark, transparent) 0 0) bottom / 100% var(--mark-weight, 0) no-repeat,
-			var(--fill, transparent);
-		transition:
-			background-color 0.6s,
-			box-shadow 0.6s;
-	}
-	.word {
-		position: relative;
-	}
-	/* A Due Word: a dot over its end, amber when just Due, red when long overdue. */
-	.word[data-due]::after {
-		content: '';
-		position: absolute;
-		top: -0.12em;
-		inset-inline-end: -0.12em;
-		width: 0.36em;
-		height: 0.36em;
-		border-radius: 50%;
-		background: var(--due-1);
-		box-shadow: 0 0 0 1.5px var(--bg);
-		pointer-events: none;
-	}
-	.word[data-due='2']::after {
-		background: var(--due-2);
-	}
-	.word[data-due='3']::after {
-		background: var(--due-3);
-	}
-	/* Zen mode: the tapped Word's Translations, under it. */
-	.gloss {
-		position: absolute;
-		top: calc(100% + 0.3rem);
-		inset-inline-start: 0;
-		z-index: 1;
-		width: max-content;
-		max-width: min(18rem, calc(100vw - 1rem));
-		padding: 0.2rem 0.55rem;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
-		color: var(--text);
-		box-shadow: 0 4px 14px rgb(0 0 0 / 0.12);
-		font: 1rem/1.4 var(--font-ui);
-		pointer-events: none;
-	}
 	/* Zen mode: nothing but the text, plain, centred and a little larger. */
 	:global(html[data-zen] header.site),
 	.chrome.zen,
@@ -811,35 +560,10 @@
 		margin-top: 3.5rem;
 		padding-bottom: 6rem;
 	}
-	.page.zen {
-		font-size: 1.45rem;
-		line-height: 2.05;
-	}
 	@media (max-width: 40rem) {
 		.reader.zen {
 			margin-top: 1.5rem;
 		}
-		.page.zen {
-			font-size: 1.28rem;
-			line-height: 1.9;
-		}
-	}
-	.page.zen .word {
-		background: transparent;
-		color: inherit;
-	}
-	.page.zen .word.multi,
-	.page.zen .in-passage,
-	.page.zen .sentence.highlighted {
-		text-decoration: none;
-	}
-	.page.zen .word[data-due]::after {
-		display: none;
-	}
-	/* The keyboard's place: a quiet tint rather than an outline. */
-	.page.zen .word.current {
-		outline: none;
-		background: color-mix(in srgb, var(--accent) 12%, transparent);
 	}
 	.zen-controls {
 		position: fixed;
@@ -902,24 +626,10 @@
 		border-color: var(--accent);
 		color: var(--accent);
 	}
-	.word.ignored {
-		color: var(--status-ignored);
-	}
 	.side {
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
-	}
-	/* The Tutor's Highlight, whole Sentences or a passage: a continuous accent underline, apart from the Status colours. */
-	.sentence.highlighted,
-	.in-passage,
-	.word.multi.in-passage {
-		text-decoration: underline var(--accent) 0.16em;
-		text-underline-offset: 0.35em;
-		text-decoration-skip-ink: none;
-	}
-	.highlight-start {
-		scroll-margin: 6rem;
 	}
 	/* The Tutor's turn, in the text under its passage: back in the interface's own type. */
 	.turn {
@@ -929,139 +639,11 @@
 		line-height: 1.55;
 		letter-spacing: normal;
 	}
-	/* While you answer, the rest of the Page steps back. */
-	.page > p {
-		transition: opacity 0.3s;
-	}
-	.page:has(.turn:focus-within) > p:not(.anchor) {
-		opacity: 0.5;
-	}
-	.page.zen .turn {
-		display: none;
-	}
-	.term-panel {
-		position: relative;
-		/* Taller than the window with a Dictionary open: the column beside the text scrolls it, so Save can stick to its bottom. */
-		min-height: 0;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: 1rem;
-		box-sizing: border-box;
-	}
-	/* Leaves room for the close button. */
-	.parts {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.35rem;
-		margin-inline-end: 2.5rem;
-	}
-	.part {
-		background: var(--status, transparent);
-		padding: 0.15rem 0.5rem;
-		font-size: 1.15rem;
-	}
-	.part:first-child {
-		margin-inline-end: 0.5rem;
-	}
-	.part[aria-pressed='true'] {
-		outline: 2px solid var(--accent);
-		outline-offset: 1px;
-	}
-	.facts {
-		display: grid;
-		grid-template-columns: auto 1fr;
-		gap: 0.2rem 0.75rem;
-		margin: 0;
-		font-size: 0.9rem;
-	}
-	.facts dt {
-		color: var(--muted);
-	}
-	.facts dd {
-		margin: 0;
-	}
-	.facts small {
-		display: block;
-		color: var(--muted);
-	}
-	.suggestion {
-		margin: 0;
-		padding: 0.6rem 0.75rem;
-		border-radius: var(--radius);
-		background: var(--accent-soft);
-		font-size: 0.9rem;
-	}
-	.suggestion button {
-		margin-top: 0.4rem;
-		padding-block: 0.2rem;
-		font-size: 0.85rem;
-	}
 	.close {
 		position: absolute;
 		top: 0.75rem;
 		inset-inline-end: 0.75rem;
 		padding: 0.2rem 0.5rem;
-	}
-	.help p {
-		margin: 0 0 0.75rem;
-	}
-	.help summary {
-		cursor: pointer;
-		font-weight: 600;
-		margin-bottom: 0.5rem;
-	}
-	.keys {
-		display: grid;
-		grid-template-columns: auto 1fr;
-		gap: 0.4rem 1rem;
-		margin: 0 0 1rem;
-		font-size: 0.9rem;
-	}
-	.keys dt {
-		white-space: nowrap;
-	}
-	.keys dd {
-		margin: 0;
-		color: var(--muted);
-	}
-	.legend {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.35rem 0.4rem;
-		font-size: 0.85rem;
-		color: var(--muted);
-	}
-	.swatch {
-		display: inline-block;
-		width: 0.9rem;
-		height: 0.9rem;
-		border-radius: 0.2rem;
-		margin-inline-start: 0.35rem;
-	}
-	.due-dot {
-		display: inline-block;
-		width: 0.5rem;
-		height: 0.5rem;
-		margin-inline-start: 0.35rem;
-		border-radius: 50%;
-		background: var(--due-2);
-	}
-	.start .touch {
-		display: none;
-	}
-	/* A touch screen has no keys to list. */
-	@media (hover: none) and (pointer: coarse) {
-		.start .pointer,
-		.help details {
-			display: none;
-		}
-		.start .touch {
-			display: inline;
-		}
-	}
-	.swatch.known {
-		border: 1px solid var(--border);
 	}
 	.end {
 		display: grid;
@@ -1104,33 +686,12 @@
 		gap: 0.5rem;
 	}
 	@media (max-width: 60rem) {
-		/* One column: the Term panel is a sheet over the bottom of the screen, not below the whole Page. */
-		.term-panel {
-			position: fixed;
-			inset-inline: 0;
-			bottom: 0;
-			z-index: 3;
-			max-height: 62vh;
-			gap: 0.75rem;
-			padding: 1rem;
-			/* On a phone the sheet itself scrolls. */
-			overflow-y: auto;
-			overflow-x: hidden;
-			overscroll-behavior: contain;
-			border-end-start-radius: 0;
-			border-end-end-radius: 0;
-			box-shadow: 0 -8px 30px rgb(0 0 0 / 0.18);
-		}
 		/* Room to scroll the last lines, and the chosen Word, clear of the sheet. */
 		.reader.sheet-open {
 			padding-bottom: 62vh;
 		}
-		.reader.sheet-open .word {
+		.reader.sheet-open :global(.word) {
 			scroll-margin: 5rem 0 64vh;
-		}
-		/* Keeps the practised Word above the practice panel docked at the bottom. */
-		.page.practising .word {
-			scroll-margin: 5rem 0 50vh;
 		}
 		.reader {
 			grid-template-columns: minmax(0, 1fr);
@@ -1141,14 +702,9 @@
 		.rail {
 			display: contents;
 		}
-		.side,
-		.rail:has(.term-panel, .practice-panel) .side {
+		.side {
 			min-height: 0;
 			overflow: visible;
-		}
-		.help details:not([open]) + .legend,
-		.help {
-			font-size: 0.95rem;
 		}
 	}
 </style>
