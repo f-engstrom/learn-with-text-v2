@@ -4,6 +4,7 @@
 	import Type from './Type.svelte';
 	import Shape from './Shape.svelte';
 	import Controls from './Controls.svelte';
+	import StatusMarks from './StatusMarks.svelte';
 
 	const { Story } = preview.meta({ title: 'Theme' });
 </script>
@@ -22,4 +23,8 @@
 
 <Story name="Controls">
 	{#snippet template()}<Controls />{/snippet}
+</Story>
+
+<Story name="Status and Due marks">
+	{#snippet template()}<StatusMarks />{/snippet}
 </Story>
