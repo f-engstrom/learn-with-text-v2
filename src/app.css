@@ -2,39 +2,45 @@
 
 /* Calm paper: warm page, ink text, a serif for reading and headings, soft surfaces. */
 :root {
+	/* Follows the system; data-theme on the root element forces one scheme (Storybook's theme switch uses it). */
 	color-scheme: light dark;
 
-	--bg: #f6f1e7;
-	--surface: #fffcf6;
-	--surface-2: #f1eadc;
-	--text: #2a251f;
-	--muted: #7a6f61;
-	--border: #e6dccb;
-	--accent: #2e4f7c;
-	--accent-soft: #e4e9f1;
-	--on-accent: #fffcf6;
-	--danger: #a33a2c;
-	--ok: #4a6b3a;
-	--shadow: 0 1px 2px rgb(70 50 20 / 0.05), 0 6px 20px -8px rgb(70 50 20 / 0.12);
-	--shadow-lifted: 0 2px 4px rgb(70 50 20 / 0.06), 0 18px 40px -12px rgb(70 50 20 / 0.22);
+	/* Each colour is light-dark(light, dark), so both values of a token sit side by side. */
+	--bg: light-dark(#f6f1e7, #1a1815);
+	--surface: light-dark(#fffcf6, #221f1b);
+	--surface-2: light-dark(#f1eadc, #2b2722);
+	--text: light-dark(#2a251f, #ece5d8);
+	--muted: light-dark(#7a6f61, #a89d8c);
+	--border: light-dark(#e6dccb, #3a342c);
+	--accent: light-dark(#2e4f7c, #9db6dc);
+	--accent-soft: light-dark(#e4e9f1, #2a3342);
+	--on-accent: light-dark(#fffcf6, #16140f);
+	--danger: light-dark(#a33a2c, #e79a8c);
+	--ok: light-dark(#4a6b3a, #a9c48f);
+	--shadow:
+		0 1px 2px light-dark(rgb(70 50 20 / 0.05), rgb(0 0 0 / 0.3)),
+		0 6px 20px -8px light-dark(rgb(70 50 20 / 0.12), rgb(0 0 0 / 0.5));
+	--shadow-lifted:
+		0 2px 4px light-dark(rgb(70 50 20 / 0.06), rgb(0 0 0 / 0.35)),
+		0 18px 40px -12px light-dark(rgb(70 50 20 / 0.22), rgb(0 0 0 / 0.6));
 
 	/* Status colours: light tints so a page of Unknown Words still reads as text. */
-	--status-unknown: #e3eaf3;
-	--status-learning1: #f5d5c6;
-	--status-learning2: #f3e0c2;
-	--status-learning3: #ece6c2;
-	--status-learning4: #dfe7cc;
-	--status-ignored: #9a9183;
+	--status-unknown: light-dark(#e3eaf3, #272d36);
+	--status-learning1: light-dark(#f5d5c6, #4e3128);
+	--status-learning2: light-dark(#f3e0c2, #4b3b26);
+	--status-learning3: light-dark(#ece6c2, #444027);
+	--status-learning4: light-dark(#dfe7cc, #363f2a);
+	--status-ignored: light-dark(#9a9183, #857b6c);
 	/* The underline under a Learning Term in the text, at full strength for Learning 1. */
-	--status-learning-mark: #b4664e;
+	--status-learning-mark: light-dark(#b4664e, #d9967a);
 
 	/* Due marks, from just Due to long overdue; the -text variants are for words on a surface. */
-	--due-1: #d9a033;
-	--due-2: #d4703a;
-	--due-3: #b9412f;
-	--due-1-text: #8a6514;
-	--due-2-text: #9c4c1f;
-	--due-3-text: #a33a2c;
+	--due-1: light-dark(#d9a033, #e0ac47);
+	--due-2: light-dark(#d4703a, #e48552);
+	--due-3: light-dark(#b9412f, #e2624f);
+	--due-1-text: light-dark(#8a6514, #e6bd6c);
+	--due-2-text: light-dark(#9c4c1f, #eba07a);
+	--due-3-text: light-dark(#a33a2c, #ee8a7a);
 
 	--font-ui: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 	/* Reading text and headings: a book serif with Latin and Cyrillic; Chinese and Farsi fall back to the system's fonts. */
@@ -46,37 +52,12 @@
 	--gutter: 1.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-	:root {
-		--bg: #1a1815;
-		--surface: #221f1b;
-		--surface-2: #2b2722;
-		--text: #ece5d8;
-		--muted: #a89d8c;
-		--border: #3a342c;
-		--accent: #9db6dc;
-		--accent-soft: #2a3342;
-		--on-accent: #16140f;
-		--danger: #e79a8c;
-		--ok: #a9c48f;
-		--shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 20px -8px rgb(0 0 0 / 0.5);
-		--shadow-lifted: 0 2px 4px rgb(0 0 0 / 0.35), 0 18px 40px -12px rgb(0 0 0 / 0.6);
+:root[data-theme='light'] {
+	color-scheme: light;
+}
 
-		--status-unknown: #272d36;
-		--status-learning1: #4e3128;
-		--status-learning2: #4b3b26;
-		--status-learning3: #444027;
-		--status-learning4: #363f2a;
-		--status-ignored: #857b6c;
-		--status-learning-mark: #d9967a;
-
-		--due-1: #e0ac47;
-		--due-2: #e48552;
-		--due-3: #e2624f;
-		--due-1-text: #e6bd6c;
-		--due-2-text: #eba07a;
-		--due-3-text: #ee8a7a;
-	}
+:root[data-theme='dark'] {
+	color-scheme: dark;
 }
 
 @media (max-width: 40rem) {
