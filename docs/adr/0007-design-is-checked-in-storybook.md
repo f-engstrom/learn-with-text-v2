@@ -13,12 +13,14 @@ Stories never reach the app's server. Each `fetch` a screen makes is answered fr
 - Storybook 10, the stable release: it has no support for SvelteKit 3. Storybook 11 does and was in beta when this was decided, so it is pinned to an exact version until 11 is stable.
 - Hand-written fixtures: simpler, but they drift from what the domain produces, and splitting text into Words by hand is error-prone. Rejected for screens.
 - An in-memory fake of the server, so that saving a Term in a story changes what it shows: a second implementation of the domain. Rejected; a story shows a state, and the domain's specs cover the flows.
-- Snapshots on a CI runner or a hosted service: the Reader uses the system's fonts, so a Linux browser renders text the learner never sees. Snapshots are taken on the developer's Mac, in Chromium, and their baselines are committed.
+- Snapshots on a CI runner or a hosted service: the Reader uses the system's fonts, so a Linux browser renders text the learner never sees. Snapshots are taken on the developer's Mac, in Chromium.
+- Committed snapshot baselines: some 40 MB of images for 130 stories, and as much again in the history with each design change. Rejected; snapshots are taken before a change and compared after it, and not kept.
 
 ## Consequences
 
 - The colour tokens hold both schemes (`light-dark()`), and `data-theme` on the root element forces one, so a story can be seen in either. The app itself still follows the system.
 - A screen's story renders the route's real `+page.svelte` inside the layout. What can't be reached by data alone (a Selection, a Practice run, zen mode) is reached by the story's `play` function pressing the keys a learner would.
+- `pnpm test:visual` compares every story with its snapshot, so a before and after of a design change shows everything it moved, and a refactor can be shown to move nothing.
 - The stories' clock starts at the moment the fixtures were read at, so what is Due stays Due.
 - A change to what a load returns, or to a domain rule the fixtures pass through, means running `pnpm fixtures` and committing the result.
 - Checking behaviour that needs the server (saving, the Tutor's tools, imports) still means running the app on a copy of the database.

@@ -29,3 +29,5 @@ vite.config.ts.timestamp-*
 /storybook-static
 debug-storybook.log
 .vitest-attachments
+# Snapshots are taken before a design change and compared after it, not kept (ADR 0007).
+/src/stories/snapshots

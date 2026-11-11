@@ -1,7 +1,8 @@
 /**
  * A story's snapshots, taken after it has rendered and its play function has run (`pnpm test:visual`).
  * Every story in light at desktop width; a screen also in dark and at phone width, and the reading
- * screen at tablet width too (ADR 0007). Baselines are in ./snapshots, rendered in Chromium on macOS.
+ * screen at tablet width too (ADR 0007). The snapshots are in ./snapshots and are not committed: they are
+ * taken before a design change (`pnpm test:visual:update`) and compared after it.
  */
 import { expect } from 'vitest';
 import { page } from 'vitest/browser';
