@@ -26,8 +26,11 @@
 	let { highlight, question, here, folded, bookId, lang, dir, onanswer, onleave, ondismiss, onfold, onunfold }: Props = $props();
 
 	let questions = $state<TutorQuestions>();
+	let link = $state<HTMLAnchorElement>();
 	/** Waiting on your answer, rather than on the Tutor's. */
 	let yourTurn = $derived(!!question && !question.answer);
+	/** The passage is on another Page: the turn waits at the top of this one as a link there. */
+	let elsewhere = $derived(highlight && !here ? highlight.page : undefined);
 	let yours = $derived(
 		!question?.answer ? [] : 'ask' in question.answer ? [`You asked: ${question.answer.ask}`] : question.answer.answers
 	);
@@ -37,12 +40,16 @@
 			: question.answer
 				? 'Waiting for the Tutor'
 				: question.questions.length === 1
-					? 'A question from the Tutor'
-					: `${question.questions.length} questions from the Tutor`
+					? 'A question waiting'
+					: `${question.questions.length} questions waiting`
+	);
+	let about = $derived(
+		question ? `The Tutor asks about Page ${elsewhere}` : highlight?.note ? `The Tutor has a note on Page ${elsewhere}` : `The Tutor points to Page ${elsewhere}`
 	);
 
 	/** Puts the keyboard on the Tutor's question, opening the turn first if it was put off. */
 	export async function focus() {
+		if (elsewhere !== undefined) return link?.focus();
 		if (folded) {
 			onunfold();
 			await tick();
@@ -65,12 +72,13 @@
 			{/each}
 		</ul>
 	{/if}
-	{#if highlight && !here}
-		<a class="button" href="/books/{bookId}/pages/{highlight.page}">The Highlight is on Page {highlight.page} →</a>
-	{/if}
 {/snippet}
 
-{#if folded}
+{#if elsewhere !== undefined}
+	<a class="elsewhere" href="/books/{bookId}/pages/{elsewhere}" bind:this={link}
+		><span class="avatar" aria-hidden="true">T</span><span class="about">{about}</span><span class="go">Go →</span></a
+	>
+{:else if folded}
 	<button type="button" class="pill" onclick={focus}
 		><span class="avatar" aria-hidden="true">T</span>{waitingOn} · <span class="open">Open</span>{#if yourTurn}<kbd class="t-hint">T</kbd>{/if}</button
 	>
@@ -81,8 +89,8 @@
 			<span class="who">Tutor</span>
 			{#if yourTurn}<kbd class="t-hint" title="Press T to answer">T</kbd>{/if}
 			<span class="spacer"></span>
-			<button type="button" class="quiet" title="Fold it away until you’re ready" onclick={later}>Later</button>
-			<button type="button" class="quiet close" aria-label="Dismiss the Tutor" title="Dismiss until the Tutor asks again" onclick={ondismiss}
+			{#if question}<button type="button" class="quiet" title="Fold it away until you’re ready" onclick={later}>Later</button>{/if}
+			<button type="button" class="quiet close" aria-label="Put the Tutor aside" title="Until the Tutor asks again" onclick={ondismiss}
 				>✕</button
 			>
 		</header>
@@ -91,7 +99,7 @@
 				{#each yours as answer, i (i)}
 					<p class="bubble">{answer}</p>
 				{/each}
-				<p class="waiting"><span class="dots" aria-hidden="true"><span></span><span></span><span></span></span>Sent. The Tutor is reading; read on meanwhile.</p>
+				<p class="waiting"><span class="dots" aria-hidden="true"><span></span><span></span><span></span></span>The Tutor is reading. Read on meanwhile.</p>
 			</div>
 		{:else if question}
 			{#key question.askedAt}
@@ -249,6 +257,31 @@
 	}
 	.pill .open {
 		color: var(--accent);
+	}
+	.elsewhere {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		min-height: 3rem;
+		padding: 0 1rem 0 0.5rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		background: var(--surface);
+		color: var(--text);
+		text-decoration: none;
+	}
+	.elsewhere .avatar {
+		width: 1.75rem;
+		height: 1.75rem;
+	}
+	.elsewhere .about {
+		flex: 1;
+	}
+	.elsewhere .go {
+		color: var(--accent);
+	}
+	.elsewhere:hover .go {
+		text-decoration: underline;
 	}
 	/* T answers the Tutor; the hint goes once the keyboard is in the turn. */
 	.t-hint {

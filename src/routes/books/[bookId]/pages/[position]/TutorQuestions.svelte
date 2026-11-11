@@ -89,10 +89,7 @@
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div class="tutor-questions" {onkeydown} role="group" aria-label="The Tutor's questions">
 	{#if question.feedback}
-		<section class="feedback" aria-label="On your last answer">
-			<p class="label">On your last answer</p>
-			<p>{question.feedback}</p>
-		</section>
+		<p class="feedback">{question.feedback}</p>
 	{/if}
 	{@render children?.()}
 		{#if asking}
@@ -103,12 +100,14 @@
 					if (ownQuestion.trim()) onanswer({ ask: ownQuestion });
 				}}
 			>
-				<fieldset>
-					<legend>Your question for the Tutor</legend>
-					<!-- svelte-ignore a11y_autofocus -->
-					<textarea rows="2" autofocus bind:value={ownQuestion} onkeydown={(e) => onEnter(e, () => e.currentTarget.form?.requestSubmit())}
-					></textarea>
-				</fieldset>
+				<label class="answer own"
+					>Your question for the Tutor<!-- svelte-ignore a11y_autofocus --><textarea
+						rows="3"
+						autofocus
+						bind:value={ownQuestion}
+						onkeydown={(e) => onEnter(e, () => e.currentTarget.form?.requestSubmit())}
+					></textarea></label
+				>
 				<div class="actions">
 					<button type="submit" class="primary" disabled={!ownQuestion.trim()}>Ask</button>
 					<button type="button" class="link" onclick={() => ((asking = false), focus())}>Back to the question</button>
@@ -134,7 +133,7 @@
 								onclick={() => goTo(i)}
 							></button>
 						{/each}
-						<span class="count">{step + 1} of {last + 1}</span>
+						<span class="count">Question {step + 1} of {last + 1}</span>
 					</nav>
 				{/if}
 				<fieldset bind:this={stepElement} tabindex="-1">
@@ -148,16 +147,18 @@
 							{/each}
 						</div>
 					{:else}
-						<textarea rows="2" {lang} bind:value={drafts[step]} onkeydown={(e) => onEnter(e, next)}></textarea>
+						<label class="answer"
+							>Your answer<textarea rows="2" {lang} bind:value={drafts[step]} onkeydown={(e) => onEnter(e, next)}></textarea></label
+						>
 					{/if}
 				</fieldset>
 				<div class="actions">
 					{#if step === last}
-						<button type="submit" class="primary" disabled={!answered}>Send</button>
+						<button type="submit" class="primary" disabled={!answered}>{last > 0 ? 'Send answers' : 'Send answer'}</button>
 					{:else if !current.options}
 						<button type="submit" disabled={!done(step)}>Next</button>
 					{/if}
-					<button type="button" class="link" onclick={() => (asking = true)}>Ask the Tutor something first</button>
+					<button type="button" class="link" onclick={() => (asking = true)}>Ask the Tutor instead</button>
 				</div>
 				<p class="hint keys">
 					{#if current.options}<kbd>1</kbd>–<kbd>{current.options.length}</kbd> pick ·{/if}
@@ -175,24 +176,10 @@
 		justify-items: start;
 		justify-self: stretch;
 	}
+	/* Feedback first, the next questions under it: one turn, no Continue in between. */
 	.feedback {
-		justify-self: stretch;
-		padding: 0.5rem 0.7rem;
-		border-radius: 6px;
-		background: var(--accent-soft);
-		font-size: 0.95rem;
-	}
-	.feedback p {
 		margin: 0;
 		white-space: pre-line;
-	}
-	.feedback .label {
-		margin-bottom: 0.2rem;
-		color: var(--muted);
-		font-size: 0.75rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
 	}
 	.questions {
 		display: grid;
@@ -256,14 +243,35 @@
 		font: inherit;
 		resize: vertical;
 	}
+	.answer {
+		display: grid;
+		gap: 0.25rem;
+		color: var(--muted);
+		font-size: 0.85rem;
+	}
+	/* A typed answer is in the Page's language, so it is set like the text. */
+	.answer textarea {
+		color: var(--text);
+		font-family: var(--font-text);
+		font-size: 1rem;
+		line-height: 1.5;
+	}
+	/* Your own question is to the Tutor, in your language: set like the screen around it. */
+	.answer.own textarea {
+		font-family: inherit;
+	}
 	.options {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
 		gap: 0.5rem;
 	}
 	.options button {
 		min-height: 2.75rem;
 		text-align: start;
+	}
+	@media (max-width: 40rem) {
+		.options button {
+			min-height: 3rem;
+		}
 	}
 	.options button[aria-pressed='true'] {
 		background: var(--accent-soft);
