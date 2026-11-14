@@ -33,7 +33,7 @@ A run of one or more Sentences on one Page that the Tutor points you to, or a pa
 _Avoid_: Selection (that's yours), focus, annotation
 
 **Word**:
-One word-like piece of a Page as produced by its Language's splitting rules. Punctuation, spaces and numbers are not Words.
+One word-like piece of a Page as produced by its Language's splitting rules. Punctuation, spaces and numbers are not Words. Words joined by a hyphen are one Word (почему-то).
 _Avoid_: Token (except when talking about the parser)
 
 **Character part**:

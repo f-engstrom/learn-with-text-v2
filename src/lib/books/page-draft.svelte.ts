@@ -4,6 +4,7 @@
  */
 import type { EditablePage } from '#lib/server/domain/book-editing.ts';
 import { joinTexts, splitAtBreaks } from '../pages';
+import { wordSegmenter, wordTokens } from '../words';
 
 export interface DraftPage {
 	/** Stable across moves, for the list's keys. */
@@ -19,15 +20,9 @@ export interface DraftPage {
 	open: boolean;
 }
 
-const segmenters = new Map<string, Intl.Segmenter>();
-
-/** Words in a text by the Language's segmentation (ADR 0002), close enough for the screen. */
+/** Words in a text by the Language's splitting (ADR 0002), as the server counts them. */
 export function countWords(text: string, languageCode: string): number {
-	let segmenter = segmenters.get(languageCode);
-	if (!segmenter) segmenters.set(languageCode, (segmenter = new Intl.Segmenter(languageCode, { granularity: 'word' })));
-	let words = 0;
-	for (const s of segmenter.segment(text)) if (s.isWordLike) words++;
-	return words;
+	return wordTokens(wordSegmenter(languageCode), text).filter((t) => t.isWord).length;
 }
 
 let added = 0;

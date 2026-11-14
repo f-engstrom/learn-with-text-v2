@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { openDatabase } from '../db/open';
-import { migrateToLatest } from '../db/migrate';
+import { migrateTo, migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
 import { createBook, getPage, InvalidBook, listBooks, MAX_FILE_BYTES, splitIntoPages, textFromFile } from './books';
 import { markPageRead } from './reading';
@@ -132,5 +132,32 @@ describe('textFromFile', () => {
 	it('rejects text that is not UTF-8, and files that are too large', () => {
 		expect(() => textFromFile(new Uint8Array([0xca, 0xee, 0xf2]))).toThrow(InvalidBook);
 		expect(() => textFromFile(new Uint8Array(MAX_FILE_BYTES + 1))).toThrow('larger than 5 MB');
+	});
+});
+
+describe('hyphenated Words', () => {
+	it('makes a hyphenated Word one Word of a new Book', async () => {
+		const { db, byName } = await setup();
+		const bookId = await createBook(db, { title: 'Пикник', languageId: byName.Russian, text: 'Назвали почему-то моим именем.' });
+		const page = await getPage(db, bookId, 1);
+		expect(page?.paragraphs[0].sentences[0].tokens.filter((t) => t.key).map((t) => t.text)).toContain('почему-то');
+		expect((await listBooks(db))[0].unknownShare).toBe(1);
+		expect(await db.selectFrom('book_word').select('normalised').where('normalised', '=', 'почему-то').execute()).toHaveLength(1);
+	});
+
+	it('works out the Words of Books imported before them again', async () => {
+		const db = openDatabase(':memory:');
+		await migrateTo(db, '0024-origin');
+		const ru = (await db.selectFrom('language').select('id').where('code', '=', 'ru').executeTakeFirstOrThrow()).id;
+		const book = await db.insertInto('book').values({ title: 'Пикник', language_id: ru, created_at: '2026-11-01T10:00:00.000Z' }).returning('id').executeTakeFirstOrThrow();
+		await db.insertInto('page').values({ book_id: book.id, position: 1, text: 'Назвали почему-то моим именем.', words: 5 }).execute();
+		await db
+			.insertInto('book_word')
+			.values(['назвали', 'почему', 'то', 'моим', 'именем'].map((normalised) => ({ book_id: book.id, normalised })))
+			.execute();
+		await migrateToLatest(db);
+		expect(await db.selectFrom('page').select('words').executeTakeFirstOrThrow()).toEqual({ words: 4 });
+		const words = await db.selectFrom('book_word').select('normalised').orderBy('normalised').execute();
+		expect(words.map((w) => w.normalised)).toEqual(['именем', 'моим', 'назвали', 'почему-то']);
 	});
 });

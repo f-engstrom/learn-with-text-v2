@@ -58,7 +58,8 @@ describe('PageDraft', () => {
 
 describe('countWords', () => {
 	it('counts Words by the Language, Chinese included', () => {
-		expect(countWords('Жил-был кот.', 'ru')).toBe(3);
+		expect(countWords('Жил-был кот.', 'ru')).toBe(2);
+		expect(countWords('Жил — был кот, 5-й.', 'ru')).toBe(4);
 		expect(countWords('我们今天学习中文。', 'zh')).toBeGreaterThan(1);
 	});
 });

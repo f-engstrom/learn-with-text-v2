@@ -1,12 +1,9 @@
 import type { Language } from './languages';
 
-export { characterParts, normalise, partKeys, termKey } from '../../normalise';
+import { wordSegmenter, wordTokens, type Token } from '../../words';
 
-/** A piece of text: a Word, or the punctuation and spaces between Words. */
-export interface Token {
-	text: string;
-	isWord: boolean;
-}
+export { characterParts, normalise, partKeys, termKey } from '../../normalise';
+export type { Token } from '../../words';
 
 export interface ParsedSentence {
 	tokens: Token[];
@@ -21,16 +18,14 @@ export interface Parser {
 	parse(text: string): ParsedParagraph[];
 }
 
-const hasLetter = /\p{L}/u;
-
-/** Splits text with ICU's word and sentence segmentation. Numbers are not Words. */
+/** Splits text with ICU's word and sentence segmentation. Numbers are not Words; hyphenated Words are one. */
 export class SegmenterParser implements Parser {
 	private readonly sentences: Intl.Segmenter;
 	private readonly words: Intl.Segmenter;
 
 	constructor(code: string) {
 		this.sentences = new Intl.Segmenter(code, { granularity: 'sentence' });
-		this.words = new Intl.Segmenter(code, { granularity: 'word' });
+		this.words = wordSegmenter(code);
 	}
 
 	parse(text: string): ParsedParagraph[] {
@@ -40,10 +35,7 @@ export class SegmenterParser implements Parser {
 			.filter((line) => line.trim() !== '')
 			.map((line) => ({
 				sentences: [...this.sentences.segment(line.trim())].map(({ segment }) => ({
-					tokens: [...this.words.segment(segment)].map((s) => ({
-						text: s.segment,
-						isWord: s.isWordLike === true && hasLetter.test(s.segment)
-					}))
+					tokens: wordTokens(this.words, segment)
 				}))
 			}));
 	}

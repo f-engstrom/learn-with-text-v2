@@ -44,9 +44,32 @@ describe('parsing', () => {
 		expect(sentences(albanian, text)).toEqual(['Unë lexoj një libër çdo ditë. ', 'Ajo është e mirë!']);
 	});
 
-	// Open question in docs/directions.md: whether a doubled Word should stay one Word.
-	it('splits a doubled Indonesian Word at its hyphen', () => {
-		expect(words(indonesian, 'Anak-anak membaca buku.')).toEqual(['Anak', 'anak', 'membaca', 'buku']);
+	it('keeps a hyphenated Russian Word whole', () => {
+		expect(words(russian, 'Назвали почему-то моим именем, кое-что по-русски.')).toEqual([
+			'Назвали',
+			'почему-то',
+			'моим',
+			'именем',
+			'кое-что',
+			'по-русски'
+		]);
+	});
+
+	it('keeps a doubled Indonesian Word whole', () => {
+		expect(words(indonesian, 'Anak-anak membaca buku-buku.')).toEqual(['Anak-anak', 'membaca', 'buku-buku']);
+	});
+
+	it('keeps a Word of three hyphenated parts whole', () => {
+		expect(words(russian, 'Он сказал крест-накрест-то.')).toEqual(['Он', 'сказал', 'крест-накрест-то']);
+	});
+
+	it('splits at a dash, a spaced hyphen or a hyphen beside a number', () => {
+		expect(words(russian, 'Он — студент - школьник, 5-й класс, раз-')).toEqual(['Он', 'студент', 'школьник', 'й', 'класс', 'раз']);
+	});
+
+	it('keeps the text of a hyphenated Word unchanged', () => {
+		const text = 'Почему-то он пришёл. Кое-кто нет.';
+		expect(sentences(russian, text)).toEqual(['Почему-то он пришёл. ', 'Кое-кто нет.']);
 	});
 
 	it('segments Chinese into Words and Sentences', () => {

@@ -24,6 +24,7 @@ import * as m0021 from './migrations/0021-azure-source';
 import * as m0022 from './migrations/0022-one-book-per-address';
 import * as m0023 from './migrations/0023-albanian-indonesian';
 import * as m0024 from './migrations/0024-origin';
+import * as m0025 from './migrations/0025-hyphenated-words';
 
 // Listed statically (not read from disk) so they survive bundling by Vite and the MCP entry point.
 const migrations: Record<string, Migration> = {
@@ -50,7 +51,8 @@ const migrations: Record<string, Migration> = {
 	'0021-azure-source': m0021,
 	'0022-one-book-per-address': m0022,
 	'0023-albanian-indonesian': m0023,
-	'0024-origin': m0024
+	'0024-origin': m0024,
+	'0025-hyphenated-words': m0025
 };
 
 export async function migrateToLatest(db: Kysely<any>): Promise<void> {
