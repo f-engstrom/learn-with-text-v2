@@ -75,7 +75,9 @@ describe('Reader MCP server', () => {
 			wait_for_answer: true,
 			withdraw_question: false,
 			mark_page_read: false,
-			import_book: false
+			import_book: false,
+			get_pages: true,
+			edit_pages: false
 		});
 	});
 
@@ -308,6 +310,30 @@ describe('Reader MCP server', () => {
 		});
 		expect(await call('clear_highlight', { book_id: bookId })).toEqual({ highlight: null });
 		expect((await call('where_am_i')).highlight).toBeUndefined();
+	});
+});
+
+describe('Cleaning up a Book', () => {
+	it('reads the Pages raw and edits them, leaving Read Pages alone', async () => {
+		const { call, bookId } = await connect();
+		const { pages } = await call('get_pages', { book_id: bookId });
+		expect(pages.map((p: { position: number; read: boolean }) => [p.position, p.read])).toEqual([
+			[1, false],
+			[2, false]
+		]);
+		expect(await call('get_pages', { book_id: bookId, from: 2 })).toMatchObject({ pages: [{ position: 2, text: 'Конец.' }] });
+
+		const edited = await call('edit_pages', {
+			book_id: bookId,
+			title: 'Кот и мышь',
+			operations: [{ op: 'add', after: pages[1].id, text: 'Ещё.\n---\nВсё.' }, { op: 'remove', page: pages[1].id }]
+		});
+		expect(edited.pages.map((p: { start: string }) => p.start)).toEqual([expect.stringMatching(/^В течение/), 'Ещё.', 'Всё.']);
+
+		await call('mark_page_read', { book_id: bookId, page: 1 });
+		expect(await call('edit_pages', { book_id: bookId, operations: [{ op: 'remove', page: pages[0].id }] })).toEqual({
+			error: expect.stringContaining('Page 1 is Read')
+		});
 	});
 });
 

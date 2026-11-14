@@ -14,7 +14,7 @@ A text you have imported to read, in one Language, split into Pages. It comes fr
 _Avoid_: Text, document, article (an article becomes a Book once you pick it)
 
 **Page**:
-One readable chunk of a Book, in order; the unit you open and mark as read.
+One readable chunk of a Book, in order; the unit you open and mark as read. A Page keeps its Read mark and the Bookmark when you move it or change its text on the Book's edit screen; a `---` line in it splits it into Pages, the first keeping it. The Tutor may clean up a Book's Pages too, but not one that is Read.
 _Avoid_: Text (Lute's name for it), chapter
 
 **Sentence**:
@@ -88,7 +88,7 @@ A per-Term choice, off by default, that makes a Term and its Parent share one St
 ### Reading
 
 **Read**:
-A Page is Read once you mark it so. Marking a Page Read can optionally make every remaining Unknown Word on it Known, except Words that sit inside a Multi-word Term on that Page.
+A Page is Read once you mark it so. Marking a Page Read can optionally make every remaining Unknown Word on it Known, except Words that sit inside a Multi-word Term on that Page. Editing a Book can take a Read mark away but never adds one.
 _Avoid_: Done, finished, completed (for Pages)
 
 **Zen mode**:

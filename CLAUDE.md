@@ -11,6 +11,7 @@ Domain rules sit in `src/lib/server/domain`, which the web app and the Tutor's M
 | Language, splitting into Words and Sentences | `domain/languages.ts`, `domain/parsing.ts` |
 | Normalised form, Character part | `lib/normalise.ts` (shared with the browser) |
 | Book, Page, importing text or a file | `domain/books.ts` |
+| Editing a Book: its Pages by id, moved, split, joined, removed or added; the Tutor's cleanup | `domain/book-editing.ts` (ADR 0008); on the screen `lib/books/page-draft.svelte.ts`, splitting and joining text in `lib/pages.ts` |
 | Import from a web address (one address, one Book) | `domain/addresses.ts`, for the web page and the Tutor alike; readers in `domain/webpages.ts`, `suggestions.ts`, `classics.ts`, `feeds.ts` |
 | Bookmark, Highlight, Read | `domain/reading.ts`; the Bookmark's Word in `lib/reading/bookmark.ts` |
 | Selection (cursor, phrase, Character part), the Bookmark following it | `lib/reading/selection.svelte.ts` |

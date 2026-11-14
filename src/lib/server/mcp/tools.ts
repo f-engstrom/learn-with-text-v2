@@ -4,6 +4,7 @@ import type { Kysely } from 'kysely';
 import { z } from 'zod';
 import { fits, rankSuggestions } from '../../suggestions';
 import type { Database } from '../db/schema';
+import { editPagesAsTutor, listPages } from '../domain/book-editing';
 import { createBook, getPage, listBooks } from '../domain/books';
 import { importFromAddress } from '../domain/addresses';
 import { listLanguages, type Language } from '../domain/languages';
@@ -48,7 +49,8 @@ export function createReaderServer(
 				'While tutoring: save_gloss for a meaning you give (only Unknown Words and Learning 1–2 Terms), set_parent to link an inflected form to its dictionary form, ' +
 				'assess_term after the learner answers about a Term (it moves your own assessment, never their Status, and counts as a Review), set_transfer when you judge how hard a Term is to carry over from their languages (list_your_languages), set_origin when you tell them where a word comes from or what it is related to (read a Term\'s origin before inventing a bridge), ' +
 				'set_bookmark as you move through the text, set_highlight to point the learner at Sentences in their reading screen, ask_learner to put your question there and wait for their answer, and mark_page_read at the end of a Page. ' +
-				'get_due_terms lists Terms due for practice, by priority, for warm-ups and quizzes. get_progress shows Words read, Milestones and Known Terms. Only the learner sets a Status.'
+				'get_due_terms lists Terms due for practice, by priority, for warm-ups and quizzes. get_progress shows Words read, Milestones and Known Terms. ' +
+				'To clean up a messy import (menus, footers, a sentence cut across Pages), read it with get_pages and fix it with edit_pages; Read Pages are the learner\'s. Only the learner sets a Status.'
 		}
 	);
 	const readOnly = { readOnlyHint: true, openWorldHint: false } as const;
@@ -598,6 +600,63 @@ export function createReaderServer(
 				// Wikipedia articles and Classics come in through their APIs, without the pages' notices.
 				if (url !== undefined) return json(await importFromAddress(db, { ...sources, readArticle }, language, url, title));
 				return json({ bookId: await createBook(db, { languageId: language.id, title: title ?? '', text: text! }) });
+			})
+	);
+
+	server.registerTool(
+		'get_pages',
+		{
+			title: 'Get Pages',
+			description:
+				"A Book's Pages as stored, for cleaning it up: each Page's id, position, whether it is Read, its Words and its raw text with line breaks. " +
+				'Give from and to (1-based positions) to read a long Book a stretch at a time.',
+			inputSchema: {
+				book_id: z.number().int(),
+				from: z.number().int().min(1).default(1),
+				to: z.number().int().min(1).optional()
+			},
+			annotations: readOnly
+		},
+		async ({ book_id, from, to }) => {
+			const pages = await listPages(db, book_id, from, to);
+			const [book] = (await listBooks(db)).filter((b) => b.id === book_id);
+			if (!book) return failure(`There is no Book ${book_id}.`);
+			return json({
+				book: { id: book.id, title: book.title, pageCount: book.pageCount },
+				pages: pages.map((p) => ({ id: p.id, position: p.position, read: p.readAt !== null, words: p.words, text: p.text }))
+			});
+		}
+	);
+
+	server.registerTool(
+		'edit_pages',
+		{
+			title: 'Edit Pages',
+			description:
+				"Cleans up a Book's Pages, naming them by id from get_pages: set_text, remove, join_next (joins the next Page onto it), move (after another Page, or first with after null), " +
+				'add (new text after a Page, or first; a line containing only --- starts another Page), and optionally a new title. ' +
+				'The operations apply in order and save at once, or not at all. Read Pages are the learner\'s and are refused: ask them first. ' +
+				"Offer a cleanup after importing a page that looks messy; don't do it unasked.",
+			inputSchema: {
+				book_id: z.number().int(),
+				title: z.string().optional(),
+				operations: z.array(
+					z.discriminatedUnion('op', [
+						z.object({ op: z.literal('set_text'), page: z.number().int(), text: z.string() }),
+						z.object({ op: z.literal('remove'), page: z.number().int() }),
+						z.object({ op: z.literal('join_next'), page: z.number().int() }),
+						z.object({ op: z.literal('move'), page: z.number().int(), after: z.number().int().nullable() }),
+						z.object({ op: z.literal('add'), after: z.number().int().nullable(), text: z.string() })
+					])
+				)
+			},
+			annotations: { ...writes, destructiveHint: true }
+		},
+		async ({ book_id, title, operations }) =>
+			guard(async () => {
+				await editPagesAsTutor(db, book_id, { title, operations });
+				const pages = await listPages(db, book_id);
+				return json({ pages: pages.map((p) => ({ id: p.id, position: p.position, read: p.readAt !== null, words: p.words, start: p.text.slice(0, 80) })) });
 			})
 	);
 

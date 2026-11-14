@@ -3,7 +3,8 @@
  * fixtures.json. Shared with the browser, so only types come from lib/server.
  */
 import type { Dictionary } from '#lib/dictionaries.ts';
-import type { BookDetails, BookSummary, Bookmark, PageView } from '#lib/server/domain/books.ts';
+import type { BookForEditing } from '#lib/server/domain/book-editing.ts';
+import type { BookSummary, Bookmark, PageView } from '#lib/server/domain/books.ts';
 import type { Feed } from '#lib/server/domain/feeds.ts';
 import type { FromTutor } from '#lib/server/domain/from-tutor.ts';
 import type { Language } from '#lib/server/domain/languages.ts';
@@ -20,10 +21,16 @@ export type ReadingData = PageView & { dictionaries: Dictionary[]; wiktionaryPag
 	daySoFar: DaySoFar | null;
 };
 
+/** The edit screen's data. */
+export interface EditBookData {
+	book: BookForEditing;
+	languages: Language[];
+}
+
 /** Every other route's data. */
 export interface RouteData {
 	/** The newest Book's Edit screen; none in an empty Reader. */
-	editBook?: { book: BookDetails; languages: Language[] };
+	editBook?: EditBookData;
 	home: {
 		languages: Language[];
 		books: BookSummary[];
@@ -63,6 +70,8 @@ export interface Fixtures {
 	routes: RouteData;
 	/** A Reader nobody has used yet. */
 	emptyRoutes: RouteData;
+	/** The edit screen: a messy web import (two Pages Read, the Bookmark on the fourth), forty Pages, and one Page far too long. */
+	editing: Record<'messy' | 'many' | 'long', EditBookData>;
 }
 
 /**

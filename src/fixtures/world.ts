@@ -7,7 +7,8 @@ import { sql, type Kysely } from 'kysely';
 import { migrateToLatest } from '../lib/server/db/migrate';
 import { openDatabase } from '../lib/server/db/open';
 import type { Database } from '../lib/server/db/schema';
-import { createBook, getBook, getPage, listBooks } from '../lib/server/domain/books';
+import { editBook, getBookForEditing } from '../lib/server/domain/book-editing';
+import { createBook, getPage, listBooks } from '../lib/server/domain/books';
 import { CLASSICS } from '../lib/server/domain/classics';
 import { isWiktionary } from '../lib/dictionaries';
 import { listDictionaries } from '../lib/server/domain/dictionaries';
@@ -23,7 +24,7 @@ import { addTopic, listTopics } from '../lib/server/domain/topics';
 import { assessTerm, saveGloss, setOrigin, setTransfer } from '../lib/server/domain/tutoring';
 import { listYourLanguages, setYourLanguage } from '../lib/server/domain/your-languages';
 import { releaseClock, setClock } from './clock';
-import { analects, feedXml, lady, saadi, vanka } from './texts';
+import { analects, bridge, feedXml, lady, saadi, vanka } from './texts';
 
 /** The moment every fixture is read at: the stories' "now". */
 export const NOW = '2026-11-10T12:00:00.000Z';
@@ -106,10 +107,37 @@ async function suggestions(db: Kysely<Database>, language: Language) {
 }
 
 /** The Edit screen's data for the newest Book, if there is one. */
-async function editBook(db: Kysely<Database>) {
-	const [newest] = await listBooks(db);
-	const book = newest && (await getBook(db, newest.id));
+async function editScreen(db: Kysely<Database>, bookId?: number) {
+	const id = bookId ?? (await listBooks(db))[0]?.id;
+	const book = id === undefined ? undefined : await getBookForEditing(db, id);
 	return book && { book, languages: await listLanguages(db) };
+}
+
+/** The edit screen for Books that need it: a messy web import, a long Book, and one long Page. */
+async function editingWorld() {
+	const { db, on, language } = await world();
+	const russian = language('ru');
+	const messy = await on(10, () =>
+		createBook(db, { languageId: russian.id, title: 'Городские новости — Читать онлайн', text: bridge.join('\n---\n'), url: 'https://example.org/news/old-bridge' })
+	);
+	await on(5, () => markPageRead(db, messy, 2));
+	await on(4, () => markPageRead(db, messy, 3));
+	await on(4, () => setBookmark(db, messy, { page: 4, sentence: 1 }));
+
+	const article = bridge.slice(1, 6);
+	const many = await on(50, () =>
+		createBook(db, { languageId: russian.id, title: 'Мост', text: Array.from({ length: 40 }, (_, i) => article[i % 5]).join('\n---\n') })
+	);
+	for (let page = 1; page <= 12; page++) await on(50 - page, () => markPageRead(db, many, page));
+	await on(30, () => setBookmark(db, many, { page: 13, sentence: 1 }));
+
+	// Pasted with no --- lines, then split into Pages of their own; one Page now holds the lot.
+	const long = await on(2, () => createBook(db, { languageId: russian.id, title: 'Вставленный текст', text: 'Мост.' }));
+	const whole = Array.from({ length: 14 }, () => article.slice(0, 3).join('\n')).join('\n');
+	const [page] = (await getBookForEditing(db, long))!.pages;
+	await on(2, () => editBook(db, long, { title: 'Вставленный текст', languageId: russian.id, pages: [{ id: page.id, text: whole }] }));
+
+	return { messy: (await editScreen(db, messy))!, many: (await editScreen(db, many))!, long: (await editScreen(db, long))! };
 }
 
 /** Every route's data for one database, apart from the reading screen's. */
@@ -123,7 +151,7 @@ async function routes(db: Kysely<Database>, russian: Language) {
 		you: { languages: await listYourLanguages(db) },
 		topics: { topics: await listTopics(db) },
 		newBook: { languages: await listLanguages(db) },
-		editBook: await editBook(db),
+		editBook: await editScreen(db),
 		suggestions: await suggestions(db, russian)
 	};
 }
@@ -323,6 +351,7 @@ export async function buildFixtures() {
 	try {
 		const empty = await emptyWorld();
 		const reader = await readerWorld();
+		const editing = await editingWorld();
 		// Through JSON, so what is compared with the committed file is what a story would import.
 		return JSON.parse(
 			JSON.stringify({
@@ -330,7 +359,8 @@ export async function buildFixtures() {
 				reading: { fresh: empty.fresh, ...reader.reading },
 				tutor: reader.tutor,
 				routes: reader.routes,
-				emptyRoutes: empty.routes
+				emptyRoutes: empty.routes,
+				editing
 			})
 		);
 	} finally {
