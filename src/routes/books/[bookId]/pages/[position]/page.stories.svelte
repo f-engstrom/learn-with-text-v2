@@ -45,6 +45,8 @@
 
 <Story name="Words in every Status" />
 
+<Story name="On a phone" globals={{ viewport: { value: 'phone' } }} />
+
 <Story
 	name="The Keys open"
 	play={async ({ canvas, userEvent }: Play) => {

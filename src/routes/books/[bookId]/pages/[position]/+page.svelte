@@ -400,7 +400,10 @@
 <div class="chrome" class:zen>
 	<header class="book">
 		<h1 lang={data.language.code} {dir}>{data.book.title}</h1>
-		<Tag>{data.language.name}</Tag>
+		<span class="about">
+			<Tag>{data.language.name}</Tag>
+			<Button href="/books/{data.book.id}/edit" variant="quiet" aria-label="Edit {data.book.title}">Edit</Button>
+		</span>
 		<span class="toggles">
 			<Button type="button" onclick={startPractice} title="Practise the Due Words (R)"
 				>Practice{#if dueOnPage > 0}<Count value={dueOnPage} />{/if}</Button
@@ -627,10 +630,25 @@
 		font-size: 0.85rem;
 		white-space: nowrap;
 	}
+	.about {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
 	.toggles {
 		display: flex;
 		gap: 0.5rem;
 		margin-inline-start: auto;
+	}
+	/* On a phone the title, its Language and Edit, and the toggles each take a row, from the start. */
+	@media (max-width: 40rem) {
+		.book {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+		.toggles {
+			margin-inline-start: 0;
+		}
 	}
 	.side {
 		display: flex;
