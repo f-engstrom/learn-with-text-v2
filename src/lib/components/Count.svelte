@@ -7,12 +7,12 @@
 
 <style>
 	.count {
-		margin-inline-start: 0.4rem;
-		padding: 0 0.4rem;
+		margin-inline-start: 0.25rem;
+		padding: 0.05rem 0.5rem;
 		border-radius: 999px;
-		background: var(--due-2);
-		color: #fff;
-		font-size: 0.75rem;
+		background: var(--accent);
+		color: var(--on-accent);
+		font-size: 0.8rem;
 		font-weight: 600;
 	}
 </style>

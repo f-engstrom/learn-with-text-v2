@@ -324,6 +324,6 @@
 		max-width: 28rem;
 	}
 	.status {
-		background: var(--status, color-mix(in srgb, var(--surface) 70%, var(--bg)));
+		background-color: var(--status, color-mix(in srgb, var(--surface) 70%, var(--bg)));
 	}
 </style>

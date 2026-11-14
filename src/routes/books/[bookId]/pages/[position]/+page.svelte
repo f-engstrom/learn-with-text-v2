@@ -605,12 +605,8 @@
 	}
 	.toggles {
 		display: flex;
-		gap: 0.4rem;
+		gap: 0.5rem;
 		margin-inline-start: auto;
-	}
-	.toggles :global(button) {
-		padding-block: 0.2rem;
-		font-size: 0.85rem;
 	}
 	.side {
 		display: flex;

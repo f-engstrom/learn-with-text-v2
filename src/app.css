@@ -120,6 +120,13 @@ small,
 
 /* Controls */
 
+/* A button and a one-line field stand the same height side by side: they share this padding and a
+   line height in rem, which holds although a button's type is a little smaller. */
+:root {
+	--control-padding-block: 0.45rem;
+	--control-line-height: 1.35rem;
+}
+
 button,
 input,
 select,
@@ -133,13 +140,13 @@ button,
 	display: inline-flex;
 	align-items: center;
 	gap: 0.35rem;
-	padding: 0.4rem 0.85rem;
+	padding: var(--control-padding-block) 0.85rem;
 	border: 1px solid var(--border);
 	border-radius: var(--radius);
 	background: var(--surface);
 	color: var(--text);
 	font-size: 0.95rem;
-	line-height: 1.3;
+	line-height: var(--control-line-height);
 	text-decoration: none;
 	cursor: pointer;
 	box-shadow: 0 1px 1px rgb(70 50 20 / 0.04);
@@ -200,15 +207,22 @@ button.link {
 
 /* A toggle (aria-pressed) or a chosen option, while on. */
 button.toggle[aria-pressed='true'] {
-	background: var(--accent-soft);
+	background: var(--accent);
 	border-color: var(--accent);
-	color: var(--accent);
+	color: var(--on-accent);
+	font-weight: 600;
+}
+
+button.toggle[aria-pressed='true']:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--accent) 88%, var(--text));
+	border-color: color-mix(in srgb, var(--accent) 88%, var(--text));
 }
 
 input:not([type='checkbox'], [type='radio'], [type='file']),
 select,
 textarea {
-	padding: 0.5rem 0.65rem;
+	padding: var(--control-padding-block) 0.65rem;
+	line-height: var(--control-line-height);
 	border: 1px solid var(--border);
 	border-radius: var(--radius);
 	background: color-mix(in srgb, var(--surface) 70%, var(--bg));
@@ -222,8 +236,26 @@ textarea {
 input:not([type='checkbox'], [type='radio'], [type='file']):focus,
 select:focus,
 textarea:focus {
-	background: var(--surface);
+	background-color: var(--surface);
 	border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+}
+
+/* A select draws its own chevron, in the muted colour, with room beside it, so it stands as tall
+   as a text field and looks the same in every browser and theme. */
+select {
+	appearance: none;
+	padding-right: 2rem;
+	background-image:
+		linear-gradient(45deg, transparent calc(50% - 0.75px), var(--muted) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+		linear-gradient(135deg, transparent calc(50% - 0.75px), var(--muted) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px));
+	background-position:
+		right calc(0.75rem + 0.3rem) center,
+		right 0.75rem center;
+	background-size:
+		0.3rem 0.3rem,
+		0.3rem 0.3rem;
+	background-repeat: no-repeat;
+	cursor: pointer;
 }
 
 input[type='checkbox'],

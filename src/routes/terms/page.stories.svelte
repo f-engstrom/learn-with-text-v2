@@ -15,6 +15,7 @@
 </script>
 
 <Story name="Terms in every Status" />
+<Story name="On a phone" globals={{ viewport: { value: 'phone' } }} />
 <Story name="No Terms" args={{ data: emptyRoutes.terms }} />
 <Story name="Filtered, nothing matches" args={{ data: { ...routes.terms, terms: [], total: 0, filter: { ...routes.terms.filter, q: "собака", status: "known" } } }} parameters={at("/terms?q=собака&status=known")} />
 <Story
