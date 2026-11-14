@@ -26,6 +26,14 @@ export interface AzureSource {
 /** Azure's codes where they differ from the Language's. */
 const codes: Record<string, string> = { zh: 'zh-Hans' };
 
+/**
+ * The languages Azure's dictionary lookup knows (its `languages?scope=dictionary`, November 2026), in
+ * Azure's codes. It refuses any other, such as Albanian, which then only gets a machine translation.
+ */
+const dictionaryLanguages = new Set(
+	'af ar bg bn bs ca cs cy da de el en es et fa fi fr he hi hr hu id is it ja ko lt lv ms mt mww nb nl pl pt ro ru sk sl sr-Latn sv sw ta th tlh-Latn tr uk ur vi zh-Hans'.split(' ')
+);
+
 const partsOfSpeech: Record<string, string> = {
 	ADJ: 'adjective',
 	ADV: 'adverb',
@@ -51,7 +59,7 @@ export async function lookUp(
 	const from = codes[language.code] ?? language.code;
 	const text = term.text.trim() || term.normalised;
 	if (text === '') return undefined;
-	if (!/\s/.test(text)) {
+	if (!/\s/.test(text) && dictionaryLanguages.has(from)) {
 		const entries: AzureEntry[] = [];
 		for (const t of (await source.lookup(from, term.normalised || text)).translations) {
 			const partOfSpeech = partsOfSpeech[t.posTag] ?? t.posTag.toLowerCase();

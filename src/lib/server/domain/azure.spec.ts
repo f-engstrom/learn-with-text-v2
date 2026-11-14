@@ -53,6 +53,15 @@ describe('lookUp', () => {
 		expect(source.asked).toEqual(['lookup zh-Hans 喜欢']);
 	});
 
+	it("goes straight to a machine translation for a Language Azure has no dictionary for, as Albanian", async () => {
+		const source = fake({}, { libri: 'the book' });
+		expect(await lookUp(source, { code: 'sq' }, { normalised: 'libri', text: 'libri' })).toEqual({
+			kind: 'translation',
+			entries: [{ partOfSpeech: '', translations: ['the book'] }]
+		});
+		expect(source.asked).toEqual(['translate sq libri']);
+	});
+
 	it('returns nothing when Azure has no translation', async () => {
 		expect(await lookUp(fake({}), ru, { normalised: 'ыы', text: 'ыы' })).toBeUndefined();
 	});
