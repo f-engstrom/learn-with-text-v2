@@ -6,17 +6,17 @@ import { fits, rankSuggestions } from '../../suggestions';
 import type { Database } from '../db/schema';
 import { editPagesAsTutor, listPages } from '../domain/book-editing';
 import { chapterAt, listChapters } from '../domain/chapters';
-import { createBook, getPage, listBooks } from '../domain/books';
+import { createBook, listBooks, type PageView } from '../domain/books';
 import { importFromAddress } from '../domain/addresses';
 import { listLanguages, type Language } from '../domain/languages';
 import { termKey } from '../domain/parsing';
 import {
 	clearHighlight,
 	getBookmark,
-	getHighlight,
 	highlightNoteLength,
 	latestBookmark,
 	markPageRead,
+	sentencesAt,
 	setBookmark,
 	setHighlight
 } from '../domain/reading';
@@ -27,7 +27,6 @@ import { getProgress } from '../domain/progress';
 import { askLearner, awaitAnswer, feedbackLength, withdrawQuestion } from '../domain/from-tutor';
 import { listYourLanguages, removeYourLanguage, setYourLanguage, YOUR_LANGUAGE_LEVELS } from '../domain/your-languages';
 import { byPriority } from '../../practice';
-import { bookmarkedWord } from '../../reading/bookmark';
 import { fetchArticle, type WebArticle } from '../domain/webpages';
 import { Refused } from '../domain/refused';
 
@@ -83,26 +82,25 @@ export function createReaderServer(
 				'Use it when the learner says "I\'m here", "help me with this" or similar while reading on their own.',
 			annotations: readOnly
 		},
-		async () => {
-			const latest = await latestBookmark(db);
-			if (!latest) return failure('No Bookmark has moved yet: the learner hasn’t opened a Book. Use list_books.');
-			const page = await getPage(db, latest.bookId, latest.bookmark.page);
-			if (!page) return failure(`Book ${latest.bookId} has no Page ${latest.bookmark.page}.`);
-			const sentences = page.paragraphs.flatMap((p, paragraph) => p.sentences.map((s) => ({ ...s, paragraph })));
-			const current = sentences[latest.bookmark.sentence - 1];
-			const text = (s: { tokens: { text: string }[] }) => s.tokens.map((t) => t.text).join('').trim();
-			const token = current && bookmarkedWord(current.tokens, latest.bookmark.word, page.language.code);
-			return json({
-				book: { id: latest.bookId, title: latest.title, language: page.language.name, pageCount: page.book.pageCount },
-				bookmark: latest.bookmark,
-				...(page.chapter ? { chapter: page.chapter } : {}),
-				movedAt: latest.at,
-				sentence: current && text(current),
-				paragraphSoFar: current && sentences.filter((s, i) => s.paragraph === current.paragraph && i < latest.bookmark.sentence).map(text).join(' '),
-				word: token?.key !== undefined ? wordView(token.text, page.terms[token.key], token.words ?? 1) : undefined,
-				highlight: await getHighlight(db, latest.bookId)
-			});
-		}
+		async () =>
+			guard(async () => {
+				const latest = await latestBookmark(db);
+				if (!latest) return failure('No Bookmark has moved yet: the learner hasn’t opened a Book. Use list_books.');
+				// The Bookmark's Page up to its Sentence, for the paragraph so far.
+				const { page, sentences, highlight } = await sentencesAt(db, latest.bookId, { sentence: 1, count: latest.bookmark.sentence });
+				const current = sentences.find((s) => s.isBookmark);
+				const token = current?.selected;
+				return json({
+					book: bookSummary(page),
+					bookmark: latest.bookmark,
+					...(page.chapter ? { chapter: page.chapter } : {}),
+					movedAt: latest.at,
+					sentence: current?.text,
+					paragraphSoFar: current && sentences.filter((s) => s.paragraph === current.paragraph).map((s) => s.text).join(' '),
+					word: token?.key !== undefined ? wordView(token.text, page.terms[token.key], token.words ?? 1) : undefined,
+					highlight
+				});
+			})
 	);
 
 	server.registerTool(
@@ -114,18 +112,16 @@ export function createReaderServer(
 			inputSchema: { book_id: z.number().int().describe('The Book, from list_books.') },
 			annotations: readOnly
 		},
-		async ({ book_id }) => {
-			const bookmark = await getBookmark(db, book_id);
-			if (!bookmark) return failure(`There is no Book ${book_id}.`);
-			const page = await getPage(db, book_id, bookmark.page);
-			const sentence = page?.paragraphs.flatMap((p) => p.sentences)[bookmark.sentence - 1];
-			return json({
-				book: { id: book_id, title: page?.book.title, language: page?.language.name, pageCount: page?.book.pageCount },
-				bookmark,
-				...(page?.chapter ? { chapter: page.chapter } : {}),
-				sentence: sentence?.tokens.map((t) => t.text).join('').trim()
-			});
-		}
+		async ({ book_id }) =>
+			guard(async () => {
+				const { page, bookmark, sentences } = await sentencesAt(db, book_id, { count: 1 });
+				return json({
+					book: bookSummary(page),
+					bookmark,
+					...(page.chapter ? { chapter: page.chapter } : {}),
+					sentence: sentences[0]?.text
+				});
+			})
 	);
 
 	server.registerTool(
@@ -145,50 +141,30 @@ export function createReaderServer(
 			},
 			annotations: readOnly
 		},
-		async ({ book_id, page: pageNumber, sentence: start, count }) => {
-			const bookmark = await getBookmark(db, book_id);
-			if (!bookmark) return failure(`There is no Book ${book_id}.`);
-			const position = pageNumber ?? bookmark.page;
-			const page = await getPage(db, book_id, position);
-			if (!page) return failure(`Book ${book_id} has no Page ${position}.`);
-			const from = start ?? (position === bookmark.page ? bookmark.sentence : 1);
-			const highlight = await getHighlight(db, book_id);
-			const inHighlight = (n: number) => highlight?.page === position && n >= highlight.first && n <= highlight.last;
-			const all = page.paragraphs.flatMap((p, paragraph) => p.sentences.map((s) => ({ ...s, paragraph: paragraph + 1 })));
-			const sentences = all.slice(from - 1, from - 1 + count).map((s, i) => {
-				const isBookmark = position === bookmark.page && from + i === bookmark.sentence;
-				const selectedWord = isBookmark ? bookmarkedWord(s.tokens, bookmark.word, page.language.code) : undefined;
-				const words = s.tokens.flatMap((t) =>
-					t.key === undefined
-						? []
-						: [
-								{
-									...wordView(t.text, page.terms[t.key], t.words ?? 1),
-									...(t === selectedWord ? { selected: true } : {})
-								}
-							]
-				);
-				return {
-					position: from + i,
+		async ({ book_id, page: pageNumber, sentence: start, count }) =>
+			guard(async () => {
+				const { page, bookmark, highlight, sentences, sentenceCount, nextPage } = await sentencesAt(db, book_id, { page: pageNumber, sentence: start, count });
+				const views = sentences.map((s) => ({
+					position: s.position,
 					paragraph: s.paragraph,
-					isBookmark,
-					...(inHighlight(from + i) ? { highlighted: true } : {}),
-					text: s.tokens.map((t) => t.text).join('').trim(),
-					words
-				};
-			});
-			const unknown = [...new Set(sentences.flatMap((s) => s.words.filter((w) => w.status === 'unknown').map((w) => w.text.toLocaleLowerCase(page.language.code))))];
-			const last = from - 1 + sentences.length;
-			return json({
-				book: { id: book_id, title: page.book.title, language: page.language.name, pageCount: page.book.pageCount },
-				page: { position, read: page.read, sentenceCount: all.length, ...(page.chapter ? { chapter: page.chapter } : {}) },
-				bookmark,
-				...(highlight ? { highlight } : {}),
-				sentences,
-				unknown,
-				nextPage: last >= all.length && position < page.book.pageCount ? position + 1 : undefined
-			});
-		}
+					isBookmark: s.isBookmark,
+					...(s.highlighted ? { highlighted: true } : {}),
+					text: s.text,
+					words: s.tokens.flatMap((t) =>
+						t.key === undefined ? [] : [{ ...wordView(t.text, page.terms[t.key], t.words ?? 1), ...(t === s.selected ? { selected: true } : {}) }]
+					)
+				}));
+				const unknown = [...new Set(views.flatMap((s) => s.words.filter((w) => w.status === 'unknown').map((w) => w.text.toLocaleLowerCase(page.language.code))))];
+				return json({
+					book: bookSummary(page),
+					page: { position: page.position, read: page.read, sentenceCount, ...(page.chapter ? { chapter: page.chapter } : {}) },
+					bookmark,
+					...(highlight ? { highlight } : {}),
+					sentences: views,
+					unknown,
+					nextPage
+				});
+			})
 	);
 
 	server.registerTool(
@@ -701,6 +677,11 @@ async function guard(run: () => Promise<CallToolResult>): Promise<CallToolResult
 		}
 		throw e;
 	}
+}
+
+/** The Book as the reading tools show it. */
+function bookSummary(page: PageView) {
+	return { id: page.book.id, title: page.book.title, language: page.language.name, pageCount: page.book.pageCount };
 }
 
 function wordView(text: string, term: TermView | undefined, words: number) {

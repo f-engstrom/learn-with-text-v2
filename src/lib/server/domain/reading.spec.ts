@@ -12,6 +12,7 @@ import {
 	InvalidHighlight,
 	latestBookmark,
 	markPageRead,
+	sentencesAt,
 	setBookmark,
 	setHighlight
 } from './reading';
@@ -193,5 +194,52 @@ describe('Highlight', () => {
 		expect(await getHighlight(db, bookId)).toMatchObject({ page: 2 });
 		await markPageRead(db, bookId, 2);
 		expect(await getHighlight(db, bookId)).toBeUndefined();
+	});
+});
+
+describe('sentencesAt', () => {
+	const text = 'Кот спит. Мышь бежит.\n\nКот смотрит. Мышь спит.\n---\nКот и мышь.';
+
+	it('reads from the Bookmark to the end of its Page, with each Sentence’s text and paragraph', async () => {
+		const { db, bookId } = await setup(text);
+		await setBookmark(db, bookId, { page: 1, sentence: 2, word: 'бежит' });
+		const at = await sentencesAt(db, bookId);
+		expect(at.page.position).toBe(1);
+		expect(at.sentenceCount).toBe(4);
+		expect(at.sentences.map((s) => [s.position, s.paragraph, s.text, s.isBookmark])).toEqual([
+			[2, 1, 'Мышь бежит.', true],
+			[3, 2, 'Кот смотрит.', false],
+			[4, 2, 'Мышь спит.', false]
+		]);
+		// The Word selected in the Bookmark's Sentence, and only there.
+		expect(at.sentences[0].selected?.text).toBe('бежит');
+		expect(at.sentences[1].selected).toBeUndefined();
+		expect(at.nextPage).toBe(2);
+	});
+
+	it('reads a given place and count, saying where to go on only at the end of the Page', async () => {
+		const { db, bookId } = await setup(text);
+		const some = await sentencesAt(db, bookId, { page: 1, sentence: 1, count: 2 });
+		expect(some.sentences.map((s) => s.text)).toEqual(['Кот спит.', 'Мышь бежит.']);
+		expect(some.nextPage).toBeUndefined();
+		// Another Page starts at its first Sentence; the last Page has nowhere to go on.
+		const last = await sentencesAt(db, bookId, { page: 2 });
+		expect(last.sentences.map((s) => [s.position, s.isBookmark])).toEqual([[1, false]]);
+		expect(last.nextPage).toBeUndefined();
+	});
+
+	it('marks the Sentences in the Tutor’s Highlight, on its Page only', async () => {
+		const { db, bookId } = await setup(text);
+		await setHighlight(db, bookId, { page: 1, first: 2, last: 3 });
+		const at = await sentencesAt(db, bookId, { sentence: 1 });
+		expect(at.highlight).toMatchObject({ page: 1, first: 2, last: 3 });
+		expect(at.sentences.map((s) => s.highlighted)).toEqual([false, true, true, false]);
+		expect((await sentencesAt(db, bookId, { page: 2 })).sentences.map((s) => s.highlighted)).toEqual([false]);
+	});
+
+	it('refuses a Book or a Page there isn’t', async () => {
+		const { db, bookId } = await setup(text);
+		await expect(sentencesAt(db, bookId + 1)).rejects.toThrow(InvalidBookmark);
+		await expect(sentencesAt(db, bookId, { page: 9 })).rejects.toThrow(`Book ${bookId} has no Page 9.`);
 	});
 });

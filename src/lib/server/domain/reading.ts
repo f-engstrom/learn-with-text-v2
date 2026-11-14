@@ -1,8 +1,9 @@
 import type { Kysely } from 'kysely';
 import type { Database } from '../db/schema';
-import { getPage, toBookmark, type Bookmark } from './books';
+import { getPage, toBookmark, type Bookmark, type PageView, type ReadingToken } from './books';
 import { suggestPronunciation } from './pronunciation';
 import { passageParts } from '../../reading/highlight';
+import { bookmarkedWord } from '../../reading/bookmark';
 import { Refused } from './refused';
 
 export class InvalidBookmark extends Refused {}
@@ -223,4 +224,75 @@ export async function markPageRead(
 		}
 	});
 	return next;
+}
+
+/** One Sentence of a Page, as the Tutor reads it. */
+export interface SentenceAt {
+	/** 1-based on its Page. */
+	position: number;
+	/** 1-based paragraph on its Page. */
+	paragraph: number;
+	text: string;
+	tokens: ReadingToken[];
+	/** The Bookmark's Sentence. */
+	isBookmark: boolean;
+	/** In the Bookmark's Sentence, the Word or phrase you last selected there. */
+	selected?: ReadingToken;
+	/** In the Tutor's Highlight. */
+	highlighted: boolean;
+}
+
+/** Sentences of one Page, with the Page and where the Bookmark and the Highlight are. */
+export interface SentencesAt {
+	page: PageView;
+	bookmark: Bookmark;
+	highlight?: Highlight;
+	sentences: SentenceAt[];
+	/** How many Sentences the Page has. */
+	sentenceCount: number;
+	/** The Page to go on to, once these reach the end of this one and there is a next. */
+	nextPage?: number;
+}
+
+/**
+ * `count` Sentences of a Book's Page from Sentence `sentence` on: by default the Bookmark's Page, from the
+ * Bookmark's Sentence there (from the first on another Page), to the end of the Page. Stays within one Page.
+ */
+export async function sentencesAt(
+	db: Kysely<Database>,
+	bookId: number,
+	at: { page?: number; sentence?: number; count?: number } = {}
+): Promise<SentencesAt> {
+	const bookmark = await getBookmark(db, bookId);
+	if (!bookmark) throw new InvalidBookmark(`There is no Book ${bookId}.`);
+	const position = at.page ?? bookmark.page;
+	const page = await getPage(db, bookId, position);
+	if (!page) throw new InvalidBookmark(`Book ${bookId} has no Page ${position}.`);
+	const highlight = await getHighlight(db, bookId);
+	const onBookmarkPage = position === bookmark.page;
+	const from = at.sentence ?? (onBookmarkPage ? bookmark.sentence : 1);
+	const all = page.paragraphs.flatMap((p, i) => p.sentences.map((s) => ({ tokens: s.tokens, paragraph: i + 1 })));
+	const sentences = all.slice(from - 1, at.count === undefined ? undefined : from - 1 + at.count).map((s, i): SentenceAt => {
+		const n = from + i;
+		const isBookmark = onBookmarkPage && n === bookmark.sentence;
+		const selected = isBookmark ? bookmarkedWord(s.tokens, bookmark.word, page.language.code) : undefined;
+		return {
+			position: n,
+			paragraph: s.paragraph,
+			text: s.tokens.map((t) => t.text).join('').trim(),
+			tokens: s.tokens,
+			isBookmark,
+			...(selected ? { selected } : {}),
+			highlighted: highlight?.page === position && n >= highlight.first && n <= highlight.last
+		};
+	});
+	const atEnd = from - 1 + sentences.length >= all.length;
+	return {
+		page,
+		bookmark,
+		...(highlight ? { highlight } : {}),
+		sentences,
+		sentenceCount: all.length,
+		...(atEnd && position < page.book.pageCount ? { nextPage: position + 1 } : {})
+	};
 }
