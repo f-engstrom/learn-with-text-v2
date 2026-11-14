@@ -2,6 +2,7 @@
 <script lang="ts">
 	import Button from '#lib/components/Button.svelte';
 	import CloseButton from '#lib/components/CloseButton.svelte';
+	import Origin from '#lib/components/Origin.svelte';
 	import TermForm from '#lib/components/TermForm.svelte';
 	import type { Dictionary } from '#lib/dictionaries.ts';
 	import { termKey } from '#lib/normalise.ts';
@@ -31,6 +32,8 @@
 		wiktionaryPage: Dictionary | null;
 		/** Whether Azure Translator has its key. */
 		azureReady: boolean;
+		/** The names of Your languages, marked in an Origin. */
+		yourLanguages: string[];
 		/** The open Dictionary, kept while you move between Words; none when the panel is closed. */
 		dictionary: DictionaryTab | null;
 		/** Why the last save was refused. */
@@ -53,6 +56,7 @@
 		dictionaries,
 		wiktionaryPage,
 		azureReady,
+		yourLanguages,
 		dictionary,
 		error,
 		onclose,
@@ -100,8 +104,9 @@
 	{#key `${selected.key}:${JSON.stringify(term)}`}
 		<TermForm bind:this={termForm} {language} text={selected.text} {term} {error} />
 	{/key}
-	{#if band || term?.transfer || term?.tutorAssessment}
+	{#if band || term?.transfer || term?.tutorAssessment || term?.origin}
 		<dl class="facts">
+			{#if term?.origin}<dt>Origin</dt><dd><Origin origin={term.origin} {yourLanguages} /></dd>{/if}
 			{#if band}<dt>Frequency</dt><dd>{frequencyLabels[band]}</dd>{/if}
 			{#if term?.transfer}
 				<dt>Transfer</dt>
@@ -130,6 +135,9 @@
 		open={dictionary}
 		onchoose={onchoosedictionary}
 		onadd={(meaning, source) => termForm?.addTranslation(meaning, source)}
+		origin={term?.origin?.of ? undefined : term?.origin}
+		{yourLanguages}
+		onuseorigin={term?.followsParent && term.parent ? undefined : (origin) => termForm?.useOrigin(origin, 'wiktionary')}
 	/>
 </div>
 

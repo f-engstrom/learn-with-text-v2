@@ -39,4 +39,31 @@ describe('readTermForm', () => {
 		form.set(f.status, 'known');
 		expect(readTermForm(form)).toMatchObject({ followsParent: false, translations: [], parent: '' });
 	});
+
+	it('reads the Origin as rows from three parallel lists when the form shows it, and keeps it otherwise', () => {
+		const form = new FormData();
+		form.set(f.languageId, '4');
+		form.set(f.text, 'чулок');
+		form.set(f.status, 'learning1');
+		expect(readTermForm(form).origin).toBeUndefined();
+		form.set(f.origin, '');
+		for (const [kind, language, word] of [
+			['loanword', 'Turkish', 'çorap'],
+			['cognate', 'English', 'sock']
+		]) {
+			form.append(f.originKind, kind);
+			form.append(f.originLanguage, language);
+			form.append(f.originWord, word);
+		}
+		form.set(f.originNote, 'via Tatar');
+		form.set(f.originSource, 'wiktionary');
+		expect(readTermForm(form).origin).toEqual({
+			links: [
+				{ kind: 'loanword', language: 'Turkish', word: 'çorap' },
+				{ kind: 'cognate', language: 'English', word: 'sock' }
+			],
+			note: 'via Tatar',
+			source: 'wiktionary'
+		});
+	});
 });

@@ -368,3 +368,68 @@ describe('termsVersion', () => {
 		expect(await termsVersion(db, byName.Russian)).toBe(versions.at(-1));
 	});
 });
+
+describe('Origin', () => {
+	const chain = [
+		{ kind: 'loanword', language: ' Turkish ', word: 'çorap' },
+		{ kind: 'loanword', language: 'Persian', word: 'jurāb' }
+	];
+
+	it('is saved with its links in order and a note, from you, and kept when not given', async () => {
+		const { db, byName } = await setup();
+		const languageId = byName.Russian;
+		await saveTerm(db, { languageId, text: 'чулок', status: 'learning1', origin: { links: [...chain, { kind: 'cognate', language: '', word: '' }], note: ' via  Tatar ' } });
+		const get = async () => (await findTerms(db, languageId, ['чулок'])).чулок;
+		expect((await get()).origin).toEqual({
+			links: [
+				{ kind: 'loanword', language: 'Turkish', word: 'çorap' },
+				{ kind: 'loanword', language: 'Persian', word: 'jurāb' }
+			],
+			note: 'via Tatar',
+			source: 'you'
+		});
+		await saveTerm(db, { languageId, text: 'чулок', status: 'learning2' });
+		expect((await get()).origin?.links).toHaveLength(2);
+		await saveTerm(db, { languageId, text: 'чулок', status: 'learning2', origin: { links: [], note: '' } });
+		expect((await get()).origin).toBeUndefined();
+	});
+
+	it('keeps its Source while unchanged, takes the one it is sent with when changed, and is yours once edited', async () => {
+		const { db, byName } = await setup();
+		const languageId = byName.Russian;
+		const get = async () => (await findTerms(db, languageId, ['чулок'])).чулок.origin;
+		await saveTerm(db, { languageId, text: 'чулок', status: 'learning1', origin: { links: chain, source: 'wiktionary' } });
+		expect((await get())?.source).toBe('wiktionary');
+		await saveTerm(db, { languageId, text: 'чулок', status: 'learning1', origin: { links: chain } });
+		expect((await get())?.source).toBe('wiktionary');
+		await saveTerm(db, { languageId, text: 'чулок', status: 'learning1', origin: { links: chain.slice(0, 1) } });
+		expect((await get())?.source).toBe('you');
+	});
+
+	it('refuses a link with an unknown kind or without a language', async () => {
+		const { db, byName } = await setup();
+		const save = (links: { kind: string; language: string; word?: string }[]) =>
+			saveTerm(db, { languageId: byName.Russian, text: 'чулок', status: 'learning1', origin: { links } });
+		await expect(save([{ kind: 'borrowed', language: 'Turkish' }])).rejects.toThrow(InvalidTerm);
+		await expect(save([{ kind: 'loanword', language: ' ', word: 'çorap' }])).rejects.toThrow('Name the language “çorap” is from.');
+	});
+
+	it("shows the Parent's on a Term that Follows Parent", async () => {
+		const { db, byName } = await setup();
+		const languageId = byName.Russian;
+		await saveTerm(db, { languageId, text: 'хлеб', status: 'learning1', origin: { links: [{ kind: 'inherited', language: 'Proto-Slavic', word: 'xlěbъ' }] } });
+		await saveTerm(db, { languageId, text: 'хлеба', status: 'learning1', parent: 'хлеб', followsParent: true, origin: { links: [{ kind: 'derived', language: 'Latin', word: 'x' }] } });
+		await saveTerm(db, { languageId, text: 'хлебу', status: 'learning1', parent: 'хлеб', followsParent: false });
+		const terms = await findTerms(db, languageId, ['хлеба', 'хлебу']);
+		expect(terms.хлеба.origin).toMatchObject({ links: [{ language: 'Proto-Slavic' }], of: 'хлеб' });
+		expect(terms.хлебу.origin).toBeUndefined();
+	});
+
+	it('moves the Terms version on', async () => {
+		const { db, byName } = await setup();
+		await saveTerm(db, { languageId: byName.Russian, text: 'чулок', status: 'learning1' });
+		const before = await termsVersion(db, byName.Russian);
+		await saveTerm(db, { languageId: byName.Russian, text: 'чулок', status: 'learning1', origin: { links: chain } });
+		expect(await termsVersion(db, byName.Russian)).toBeGreaterThan(before);
+	});
+});

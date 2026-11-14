@@ -7,6 +7,7 @@ import { listDictionaries } from '#lib/server/domain/dictionaries.ts';
 import { daySoFar } from '#lib/server/domain/progress.ts';
 import { InvalidBookmark, markPageRead } from '#lib/server/domain/reading.ts';
 import { fromTutor } from '#lib/server/domain/from-tutor.ts';
+import { listYourLanguages } from '#lib/server/domain/your-languages.ts';
 import { deleteTermAction, saveTermAction } from '#lib/server/term-actions.ts';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -21,6 +22,8 @@ export const load: PageServerLoad = async ({ params, url }) => {
 		wiktionaryPage: dictionaries.find(isWiktionary) ?? null,
 		// Without its key Azure's tab only says how to set it up, and asks nothing.
 		azureReady: !!AZURE_TRANSLATOR_KEY,
+		// Marked where an Origin names one of them.
+		yourLanguages: (await listYourLanguages(database())).map((l) => l.name),
 		...(await fromTutor(database(), page.book.id))!,
 		// Just after Mark as read, which sends you here with ?read.
 		daySoFar: url.searchParams.has('read') ? await daySoFar(database(), page.language.id) : null

@@ -1,6 +1,6 @@
 import { sql, type Kysely, type SelectQueryBuilder, type Transaction } from 'kysely';
-import type { Database, SourceValue, StatusValue, TransferValue } from '../db/schema';
-import { isSource, isStatus, LEARNING } from '../../terms';
+import type { Database, OriginKindValue, OriginSourceValue, SourceValue, StatusValue, TransferValue } from '../db/schema';
+import { isOriginKind, isOriginSource, isSource, isStatus, LEARNING } from '../../terms';
 import { bandRanks, ensureFrequencyLists, frequencyBands, type FrequencyBand } from './frequency';
 import { getLanguage, listLanguages, type Language } from './languages';
 import { MAX_TERM_WORDS } from './multiword';
@@ -12,12 +12,40 @@ import { Refused } from './refused';
 export type Status = StatusValue;
 export type Source = SourceValue;
 export type TransferLevel = TransferValue;
+export type OriginKind = OriginKindValue;
+export type OriginSource = OriginSourceValue;
 
 /** How hard a Term is to carry over from Your languages (see CONTEXT.md). */
 export interface Transfer {
 	form: TransferLevel;
 	concept: TransferLevel;
 	reason?: string;
+}
+
+/** One link of an Origin: a loanword from Turkish çorap, a cognate of English water. */
+export interface OriginLink {
+	kind: OriginKind;
+	/** The language named in words, e.g. 'Ottoman Turkish'. */
+	language: string;
+	/** The word in that language; '' if not known. */
+	word: string;
+}
+
+/** Where a Term's word comes from, or what it's related to in other languages (see CONTEXT.md). */
+export interface Origin {
+	/** In order: a chain reads from the nearest source back. */
+	links: OriginLink[];
+	note?: string;
+	source: OriginSource;
+	/** The Parent's text, when this is the Parent's Origin shown on a Term that Follows Parent. */
+	of?: string;
+}
+
+/** An Origin as submitted, with who it came from (you, unless it is unchanged or says otherwise). */
+export interface OriginInput {
+	links: { kind: string; language: string; word?: string }[];
+	note?: string;
+	source?: string;
 }
 
 /** In display order: Learning 1–4, then Known and Ignored. */
@@ -46,6 +74,8 @@ export interface TermView {
 	tutorAssessment?: Status;
 	/** Once the Tutor has judged it. */
 	transfer?: Transfer;
+	/** Its own, or its Parent's when it Follows Parent. */
+	origin?: Origin;
 }
 
 /** A Translation as submitted from a form: `id` refers to one the Term already has. */
@@ -68,6 +98,8 @@ export interface SaveTerm {
 	parent?: string;
 	/** Omit to keep the current choice. Has no effect without a Parent. */
 	followsParent?: boolean;
+	/** Omit to keep the current Origin; no links and no note removes it. */
+	origin?: OriginInput;
 }
 
 /**
@@ -89,6 +121,7 @@ export async function saveTerm(db: Kysely<Database>, input: SaveTerm): Promise<n
 	const translations = input.translations
 		?.map((t) => ({ ...t, text: t.text.trim() }))
 		.filter((t) => t.text !== '');
+	const origin = input.origin === undefined ? undefined : cleanOrigin(input.origin);
 
 	return db.transaction().execute(async (trx) => {
 		const existing = await trx
@@ -132,6 +165,12 @@ export async function saveTerm(db: Kysely<Database>, input: SaveTerm): Promise<n
 			await trx.updateTable('term').set({ follows_parent: Number(input.followsParent) }).where('id', '=', id).execute();
 		}
 		await shareStatus(trx, id, status);
+		if (origin !== undefined) {
+			const previous = await readOrigin(trx, id);
+			// An unchanged Origin keeps its Source; a changed one is from you unless it says where it came from.
+			const source = previous && sameOrigin(previous, origin) ? previous.source : isOriginSource(input.origin?.source) ? input.origin.source : 'you';
+			await writeOrigin(trx, id, origin, source);
+		}
 
 		if (translations === undefined) return id;
 
@@ -156,6 +195,49 @@ export async function saveTerm(db: Kysely<Database>, input: SaveTerm): Promise<n
 		}
 		return id;
 	});
+}
+
+/** Checks an Origin's links and tidies them; null when it has no links and no note. */
+export function cleanOrigin(input: OriginInput): Omit<Origin, 'source'> | null {
+	const tidy = (v: string | undefined) => (v ?? '').trim().replace(/\s+/gu, ' ');
+	const links = input.links
+		.map((l) => ({ kind: l.kind, language: tidy(l.language), word: tidy(l.word) }))
+		.filter((l) => l.language !== '' || l.word !== '');
+	for (const link of links) {
+		if (!isOriginKind(link.kind)) throw new InvalidTerm('Each link of an Origin is a loanword, inherited, derived, calque or cognate.');
+		if (link.language === '') throw new InvalidTerm(`Name the language “${link.word}” is from.`);
+	}
+	const note = tidy(input.note);
+	if (links.length === 0 && note === '') return null;
+	return { links: links as OriginLink[], ...(note ? { note } : {}) };
+}
+
+function sameOrigin(a: Omit<Origin, 'source'>, b: Omit<Origin, 'source'> | null): boolean {
+	return b !== null && JSON.stringify([a.links, a.note ?? '']) === JSON.stringify([b.links, b.note ?? '']);
+}
+
+/** A Term's own Origin, if it has one. */
+export async function readOrigin(db: Kysely<Database>, termId: number): Promise<Origin | undefined> {
+	const term = await db.selectFrom('term').select(['origin_note', 'origin_source']).where('id', '=', termId).executeTakeFirst();
+	if (!term?.origin_source) return undefined;
+	const links = await db.selectFrom('origin_link').select(['kind', 'language', 'word']).where('term_id', '=', termId).orderBy('position').execute();
+	return { links, ...(term.origin_note ? { note: term.origin_note } : {}), source: term.origin_source };
+}
+
+/** Replaces a Term's Origin, or removes it (null). Run it in a transaction. */
+export async function writeOrigin(db: Kysely<Database>, termId: number, origin: Omit<Origin, 'source'> | null, source: OriginSource): Promise<void> {
+	await db.deleteFrom('origin_link').where('term_id', '=', termId).execute();
+	await db
+		.updateTable('term')
+		.set(origin ? { origin_note: origin.note ?? null, origin_source: source } : { origin_note: null, origin_source: null })
+		.where('id', '=', termId)
+		.execute();
+	if (origin && origin.links.length > 0) {
+		await db
+			.insertInto('origin_link')
+			.values(origin.links.map((l, i) => ({ term_id: termId, position: i + 1, kind: l.kind, language: l.language, word: l.word })))
+			.execute();
+	}
 }
 
 /** Checks a Term's text and works out its Normalised form; the text is kept lowercased. */
@@ -401,7 +483,11 @@ function selectTerms(db: Kysely<Database>) {
 			'term.transfer_form',
 			'term.transfer_concept',
 			'term.transfer_reason',
+			'term.origin_note',
+			'term.origin_source',
 			'parent.id as parentId',
+			'parent.origin_note as parentOriginNote',
+			'parent.origin_source as parentOriginSource',
 			'parent.text as parentText',
 			'parent.status as parentStatus'
 		]);
@@ -423,12 +509,34 @@ async function toViews(db: Kysely<Database>, rows: TermRow[]): Promise<{ normali
 		.orderBy('term_id')
 		.orderBy('position')
 		.execute();
+	// A Term that Follows Parent shows its Parent's Origin, so the Parents' links are read too.
+	const links = await db
+		.selectFrom('origin_link')
+		.select(['term_id', 'kind', 'language', 'word'])
+		.where('term_id', 'in', [...new Set(rows.flatMap((r) => (r.parentId === null ? [r.id] : [r.id, r.parentId])))])
+		.orderBy('term_id')
+		.orderBy('position')
+		.execute();
+	const originOf = (id: number, note: string | null, source: OriginSource | null, of?: string): Origin | undefined =>
+		source === null
+			? undefined
+			: {
+					links: links.filter((l) => l.term_id === id).map(({ kind, language, word }) => ({ kind, language, word })),
+					...(note ? { note } : {}),
+					source,
+					...(of ? { of } : {})
+				};
 	const practice = await practiceViews(db, rows);
 	const frequency: Record<number, Record<string, FrequencyBand>> = {};
 	for (const languageId of new Set(rows.map((r) => r.language_id))) {
 		const language = await getLanguage(db, languageId);
 		if (language) frequency[languageId] = await frequencyBands(db, language, rows.filter((r) => r.language_id === languageId).map((r) => r.normalised));
 	}
+
+	const originFor = (t: TermRow) =>
+		t.follows_parent === 1 && t.parentId !== null
+			? originOf(t.parentId, t.parentOriginNote, t.parentOriginSource, t.parentText ?? undefined)
+			: originOf(t.id, t.origin_note, t.origin_source);
 
 	return rows.map((t) => ({
 		normalised: t.normalised,
@@ -448,6 +556,7 @@ async function toViews(db: Kysely<Database>, rows: TermRow[]): Promise<{ normali
 			...(t.transfer_form && t.transfer_concept
 				? { transfer: { form: t.transfer_form, concept: t.transfer_concept, ...(t.transfer_reason ? { reason: t.transfer_reason } : {}) } }
 				: {}),
+			...(originFor(t) ? { origin: originFor(t) } : {}),
 			translations: translations
 				.filter((tr) => tr.term_id === t.id)
 				.map((tr) => ({ id: tr.id, text: tr.text, source: tr.source }))

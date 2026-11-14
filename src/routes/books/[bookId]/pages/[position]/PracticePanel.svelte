@@ -2,6 +2,7 @@
 	import Button from '#lib/components/Button.svelte';
 	import CloseButton from '#lib/components/CloseButton.svelte';
 	import Grades from '#lib/components/Grades.svelte';
+	import Origin from '#lib/components/Origin.svelte';
 	import { statusLabels } from '#lib/terms.ts';
 	import { subsetLabels, type PracticeState, type Subset } from '#lib/reading/practice.svelte.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
@@ -14,13 +15,15 @@
 		/** The Word being practised, as written, and its Term. */
 		text: string | undefined;
 		term: TermView | undefined;
+		/** The names of Your languages, marked in an Origin. */
+		yourLanguages: string[];
 		onpick: (subset: Subset) => void;
 		onreveal: () => void;
 		ongrade: (grade: Grade) => void;
 		onstop: () => void;
 	}
 
-	let { state, subsets, text, term, onpick, onreveal, ongrade, onstop }: Props = $props();
+	let { state, subsets, text, term, yourLanguages, onpick, onreveal, ongrade, onstop }: Props = $props();
 	let available = $derived(subsets.filter((s) => s.count > 0));
 </script>
 
@@ -58,6 +61,9 @@
 						{#if term.pronunciation}{term.pronunciation}{/if}
 						{#if term.parent}from {term.parent.text}{/if}
 					</p>
+				{/if}
+				{#if term.origin}
+					<div class="origin"><Origin origin={term.origin} {yourLanguages} note={false} /></div>
 				{/if}
 				{#if term.practice?.recall}
 					<p class="muted">Recall: {statusLabels[term.practice.recall.level]}</p>
@@ -109,6 +115,9 @@
 	.word {
 		font-family: var(--font-text);
 		font-size: 1.5rem;
+	}
+	.origin {
+		font-size: 0.9rem;
 	}
 	.meaning {
 		margin: 0;

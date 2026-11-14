@@ -13,6 +13,14 @@ export const termFields = {
 	pronunciation: 'pronunciation',
 	parent: 'parent',
 	followsParent: 'followsParent',
+	/** Present when the form shows the Origin; without it the Origin is kept as it is. */
+	origin: 'origin',
+	/** The Origin's links are three parallel lists, one entry per row. */
+	originKind: 'originKind',
+	originLanguage: 'originLanguage',
+	originWord: 'originWord',
+	originNote: 'originNote',
+	originSource: 'originSource',
 	/** The Term to delete. */
 	id: 'id'
 } as const;
@@ -33,7 +41,19 @@ export function readTermForm(form: FormData): SaveTerm {
 			id: ids[i] ? Number(ids[i]) : undefined,
 			text: String(text),
 			source: sources[i]
-		}))
+		})),
+		...(form.has(f.origin) ? { origin: readOrigin(form) } : {})
+	};
+}
+
+function readOrigin(form: FormData): NonNullable<SaveTerm['origin']> {
+	const f = termFields;
+	const languages = form.getAll(f.originLanguage).map(String);
+	const words = form.getAll(f.originWord).map(String);
+	return {
+		links: form.getAll(f.originKind).map((kind, i) => ({ kind: String(kind), language: languages[i] ?? '', word: words[i] ?? '' })),
+		note: String(form.get(f.originNote) ?? ''),
+		source: String(form.get(f.originSource) ?? 'you')
 	};
 }
 

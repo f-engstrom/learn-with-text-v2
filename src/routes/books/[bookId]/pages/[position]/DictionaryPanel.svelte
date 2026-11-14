@@ -10,6 +10,8 @@
 	import { lookupUrl, type Dictionary } from '#lib/dictionaries.ts';
 	import type { DictionaryTab } from '#lib/reading/open-dictionary.svelte.ts';
 	import type { Language } from '#lib/server/domain/languages.ts';
+	import type { OriginSuggestion } from '#lib/server/domain/etymology.ts';
+	import type { Origin } from '#lib/server/domain/terms.ts';
 	import Suggestions from './Suggestions.svelte';
 
 	interface Props {
@@ -29,9 +31,29 @@
 		open: DictionaryTab | null;
 		onchoose: (tab: DictionaryTab) => void;
 		onadd: (meaning: string, source: 'wiktionary' | 'azure') => void;
+		/** The Term's own Origin, so Wiktionary's Etymology in use shows as such. */
+		origin?: Origin;
+		/** The names of Your languages, marked in an Origin. */
+		yourLanguages?: string[];
+		/** Takes one of Wiktionary's Etymologies as the Origin; none where the Origin isn't the Term's own. */
+		onuseorigin?: (origin: OriginSuggestion) => void;
 	}
 
-	let { language, termKey, text, translations, dictionaries, wiktionaryPage, azureReady, open, onchoose, onadd }: Props = $props();
+	let {
+		language,
+		termKey,
+		text,
+		translations,
+		dictionaries,
+		wiktionaryPage,
+		azureReady,
+		open,
+		onchoose,
+		onadd,
+		origin,
+		yourLanguages,
+		onuseorigin
+	}: Props = $props();
 
 	let embedded = $derived(dictionaries.filter((d) => d.display === 'embedded'));
 	let popups = $derived(dictionaries.filter((d) => d.display === 'popup'));
@@ -77,6 +99,9 @@
 			{translations}
 			linked={!wiktionaryPage}
 			onadd={(meaning) => onadd(meaning, 'wiktionary')}
+			{origin}
+			{yourLanguages}
+			{onuseorigin}
 		/>
 		{#if wiktionaryPage}{@render page(wiktionaryPage)}{/if}
 	{:else if open === 'azure' && !azureReady}

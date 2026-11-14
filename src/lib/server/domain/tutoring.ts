@@ -4,7 +4,7 @@ import { getLanguage } from './languages';
 import { termKey } from './parsing';
 import { recordReview, type Grade, type PracticeView } from './practice';
 import { isLearning, LEVELS } from '../../terms';
-import { findTerms, InvalidTerm, saveTerm, type Status, type Transfer } from './terms';
+import { cleanOrigin, findTerms, InvalidTerm, saveTerm, writeOrigin, type Origin, type OriginInput, type Status, type Transfer } from './terms';
 
 // The Tutor's changes to Terms. The rules live here so no entry point can break them (ADR 0003).
 
@@ -96,6 +96,29 @@ export async function setTransfer(
 		.where('id', '=', term.id)
 		.execute();
 	return { form: input.form, concept: input.concept, ...(reason ? { reason } : {}) };
+}
+
+/**
+ * Replaces a Term's Origin with the Tutor's, with Source Tutor. Refused for an Unknown Word, for a
+ * Term that Follows its Parent (the Origin belongs to the Parent) and for an Origin you wrote.
+ */
+export async function setOrigin(
+	db: Kysely<Database>,
+	input: { languageId: number; text: string } & Pick<OriginInput, 'links' | 'note'>
+): Promise<Origin> {
+	const language = await getLanguage(db, input.languageId);
+	if (!language) throw new InvalidTerm('Unknown Language.');
+	const key = termKey(input.text, language);
+	const term = (await findTerms(db, language.id, [key]))[key];
+	if (!term) throw new InvalidTerm(`“${input.text}” is Unknown; save a Gloss first to give it a Term.`);
+	if (term.followsParent && term.parent) {
+		throw new InvalidTerm(`“${term.text}” follows its Parent “${term.parent.text}”; set the Origin there.`);
+	}
+	if (term.origin?.source === 'you') throw new InvalidTerm(`The learner wrote the Origin of “${term.text}” themselves; leave it as it is.`);
+	const origin = cleanOrigin(input);
+	if (!origin) throw new InvalidTerm('An Origin needs a link or a note.');
+	await db.transaction().execute((trx) => writeOrigin(trx, term.id, origin, 'tutor'));
+	return { ...origin, source: 'tutor' };
 }
 
 /**

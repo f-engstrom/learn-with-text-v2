@@ -128,6 +128,25 @@ export interface TermTable {
 	transfer_form: TransferValue | null;
 	transfer_concept: TransferValue | null;
 	transfer_reason: string | null;
+	/** The Origin's note and Source; both null while it has no Origin. */
+	origin_note: string | null;
+	origin_source: OriginSourceValue | null;
+}
+
+export type OriginKindValue = 'loanword' | 'inherited' | 'derived' | 'calque' | 'cognate';
+export type OriginSourceValue = 'you' | 'wiktionary' | 'tutor';
+
+/** One link of a Term's Origin, in order. */
+export interface OriginLinkTable {
+	id: Generated<number>;
+	term_id: number;
+	/** 1-based order within the Term's Origin. */
+	position: number;
+	kind: OriginKindValue;
+	/** The language named in words, e.g. 'Ottoman Turkish'. */
+	language: string;
+	/** The word in that language; '' if not known. */
+	word: string;
 }
 
 export type TransferValue = 'easy' | 'medium' | 'hard';
@@ -192,6 +211,7 @@ export interface Database {
 	term: TermTable;
 	status_change: StatusChangeTable;
 	translation: TranslationTable;
+	origin_link: OriginLinkTable;
 	review: ReviewTable;
 	frequency: FrequencyTable;
 	your_language: YourLanguageTable;

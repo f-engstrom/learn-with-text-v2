@@ -444,6 +444,7 @@
 					subsets={practice.subsets}
 					text={practice.word === undefined ? undefined : words[practice.word]?.text}
 					term={practice.word === undefined ? undefined : data.terms[words[practice.word]?.key]}
+					yourLanguages={data.yourLanguages}
 					onpick={(subset) => practice.pick(subset)}
 					onreveal={() => practice.reveal()}
 					ongrade={(grade) => practice.grade(grade)}
@@ -461,6 +462,7 @@
 					dictionaries={data.dictionaries}
 					wiktionaryPage={data.wiktionaryPage}
 					azureReady={data.azureReady}
+					yourLanguages={data.yourLanguages}
 					dictionary={dictionary.tab}
 					onchoosedictionary={(tab) => dictionary.choose(tab)}
 					error={form?.message}

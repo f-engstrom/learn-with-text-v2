@@ -7,7 +7,8 @@
 	import { tick } from 'svelte';
 	import { actionUrl } from '#lib/actions.ts';
 	import type { Language } from '#lib/server/domain/languages.ts';
-	import type { Source, TermView } from '#lib/server/domain/terms.ts';
+	import type { OriginKind, OriginLink, OriginSource, Source, TermView } from '#lib/server/domain/terms.ts';
+	import { ORIGIN_KINDS, originKindLabels } from '#lib/terms.ts';
 	import { termFields } from '#lib/term-writes.ts';
 
 	interface Props {
@@ -45,6 +46,17 @@
 	const saved = () => ({ parent: term?.parent?.text ?? '', followsParent: term?.followsParent ?? false });
 	let parent = $state(saved().parent);
 	let followsParent = $state(saved().followsParent);
+
+	// The Origin is the Term's own: one that Follows its Parent shows the Parent's, which is edited there.
+	let showsOrigin = $derived(!(term?.followsParent && term.parent));
+	const savedOrigin = () => (term?.origin && !term.origin.of ? term.origin : undefined);
+	let originLinks = $state<OriginLink[]>(savedOrigin()?.links.map((l) => ({ ...l })) ?? []);
+	let originNote = $state(savedOrigin()?.note ?? '');
+	/** Who the Origin is from: kept while unchanged, Wiktionary once picked from it, you once edited here. */
+	let originSource = $state<OriginSource>(savedOrigin()?.source ?? 'you');
+	// Closed at first: the facts beneath the form show the Origin; open it to edit.
+	let originOpen = $state(false);
+	const edited = () => (originSource = 'you');
 
 	let formElement: HTMLFormElement;
 	let clipboardError = $state<string | undefined>();
@@ -84,6 +96,22 @@
 		}
 		await tick();
 		formElement.requestSubmit();
+	}
+
+	/** Takes an Origin offered by a Dictionary in place of the one here, and saves. */
+	export async function useOrigin(origin: { links: OriginLink[]; note?: string }, source: OriginSource) {
+		originLinks = origin.links.map((l) => ({ ...l }));
+		originNote = origin.note ?? '';
+		originSource = source;
+		originOpen = true;
+		await tick();
+		formElement.requestSubmit();
+	}
+
+	function moveLink(from: number, to: number) {
+		const [link] = originLinks.splice(from, 1);
+		originLinks.splice(to, 0, link);
+		edited();
 	}
 
 	/** A Translation box grows to show all of a long Translation instead of cutting it off. */
@@ -165,6 +193,58 @@
 			<p class="error" role="alert">{clipboardError}</p>
 		{/if}
 	</fieldset>
+
+	{#if showsOrigin}
+		<details class="origin" bind:open={originOpen}>
+			<summary>Origin {#if originLinks.length > 0 || originNote}<SourceTag source={originSource} />{/if}</summary>
+			<input type="hidden" name={termFields.origin} value="" />
+			<input type="hidden" name={termFields.originSource} value={originSource} />
+			<ol>
+				{#each originLinks as link, i (link)}
+					<li>
+						<select name={termFields.originKind} bind:value={link.kind} onchange={edited} aria-label="Kind of link {i + 1}">
+							{#each ORIGIN_KINDS as kind (kind)}<option value={kind}>{originKindLabels[kind as OriginKind]}</option>{/each}
+						</select>
+						<input
+							name={termFields.originLanguage}
+							bind:value={link.language}
+							oninput={edited}
+							placeholder="Language"
+							aria-label="Language of link {i + 1}"
+							autocomplete="off"
+						/>
+						<input
+							name={termFields.originWord}
+							bind:value={link.word}
+							oninput={edited}
+							placeholder="Word"
+							aria-label="Word of link {i + 1}"
+							autocomplete="off"
+						/>
+						<span class="link-buttons">
+							<Button type="button" aria-label="Move link up" disabled={i === 0} onclick={() => moveLink(i, i - 1)}>↑</Button>
+							<Button type="button" aria-label="Move link down" disabled={i === originLinks.length - 1} onclick={() => moveLink(i, i + 1)}
+								>↓</Button
+							>
+							<Button type="button" aria-label="Remove link" onclick={() => (originLinks.splice(i, 1), edited())}>✕</Button>
+						</span>
+					</li>
+				{/each}
+			</ol>
+			<div class="row-actions">
+				<Button
+					type="button"
+					onclick={() => (originLinks.push({ kind: originLinks.length === 0 ? 'loanword' : originLinks.at(-1)!.kind, language: '', word: '' }), edited())}
+					>Add link</Button
+				>
+			</div>
+			<label>
+				Note
+				<textarea name={termFields.originNote} rows="2" bind:value={originNote} oninput={edited} placeholder="The story, e.g. how it arrived"
+				></textarea>
+			</label>
+		</details>
+	{/if}
 
 	<label>
 		Pronunciation
@@ -322,6 +402,43 @@
 	.translations li :global(button) {
 		grid-row: 1;
 		padding-inline: 0.55rem;
+	}
+	.origin {
+		display: grid;
+		gap: 0.5rem;
+	}
+	.origin summary {
+		cursor: pointer;
+	}
+	.origin[open] summary {
+		margin-bottom: 0.1rem;
+	}
+	.origin ol {
+		display: grid;
+		gap: 0.5rem;
+		margin: 0;
+		padding-inline-start: 1.25rem;
+	}
+	/* Kind and language share a line; the word and the row's buttons take the next. */
+	.origin li {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: 0.25rem;
+	}
+	.origin li > * {
+		min-width: 0;
+	}
+	.link-buttons {
+		display: flex;
+		justify-content: end;
+		gap: 0.25rem;
+	}
+	.link-buttons :global(button) {
+		padding-inline: 0.55rem;
+	}
+	.origin textarea {
+		resize: vertical;
+		line-height: 1.4;
 	}
 	.follows {
 		display: flex;

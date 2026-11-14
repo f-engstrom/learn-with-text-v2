@@ -20,7 +20,7 @@ import {
 } from '../domain/reading';
 import { findSuggestions, getFitRange, type SuggestionSources } from '../domain/suggestions';
 import { findTerms, listTerms, type TermView } from '../domain/terms';
-import { assessTerm, linkParent, saveGloss, setTransfer } from '../domain/tutoring';
+import { assessTerm, linkParent, saveGloss, setOrigin, setTransfer } from '../domain/tutoring';
 import { getProgress } from '../domain/progress';
 import { askLearner, awaitAnswer, feedbackLength, withdrawQuestion } from '../domain/from-tutor';
 import { listYourLanguages, removeYourLanguage, setYourLanguage, YOUR_LANGUAGE_LEVELS } from '../domain/your-languages';
@@ -46,7 +46,7 @@ export function createReaderServer(
 				'A Word with no Term is Unknown. A Term has a Status (learning1–4, known, ignored), ordered Translations each with a Source (you, wiktionary, tutor, azure), an optional Pronunciation and Parent. ' +
 				'Start with list_books, then get_sentences to read from the Bookmark; where_am_i says where the learner is right now when they read on their own. ' +
 				'While tutoring: save_gloss for a meaning you give (only Unknown Words and Learning 1–2 Terms), set_parent to link an inflected form to its dictionary form, ' +
-				'assess_term after the learner answers about a Term (it moves your own assessment, never their Status, and counts as a Review), set_transfer when you judge how hard a Term is to carry over from their languages (list_your_languages), ' +
+				'assess_term after the learner answers about a Term (it moves your own assessment, never their Status, and counts as a Review), set_transfer when you judge how hard a Term is to carry over from their languages (list_your_languages), set_origin when you tell them where a word comes from or what it is related to (read a Term\'s origin before inventing a bridge), ' +
 				'set_bookmark as you move through the text, set_highlight to point the learner at Sentences in their reading screen, ask_learner to put your question there and wait for their answer, and mark_page_read at the end of a Page. ' +
 				'get_due_terms lists Terms due for practice, by priority, for warm-ups and quizzes. get_progress shows Words read, Milestones and Known Terms. Only the learner sets a Status.'
 		}
@@ -292,6 +292,38 @@ export function createReaderServer(
 				const language = await findLanguage(db, name);
 				if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
 				return json({ transfer: await setTransfer(db, { languageId: language.id, text, form, concept, reason }) });
+			})
+	);
+
+	server.registerTool(
+		'set_origin',
+		{
+			title: 'Set Origin',
+			description:
+				"Where a Term's word comes from or what it is related to in other languages: a fact about the word, unlike Transfer. " +
+				'Links in order, nearest source first (a chain: loanword from Turkish çorap, which is from Persian jurāb), and cognates, with a short note for the story. ' +
+				"It replaces Wiktionary's or your own Origin; one the learner wrote is theirs. A Term that follows its Parent shows the Parent's, so set it on the Parent.",
+			inputSchema: {
+				language: z.string().describe('Language name or code.'),
+				text: z.string().min(1).describe('The Word or phrase; it must have a Term.'),
+				links: z
+					.array(
+						z.object({
+							kind: z.enum(['loanword', 'inherited', 'derived', 'calque', 'cognate']),
+							language: z.string().min(1).describe('The language named in words, e.g. "English", "Ottoman Turkish", "Proto-Slavic".'),
+							word: z.string().optional().describe('The word in that language.')
+						})
+					)
+					.max(8),
+				note: z.string().max(300).optional().describe('e.g. "from Vauxhall, a London pleasure garden; the name reached Russia via Pavlovsk station".')
+			},
+			annotations: { ...writes, idempotentHint: true }
+		},
+		async ({ language: name, text, links, note }) =>
+			guard(async () => {
+				const language = await findLanguage(db, name);
+				if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
+				return json({ origin: await setOrigin(db, { languageId: language.id, text, links, note }) });
 			})
 	);
 
@@ -596,6 +628,7 @@ function termView(term: TermView) {
 		...(term.parent ? { parent: term.parent.text, followsParent: term.followsParent } : {}),
 		...(term.tutorAssessment ? { tutorAssessment: term.tutorAssessment } : {}),
 		...(term.transfer ? { transfer: term.transfer } : {}),
+		...(term.origin ? { origin: term.origin } : {}),
 		...(term.frequency ? { frequency: term.frequency } : {}),
 		...(term.practice
 			? {

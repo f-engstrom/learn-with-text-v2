@@ -150,6 +150,10 @@ _Avoid_: Tutor status, score
 How hard a Term is to carry over from Your languages, judged by the Tutor in two parts: its form (is there a look-alike?) and its concept (does the meaning map one-to-one?), each easy, medium or hard, with an optional reason.
 _Avoid_: Difficulty (that's Transfer and Frequency together), cognate score
 
+**Origin**:
+Where a Term's word comes from, or what it is related to in other languages: a fact about the word, where Transfer is about you. An ordered list of links, each a kind (loanword, inherited, derived, calque or cognate), a language named in words ("Ottoman Turkish", "Proto-Slavic") and the word there, with a note for the story and one Source (you, Wiktionary or the Tutor). Wiktionary's Etymology is offered in the Dictionary panel, never saved by itself; the Tutor may replace its own or Wiktionary's Origin but not yours. A Term that Follows Parent shows its Parent's Origin. A language that is one of Your languages is marked.
+_Avoid_: Etymology (fine for Wiktionary's section), cognate score, roots
+
 **Your languages**:
 The languages you already know, which Transfer and the Tutor's bridges are measured against. You or the Tutor add them as they come up.
 

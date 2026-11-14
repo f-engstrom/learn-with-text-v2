@@ -30,6 +30,17 @@ export const wiktionary: WiktionaryResult = {
 	entries: [
 		{ partOfSpeech: 'Participle', definitions: ['past active perfective participle of привыкнуть', 'accustomed, used to'] },
 		{ partOfSpeech: 'Adjective', definitions: ['habitual'] }
+	],
+	etymologies: [
+		{
+			heading: 'Etymology',
+			links: [
+				{ kind: 'inherited', language: 'Old East Slavic', word: 'выкнути' },
+				{ kind: 'inherited', language: 'Proto-Slavic', word: '*vyknǫti' },
+				{ kind: 'cognate', language: 'Bosnian', word: 'navika' }
+			],
+			note: 'From при- + выкнуть, inherited from Old East Slavic выкнути, from Proto-Slavic *vyknǫti. Compare Bosnian navika.'
+		}
 	]
 };
 

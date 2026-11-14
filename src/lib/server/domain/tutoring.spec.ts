@@ -4,7 +4,7 @@ import { openDatabase } from '../db/open';
 import { migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
 import { findTerms, InvalidTerm, saveTerm } from './terms';
-import { assessTerm, linkParent, saveGloss, setTransfer } from './tutoring';
+import { assessTerm, linkParent, saveGloss, setOrigin, setTransfer } from './tutoring';
 
 async function setup() {
 	const db = openDatabase(':memory:');
@@ -95,6 +95,32 @@ describe('setTransfer', () => {
 		expect((await get('тоска')).transfer).toEqual({ form: 'hard', concept: 'hard', reason: 'no one-word match' });
 		await expect(setTransfer(db, { languageId: ru, text: 'тоска', form: 'tricky' as 'hard', concept: 'easy' })).rejects.toThrow(InvalidTerm);
 		await expect(setTransfer(db, { languageId: ru, text: 'дом', form: 'easy', concept: 'easy' })).rejects.toThrow('is Unknown');
+	});
+});
+
+describe('setOrigin', () => {
+	const links = [{ kind: 'loanword', language: 'English', word: 'computer' }];
+
+	it("replaces Wiktionary's or its own Origin, with Source Tutor", async () => {
+		const { db, ru, get } = await setup();
+		await saveTerm(db, { languageId: ru, text: 'компьютер', status: 'learning1', origin: { links: [], note: 'old', source: 'wiktionary' } });
+		expect(await setOrigin(db, { languageId: ru, text: 'Компьютер', links, note: 'from English' })).toEqual({
+			links: [{ kind: 'loanword', language: 'English', word: 'computer' }],
+			note: 'from English',
+			source: 'tutor'
+		});
+		await setOrigin(db, { languageId: ru, text: 'компьютер', links });
+		expect((await get('компьютер')).origin).toEqual({ links: [{ kind: 'loanword', language: 'English', word: 'computer' }], source: 'tutor' });
+	});
+
+	it('refuses an Unknown Word, a Term that Follows Parent, an Origin you wrote, and an empty one', async () => {
+		const { db, ru } = await setup();
+		await expect(setOrigin(db, { languageId: ru, text: 'дом', links })).rejects.toThrow('is Unknown');
+		await saveTerm(db, { languageId: ru, text: 'хлеба', status: 'learning1', parent: 'хлеб', followsParent: true });
+		await expect(setOrigin(db, { languageId: ru, text: 'хлеба', links })).rejects.toThrow('set the Origin there');
+		await saveTerm(db, { languageId: ru, text: 'вокзал', status: 'learning1', origin: { links: [], note: 'Vauxhall' } });
+		await expect(setOrigin(db, { languageId: ru, text: 'вокзал', links })).rejects.toThrow('themselves');
+		await expect(setOrigin(db, { languageId: ru, text: 'хлеб', links: [] })).rejects.toThrow('needs a link or a note');
 	});
 });
 

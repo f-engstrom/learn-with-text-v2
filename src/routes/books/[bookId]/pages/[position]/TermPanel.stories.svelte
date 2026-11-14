@@ -21,6 +21,7 @@
 			dictionaries: mixed.dictionaries,
 			wiktionaryPage: mixed.wiktionaryPage,
 			azureReady: true,
+			yourLanguages: mixed.yourLanguages,
 			dictionary: 'wiktionary',
 			error: undefined,
 			onclose: fn(),
@@ -37,6 +38,8 @@
 <Story name="An Unknown Word" args={of('блондинка')} />
 <Story name="Frequency, Transfer and the Tutor's assessment" args={of('интересоваться')} />
 <Story name="A suggested Status" args={of('появилось')} />
+<Story name="An Origin from the Tutor, with cognates in Your languages" args={{ ...of('интересоваться'), dictionary: null }} />
+<Story name="Its Parent's Origin" args={{ ...of('лицами'), dictionary: null }} />
 <Story name="The Dictionary panel closed" args={{ dictionary: null }} />
 <Story name="Refused" args={{ error: 'A Term cannot be its own Parent.' }} />
 <Story

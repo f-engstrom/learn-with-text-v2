@@ -7,7 +7,10 @@
 <script lang="ts">
 	import type { AzureResult } from '#lib/server/domain/azure.ts';
 	import type { Language } from '#lib/server/domain/languages.ts';
+	import type { OriginSuggestion } from '#lib/server/domain/etymology.ts';
+	import type { Origin as OriginView } from '#lib/server/domain/terms.ts';
 	import type { WiktionaryResult } from '#lib/server/domain/wiktionary.ts';
+	import Origin from '#lib/components/Origin.svelte';
 
 	interface Props {
 		/** Which Dictionary it asks, and the Source its Translations get. */
@@ -21,9 +24,15 @@
 		/** Whether Wiktionary's entry links to its page; not when the page shows beneath. */
 		linked?: boolean;
 		onadd: (meaning: string) => void;
+		/** The Term's own Origin, so the one in use shows as such. */
+		origin?: OriginView;
+		/** The names of Your languages, marked in an Origin. */
+		yourLanguages?: string[];
+		/** Takes one of Wiktionary's Etymologies as the Origin; none where the Origin isn't the Term's own. */
+		onuseorigin?: (origin: OriginSuggestion) => void;
 	}
 
-	let { source, language, termKey, text, translations, linked = true, onadd }: Props = $props();
+	let { source, language, termKey, text, translations, linked = true, onadd, origin, yourLanguages = [], onuseorigin }: Props = $props();
 
 	/** One part of speech and its meanings, each a possible Translation. */
 	type Entry = { partOfSpeech?: string; meanings: string[] };
@@ -32,6 +41,10 @@
 	let result = $state<Result | null | undefined>();
 	let failed = $state<string | undefined>();
 	let dir: 'rtl' | 'ltr' = $derived(language.rightToLeft ? 'rtl' : 'ltr');
+	/** Wiktionary's Etymologies, each an Origin to use. */
+	let etymologies = $derived(result?.source === 'wiktionary' ? (result.answer.etymologies ?? []) : []);
+	const inUse = (e: OriginSuggestion) =>
+		!!origin && JSON.stringify([origin.links, origin.note ?? '']) === JSON.stringify([e.links, e.note ?? '']);
 
 	let entries: Entry[] | null | undefined = $derived(
 		result &&
@@ -97,6 +110,17 @@
 				{/each}
 			</ol>
 		{/each}
+		{#each etymologies as etymology, i (i)}
+			<div class="etymology">
+				<p class="part">{etymologies.length > 1 ? etymology.heading : 'Origin'}</p>
+				<Origin origin={{ ...etymology, source: 'wiktionary' }} {yourLanguages} sourced={false} />
+				{#if onuseorigin}
+					<button type="button" class="use" disabled={inUse(etymology)} onclick={() => onuseorigin(etymology)}
+						>{inUse(etymology) ? '✓ The Origin' : '+ Use as Origin'}</button
+					>
+				{/if}
+			</div>
+		{/each}
 	{/if}
 </section>
 
@@ -125,6 +149,19 @@
 		margin: 0;
 		padding: 0;
 		list-style: none;
+	}
+	.etymology {
+		display: grid;
+		gap: 0.2rem;
+		padding-inline: 0.4rem;
+	}
+	.etymology .part {
+		margin-inline: -0.4rem;
+	}
+	.etymology .use {
+		justify-self: start;
+		width: auto;
+		margin-inline: -0.4rem;
 	}
 	button {
 		width: 100%;

@@ -61,6 +61,7 @@ describe('Reader MCP server', () => {
 			save_gloss: false,
 			assess_term: false,
 			set_transfer: false,
+			set_origin: false,
 			get_due_terms: true,
 			list_your_languages: true,
 			get_progress: true,
@@ -181,6 +182,14 @@ describe('Reader MCP server', () => {
 		expect(due.due).toBeGreaterThanOrEqual(3);
 		expect(due.terms.map((t: { text: string }) => t.text)).toContain('бежит');
 		expect(due.terms[0]).toMatchObject({ practice: { isDue: true } });
+	});
+
+	it('records an Origin, which look_up_term then shows', async () => {
+		const { call } = await connect();
+		await call('save_gloss', { language: 'ru', text: 'вокзал', gloss: 'station' });
+		const origin = { links: [{ kind: 'loanword', language: 'English', word: 'Vauxhall' }], note: 'a London pleasure garden', source: 'tutor' };
+		expect(await call('set_origin', { language: 'ru', text: 'вокзал', links: origin.links, note: origin.note })).toEqual({ origin });
+		expect(await call('look_up_term', { language: 'ru', text: 'вокзал' })).toMatchObject({ origin });
 	});
 
 	it("keeps the learner's languages", async () => {

@@ -16,7 +16,7 @@ import type { FitRange } from '#lib/suggestions.ts';
 import json from './fixtures.json';
 
 /** The reading screen's data. */
-export type ReadingData = PageView & { dictionaries: Dictionary[]; wiktionaryPage: Dictionary | null; azureReady: boolean } & FromTutor & {
+export type ReadingData = PageView & { dictionaries: Dictionary[]; wiktionaryPage: Dictionary | null; azureReady: boolean; yourLanguages: string[] } & FromTutor & {
 	daySoFar: DaySoFar | null;
 };
 

@@ -1,3 +1,4 @@
+import { languageName, readEtymologies, type OriginSuggestion } from './etymology';
 import type { Language } from './languages';
 
 /** One part of speech of a Wiktionary entry, with its definitions as plain text. */
@@ -10,6 +11,8 @@ export interface WiktionaryResult {
 	/** The page the definitions came from, e.g. 喜歡 for 喜欢. */
 	title: string;
 	entries: WiktionaryEntry[];
+	/** The page's Etymology sections as Origins to offer, when it has any. */
+	etymologies?: OriginSuggestion[];
 }
 
 /** The definition API's shape: entries per Wiktionary language code. */
@@ -29,7 +32,7 @@ const sections: Record<string, string> = { bs: 'sh', fa: 'fa', ru: 'ru', zh: 'zh
 /**
  * English Wiktionary's definitions of a Term in its Language. Tries the Normalised form, then the
  * text as written (for names); a simplified Chinese page that only points to its traditional form
- * (`{{zh-see|喜歡}}`) is followed there.
+ * (`{{zh-see|喜歡}}`) is followed there. The page's Etymology sections come along as Origins to offer.
  */
 export async function lookUp(
 	source: WiktionarySource,
@@ -38,13 +41,19 @@ export async function lookUp(
 ): Promise<WiktionaryResult | undefined> {
 	const section = sections[language.code] ?? language.code;
 	const titles = [...new Set([term.normalised, term.text.trim()])].filter((t) => t !== '');
+	const withEtymologies = async (result: WiktionaryResult): Promise<WiktionaryResult> => {
+		// The definitions are worth showing even when the wikitext can't be read.
+		const wikitext = await source.wikitext(result.title).catch(() => undefined);
+		const etymologies = wikitext ? readEtymologies(wikitext, languageName(section)) : [];
+		return etymologies.length > 0 ? { ...result, etymologies } : result;
+	};
 	for (const title of titles) {
 		const entries = toEntries((await source.definitions(title))?.[section]);
-		if (entries.length > 0) return { title, entries };
+		if (entries.length > 0) return withEtymologies({ title, entries });
 		if (language.code === 'zh') {
 			const target = (await source.wikitext(title))?.match(/\{\{zh-see\|([^|}]+)/)?.[1]?.trim();
 			const followed = target ? toEntries((await source.definitions(target))?.[section]) : [];
-			if (target && followed.length > 0) return { title: target, entries: followed };
+			if (target && followed.length > 0) return withEtymologies({ title: target, entries: followed });
 		}
 	}
 	return undefined;

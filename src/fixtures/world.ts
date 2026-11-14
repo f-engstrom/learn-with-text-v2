@@ -20,7 +20,7 @@ import { clearHighlight, latestBookmark, markPageRead, setBookmark, setHighlight
 import { getFitRange } from '../lib/server/domain/suggestions';
 import { listTerms, saveTerm, TERM_PAGE_SIZE } from '../lib/server/domain/terms';
 import { addTopic, listTopics } from '../lib/server/domain/topics';
-import { assessTerm, saveGloss, setTransfer } from '../lib/server/domain/tutoring';
+import { assessTerm, saveGloss, setOrigin, setTransfer } from '../lib/server/domain/tutoring';
 import { listYourLanguages, setYourLanguage } from '../lib/server/domain/your-languages';
 import { releaseClock, setClock } from './clock';
 import { analects, feedXml, lady, saadi, vanka } from './texts';
@@ -58,6 +58,7 @@ async function reading(db: Kysely<Database>, bookId: number, position: number, r
 		dictionaries: dictionaries.filter((d) => !isWiktionary(d)),
 		wiktionaryPage: dictionaries.find(isWiktionary) ?? null,
 		azureReady: true,
+		yourLanguages: (await listYourLanguages(db)).map((l) => l.name),
 		...(await fromTutor(db, bookId))!,
 		daySoFar: read ? await daySoFar(db, page.language.id) : null
 	};
@@ -184,6 +185,32 @@ async function readerWorld() {
 	}));
 	await on(12, async () => {
 		await saveGloss(db, { languageId: russian.id, text: 'набережной', gloss: 'embankment, seafront' });
+		// Origins from each Source: yours (which лицами, following лицо, shows), the Tutor's and Wiktionary's.
+		await save(russian, 'лицо', 'learning4', {
+			origin: { links: [{ kind: 'inherited', language: 'Proto-Slavic', word: '*lice' }, { kind: 'cognate', language: 'Bosnian', word: 'lice' }] }
+		});
+		await save(russian, 'павильоне', 'learning1', {
+			origin: {
+				links: [
+					{ kind: 'loanword', language: 'French', word: 'pavillon' },
+					{ kind: 'derived', language: 'Latin', word: 'pāpiliō' }
+				],
+				note: 'Borrowed from French pavillon, from Latin pāpiliō (“butterfly; tent”).',
+				source: 'wiktionary'
+			}
+		});
+		await setOrigin(db, {
+			languageId: russian.id,
+			text: 'интересоваться',
+			links: [
+				{ kind: 'derived', language: 'Russian', word: 'интерес' },
+				{ kind: 'loanword', language: 'German', word: 'Interesse' },
+				{ kind: 'derived', language: 'Latin', word: 'interesse' },
+				{ kind: 'cognate', language: 'English', word: 'interest' },
+				{ kind: 'cognate', language: 'Swedish', word: 'intresse' }
+			],
+			note: 'Formed from интерес, which came through German (perhaps by way of Polish) in the 18th century.'
+		});
 		await setTransfer(db, {
 			languageId: russian.id,
 			text: 'интересоваться',

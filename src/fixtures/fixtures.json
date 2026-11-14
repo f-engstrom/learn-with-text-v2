@@ -1571,6 +1571,7 @@
 				"display": "embedded"
 			},
 			"azureReady": true,
+			"yourLanguages": [],
 			"highlight": null,
 			"question": null,
 			"termsVersion": 0,
@@ -3135,6 +3136,37 @@
 						"concept": "medium",
 						"reason": "Close to English \"interest\"; takes the instrumental."
 					},
+					"origin": {
+						"links": [
+							{
+								"kind": "derived",
+								"language": "Russian",
+								"word": "интерес"
+							},
+							{
+								"kind": "loanword",
+								"language": "German",
+								"word": "Interesse"
+							},
+							{
+								"kind": "derived",
+								"language": "Latin",
+								"word": "interesse"
+							},
+							{
+								"kind": "cognate",
+								"language": "English",
+								"word": "interest"
+							},
+							{
+								"kind": "cognate",
+								"language": "Swedish",
+								"word": "intresse"
+							}
+						],
+						"note": "Formed from интерес, which came through German (perhaps by way of Polish) in the 18th century.",
+						"source": "tutor"
+					},
 					"translations": [
 						{
 							"id": 3,
@@ -3179,6 +3211,22 @@
 						}
 					},
 					"frequency": "rare",
+					"origin": {
+						"links": [
+							{
+								"kind": "inherited",
+								"language": "Proto-Slavic",
+								"word": "*lice"
+							},
+							{
+								"kind": "cognate",
+								"language": "Bosnian",
+								"word": "lice"
+							}
+						],
+						"source": "you",
+						"of": "лицо"
+					},
 					"translations": [
 						{
 							"id": 2,
@@ -3204,6 +3252,21 @@
 						}
 					},
 					"frequency": "top1k",
+					"origin": {
+						"links": [
+							{
+								"kind": "inherited",
+								"language": "Proto-Slavic",
+								"word": "*lice"
+							},
+							{
+								"kind": "cognate",
+								"language": "Bosnian",
+								"word": "lice"
+							}
+						],
+						"source": "you"
+					},
 					"translations": [
 						{
 							"id": 1,
@@ -3307,6 +3370,22 @@
 						"reviews": 0
 					},
 					"frequency": "rare",
+					"origin": {
+						"links": [
+							{
+								"kind": "loanword",
+								"language": "French",
+								"word": "pavillon"
+							},
+							{
+								"kind": "derived",
+								"language": "Latin",
+								"word": "pāpiliō"
+							}
+						],
+						"note": "Borrowed from French pavillon, from Latin pāpiliō (“butterfly; tent”).",
+						"source": "wiktionary"
+					},
 					"translations": [
 						{
 							"id": 11,
@@ -3597,9 +3676,14 @@
 				"display": "embedded"
 			},
 			"azureReady": true,
+			"yourLanguages": [
+				"Swedish",
+				"English",
+				"Bosnian"
+			],
 			"highlight": null,
 			"question": null,
-			"termsVersion": 68,
+			"termsVersion": 83,
 			"daySoFar": null
 		},
 		"lastPage": {
@@ -4106,9 +4190,14 @@
 				"display": "embedded"
 			},
 			"azureReady": true,
+			"yourLanguages": [
+				"Swedish",
+				"English",
+				"Bosnian"
+			],
 			"highlight": null,
 			"question": null,
-			"termsVersion": 68,
+			"termsVersion": 83,
 			"daySoFar": null
 		},
 		"rightToLeft": {
@@ -4673,6 +4762,11 @@
 				"display": "embedded"
 			},
 			"azureReady": true,
+			"yourLanguages": [
+				"Swedish",
+				"English",
+				"Bosnian"
+			],
 			"highlight": null,
 			"question": null,
 			"termsVersion": 8,
@@ -5265,6 +5359,11 @@
 				"display": "embedded"
 			},
 			"azureReady": true,
+			"yourLanguages": [
+				"Swedish",
+				"English",
+				"Bosnian"
+			],
 			"highlight": null,
 			"question": null,
 			"termsVersion": 10,
@@ -6180,9 +6279,14 @@
 				"display": "embedded"
 			},
 			"azureReady": true,
+			"yourLanguages": [
+				"Swedish",
+				"English",
+				"Bosnian"
+			],
 			"highlight": null,
 			"question": null,
-			"termsVersion": 75,
+			"termsVersion": 90,
 			"daySoFar": {
 				"wordsRead": 108,
 				"newTerms": 2,
@@ -6200,7 +6304,7 @@
 				"at": "2026-11-10T12:00:00.000Z"
 			},
 			"question": null,
-			"termsVersion": 68
+			"termsVersion": 83
 		},
 		"passage": {
 			"highlight": {
@@ -6212,7 +6316,7 @@
 				"at": "2026-11-10T12:00:00.000Z"
 			},
 			"question": null,
-			"termsVersion": 68
+			"termsVersion": 83
 		},
 		"question": {
 			"highlight": {
@@ -6250,7 +6354,7 @@
 				],
 				"askedAt": "2026-11-10T12:00:00.000Z"
 			},
-			"termsVersion": 68
+			"termsVersion": 83
 		},
 		"answered": {
 			"highlight": {
@@ -6294,7 +6398,7 @@
 					]
 				}
 			},
-			"termsVersion": 68
+			"termsVersion": 83
 		}
 	},
 	"routes": {
@@ -6705,6 +6809,22 @@
 						"reviews": 0
 					},
 					"frequency": "rare",
+					"origin": {
+						"links": [
+							{
+								"kind": "loanword",
+								"language": "French",
+								"word": "pavillon"
+							},
+							{
+								"kind": "derived",
+								"language": "Latin",
+								"word": "pāpiliō"
+							}
+						],
+						"note": "Borrowed from French pavillon, from Latin pāpiliō (“butterfly; tent”).",
+						"source": "wiktionary"
+					},
 					"translations": [
 						{
 							"id": 11,
@@ -6851,6 +6971,37 @@
 						"concept": "medium",
 						"reason": "Close to English \"interest\"; takes the instrumental."
 					},
+					"origin": {
+						"links": [
+							{
+								"kind": "derived",
+								"language": "Russian",
+								"word": "интерес"
+							},
+							{
+								"kind": "loanword",
+								"language": "German",
+								"word": "Interesse"
+							},
+							{
+								"kind": "derived",
+								"language": "Latin",
+								"word": "interesse"
+							},
+							{
+								"kind": "cognate",
+								"language": "English",
+								"word": "interest"
+							},
+							{
+								"kind": "cognate",
+								"language": "Swedish",
+								"word": "intresse"
+							}
+						],
+						"note": "Formed from интерес, which came through German (perhaps by way of Polish) in the 18th century.",
+						"source": "tutor"
+					},
 					"translations": [
 						{
 							"id": 3,
@@ -6888,6 +7039,22 @@
 						}
 					},
 					"frequency": "rare",
+					"origin": {
+						"links": [
+							{
+								"kind": "inherited",
+								"language": "Proto-Slavic",
+								"word": "*lice"
+							},
+							{
+								"kind": "cognate",
+								"language": "Bosnian",
+								"word": "lice"
+							}
+						],
+						"source": "you",
+						"of": "лицо"
+					},
 					"translations": [
 						{
 							"id": 2,
@@ -6915,6 +7082,21 @@
 						}
 					},
 					"frequency": "top1k",
+					"origin": {
+						"links": [
+							{
+								"kind": "inherited",
+								"language": "Proto-Slavic",
+								"word": "*lice"
+							},
+							{
+								"kind": "cognate",
+								"language": "Bosnian",
+								"word": "lice"
+							}
+						],
+						"source": "you"
+					},
 					"translations": [
 						{
 							"id": 1,
@@ -7347,6 +7529,22 @@
 					"reviews": 0
 				},
 				"frequency": "rare",
+				"origin": {
+					"links": [
+						{
+							"kind": "loanword",
+							"language": "French",
+							"word": "pavillon"
+						},
+						{
+							"kind": "derived",
+							"language": "Latin",
+							"word": "pāpiliō"
+						}
+					],
+					"note": "Borrowed from French pavillon, from Latin pāpiliō (“butterfly; tent”).",
+					"source": "wiktionary"
+				},
 				"translations": [
 					{
 						"id": 11,

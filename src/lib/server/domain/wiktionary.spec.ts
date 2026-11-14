@@ -61,6 +61,13 @@ describe('lookUp', () => {
 		});
 	});
 
+	it("offers the page's Etymology in the Language as Origins", async () => {
+		const source = fake({ вокзал: { ru: [entry('Noun', 'station')] } }, { вокзал: '==Russian==\n===Etymology===\n{{bor+|ru|en|Vauxhall}}.\n===Noun===\n' });
+		expect((await lookUp(source, ru, { normalised: 'вокзал', text: 'вокзал' }))?.etymologies).toEqual([
+			{ heading: 'Etymology', links: [{ kind: 'loanword', language: 'English', word: 'Vauxhall' }], note: 'Borrowed from English Vauxhall.' }
+		]);
+	});
+
 	it('returns nothing when no page has the Language', async () => {
 		expect(await lookUp(fake({ кот: { uk: [entry('Noun', 'x')] } }), ru, { normalised: 'кот', text: 'кот' })).toBeUndefined();
 	});

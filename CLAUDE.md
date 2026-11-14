@@ -15,6 +15,7 @@ Domain rules sit in `src/lib/server/domain`, which the web app and the Tutor's M
 | Bookmark, Highlight, Read | `domain/reading.ts`; the Bookmark's Word in `lib/reading/bookmark.ts` |
 | Selection (cursor, phrase, Character part), the Bookmark following it | `lib/reading/selection.svelte.ts` |
 | Term, Translation, Source, Parent, Follows Parent, Status | `domain/terms.ts` (`saveTerm` does it all in one call); the Status and Source lists and labels in `lib/terms.ts` |
+| Origin (its links, note and Source) | `domain/terms.ts` (`saveTerm`; `setOrigin` in `domain/tutoring.ts` for the Tutor); read from Wiktionary's Etymology in `domain/etymology.ts`; shown by `components/Origin.svelte`; its kinds in `lib/terms.ts` |
 | Multi-word Term | `domain/multiword.ts` |
 | Gloss, Tutor adjustment, Tutor's assessment, Transfer | `domain/tutoring.ts` |
 | From the Tutor, Tutor's question | `domain/from-tutor.ts`; in the reading screen `lib/reading/from-tutor.svelte.ts` |
