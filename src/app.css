@@ -233,6 +233,12 @@ textarea {
 		background-color 0.15s;
 }
 
+/* A number field holds a few digits. Without a width, Chromium sizes it from the font's metrics,
+   which come out differently from one page load to the next. */
+input[type='number'] {
+	width: 4.5rem;
+}
+
 input:not([type='checkbox'], [type='radio'], [type='file']):focus,
 select:focus,
 textarea:focus {

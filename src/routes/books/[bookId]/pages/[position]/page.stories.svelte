@@ -137,6 +137,8 @@
 		for (let i = 0; i < 20 && canvas.queryByRole('button', { name: /Reveal/ }); i++) {
 			await userEvent.keyboard(' ');
 			await userEvent.keyboard('3');
+			// The Review saves before the next Word, or the end, comes up.
+			await waitFor(() => canvas.queryByRole('button', { name: /Reveal/ }) ?? canvas.getByRole('heading', { name: 'Practice done' }));
 		}
 		await canvas.findByRole('heading', { name: 'Practice done' });
 	}}

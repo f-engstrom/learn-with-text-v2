@@ -129,9 +129,6 @@
 		gap: 0.35rem;
 		font-weight: normal;
 	}
-	.fit input {
-		width: 4.5rem;
-	}
 	.suggestions {
 		display: grid;
 		gap: 0.6rem;

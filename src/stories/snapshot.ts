@@ -63,8 +63,17 @@ export async function snapshot(story: { id: string; title: string }): Promise<vo
 				height = Math.min(root.scrollHeight, 10000);
 			}
 			for (const scrolled of [root, ...document.querySelectorAll('*')]) if (scrolled.scrollTop) scrolled.scrollTop = 0;
-			await settled(root);
-			await expect(page.elementLocator(document.body)).toMatchScreenshot(`${story.id}--${variant.name}`, { timeout: 15_000 });
+			// Chromium draws a sticky element on a layer of its own, which can land half a pixel apart from one run to
+			// the next. Scrolled to the top it sits where a relative one would, so it is drawn as one for the snapshot.
+			const sticky = [...document.querySelectorAll<HTMLElement>('*')].filter((e) => getComputedStyle(e).position === 'sticky');
+			const was = sticky.map((e) => e.style.position);
+			for (const e of sticky) e.style.position = 'relative';
+			try {
+				await settled(root);
+				await expect(page.elementLocator(document.body)).toMatchScreenshot(`${story.id}--${variant.name}`, { timeout: 15_000 });
+			} finally {
+				sticky.forEach((e, i) => (e.style.position = was[i]));
+			}
 		}
 	} finally {
 		move();
