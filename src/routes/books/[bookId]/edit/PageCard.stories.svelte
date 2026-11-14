@@ -1,6 +1,7 @@
 <script module lang="ts">
 	import preview from '../../../../../.storybook/preview';
 	import PageCard from './PageCard.svelte';
+	import { fn } from 'storybook/test';
 	import type { DraftPage } from '#lib/books/page-draft.svelte.ts';
 
 	const { Story } = preview.meta({ title: 'Components/Edit Book/PageCard', component: PageCard });
@@ -11,7 +12,7 @@
 
 {#snippet one(p: DraftPage, props: Record<string, unknown> = {})}
 	<ol style="display: grid; gap: 0.5rem; max-width: 48rem; padding: 0">
-		<PageCard page={p} text={p.text} number={p.removed ? null : 2} words={24} lang="ru" {...props} />
+		<PageCard page={p} text={p.text} number={p.removed ? null : 2} words={24} lang="ru" onchapter={fn()} {...props} />
 	</ol>
 {/snippet}
 

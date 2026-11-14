@@ -8,6 +8,7 @@
 	import Tag from '#lib/components/Tag.svelte';
 	import type { DraftPage } from '#lib/books/page-draft.svelte.ts';
 	import { LONG_PAGE_WORDS, splitAtBreaks } from '#lib/pages.ts';
+	import { tick } from 'svelte';
 
 	interface Props {
 		page: DraftPage;
@@ -57,6 +58,14 @@
 	const readOn = $derived(page.readAt && new Date(page.readAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
 	const moved = $derived(page.was !== null && number !== null && page.was !== number);
 	const id = $derived(`page-${page.key}`);
+
+	/** Marks the Page as starting a Chapter and opens it at the title, to name it. */
+	async function startChapter() {
+		onchapter?.(true);
+		page.open = true;
+		await tick();
+		document.getElementById(`${id}-chapter`)?.focus();
+	}
 </script>
 
 {#if page.removed}
@@ -94,6 +103,9 @@
 			{#if page.id === null}<Tag>New</Tag>{/if}
 			<small>{words.toLocaleString('en')} {words === 1 ? 'Word' : 'Words'}</small>
 			{#if moved}<small>· was Page {page.was}</small>{/if}
+			{#if chapterNumber === null && !page.open && onchapter}
+				<Button variant="link" type="button" class="start-chapter" onclick={startChapter}>Start a Chapter here</Button>
+			{/if}
 		</p>
 
 		{#if long}
@@ -113,6 +125,7 @@
 				</label>
 				{#if page.chapter !== null}
 					<input
+						id="{id}-chapter"
 						class="title-field"
 						bind:value={page.chapter}
 						{lang}
@@ -159,6 +172,10 @@
 	}
 	.page.chapter {
 		border-top: 3px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+	}
+	.facts :global(.start-chapter) {
+		margin-inline-start: auto;
+		font-size: 0.85rem;
 	}
 	.chapter-fields {
 		display: flex;

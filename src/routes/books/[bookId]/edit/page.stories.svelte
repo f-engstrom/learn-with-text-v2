@@ -64,9 +64,10 @@
 	parameters={at(chapters.book.id)}
 	play={async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: /^Предисловие/ }));
-		await userEvent.click(canvas.getByRole('checkbox', { name: 'Starts a Chapter' }));
-		await userEvent.type(canvas.getByRole('textbox', { name: 'Title of the Chapter Page 1 starts' }), 'Предисловие');
+		await userEvent.click(canvas.getAllByRole('button', { name: 'Start a Chapter here' })[0]);
+		// The card opens at the new Chapter's title.
+		await userEvent.keyboard('Предисловие');
+		await expect(canvas.getByRole('textbox', { name: 'Title of the Chapter Page 1 starts' })).toHaveValue('Предисловие');
 		// The Chapters after it are numbered on.
 		await expect(canvas.getAllByText(/^Chapter \d$/).map((e) => e.textContent)).toEqual(['Chapter 1', 'Chapter 2', 'Chapter 3', 'Chapter 4']);
 	}}
