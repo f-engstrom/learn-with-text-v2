@@ -3,6 +3,7 @@
 	import { fixtures } from '#fixtures';
 	import Screen from '#stories/Screen.svelte';
 	import type { Server } from '#stories/server.ts';
+	import { expect, waitFor } from 'storybook/test';
 	import Page from './+page.svelte';
 
 	const { fresh, mixed, lastPage, rightToLeft, characters, afterRead } = fixtures.reading;
@@ -201,8 +202,36 @@
 	name="Azure open, by L"
 	play={async ({ canvas, userEvent }: Play) => {
 		await userEvent.click(word(canvas, 'привыкший'));
-		await userEvent.keyboard('l');
+		// The first L goes to Wiktionary, already open; the second opens the next.
+		await userEvent.keyboard('ll');
 		await canvas.findByRole('button', { name: '+ got used' });
+		await waitFor(() => expect(document.activeElement?.closest('[aria-label="Azure Translator"] li')).not.toBeNull());
+	}}
+/>
+
+<Story
+	name="L goes to the Dictionary's first meaning"
+	play={async ({ canvas, userEvent }: Play) => {
+		await userEvent.click(word(canvas, 'привыкший'));
+		await userEvent.keyboard('l');
+		await waitFor(() => expect(document.activeElement?.closest('.suggestions li')).not.toBeNull());
+	}}
+/>
+
+<Story
+	name="Tab goes around the Term panel"
+	parameters={{ snapshot: false }}
+	play={async ({ canvas, userEvent }: Play) => {
+		await userEvent.click(word(canvas, 'привыкший'));
+		// With the Dictionary closed the panel ends on a button: the test's Tab can't leave an iframe as a browser's does.
+		await userEvent.click(canvas.getByRole('button', { name: 'Wiktionary', pressed: true }));
+		const close = canvas.getByRole('button', { name: 'Close the Term form' });
+		close.focus();
+		await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+		const panel = close.closest('.term-panel')!;
+		if (!panel.contains(document.activeElement) || document.activeElement === close) throw new Error('Shift+Tab left the Term panel');
+		await userEvent.keyboard('{Tab}');
+		expect(document.activeElement).toBe(close);
 	}}
 />
 

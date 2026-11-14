@@ -308,13 +308,21 @@
 				tutorTurn?.focus();
 				break;
 			case 'dictionary':
-				if (open && selected) dictionary.step(panelTabs(data.dictionaries, data.azureReady), command.by);
+				if (selected && !zen && !practising) goToDictionary(command.by);
 				break;
 			case 'close':
 				open = false;
 				selection.refocus();
 				break;
 		}
+	}
+
+	/** L: opens the Term form and goes to its Dictionary panel, opening the next Dictionary once there (`OpenDictionary.reach`). */
+	async function goToDictionary(by: 1 | -1) {
+		open = true;
+		await tick();
+		dictionary.reach(panelTabs(data.dictionaries, data.azureReady), by, !!termPanel?.inDictionary());
+		await termPanel?.reachDictionary();
 	}
 
 	async function pasteTranslation(copied?: string) {
@@ -477,6 +485,15 @@
 			{/if}
 		</aside>
 	</div>
+
+	<!-- In the grid, under the text: a long Term panel beside it grows the space below the buttons, not above them. -->
+	<footer class="end chrome" class:zen>
+		<form method="POST" action="?/markRead" class="mark-read" use:enhance>
+			<Button variant="primary">Mark as read</Button>
+			<Button name="restKnown" value="true">Mark as read, rest Known</Button>
+		</form>
+		{@render pages()}
+	</footer>
 </div>
 
 {#if zen}
@@ -491,14 +508,6 @@
 		<Button type="button" onclick={toggleZen}>Exit zen</Button>
 	</nav>
 {/if}
-
-<footer class="end chrome" class:zen>
-	<form method="POST" action="?/markRead" class="mark-read" use:enhance>
-		<Button variant="primary">Mark as read</Button>
-		<Button name="restKnown" value="true">Mark as read, rest Known</Button>
-	</form>
-	{@render pages()}
-</footer>
 
 <style>
 	.book {
@@ -536,7 +545,11 @@
 	.reader {
 		display: grid;
 		grid-template-columns: minmax(0, 44rem) minmax(20rem, 1fr);
-		grid-template-areas: 'page rail';
+		/* The column beside the text spans the row under it too, so its extra height falls below the end's buttons. */
+		grid-template-rows: auto 1fr;
+		grid-template-areas:
+			'page rail'
+			'end rail';
 		gap: 1rem 3rem;
 		align-items: start;
 		margin-top: 1.5rem;
@@ -565,6 +578,7 @@
 	}
 	.reader.zen {
 		grid-template-columns: minmax(0, 38rem);
+		grid-template-rows: auto;
 		grid-template-areas: 'page';
 		justify-content: center;
 		margin-top: 3.5rem;
@@ -632,10 +646,11 @@
 		letter-spacing: normal;
 	}
 	.end {
+		grid-area: end;
+		align-self: start;
 		display: grid;
 		gap: 1rem;
 		max-width: 44rem;
-		margin-top: 1rem;
 		padding-top: 1.5rem;
 		border-top: 1px solid var(--border);
 	}
@@ -674,7 +689,7 @@
 		}
 		.reader {
 			grid-template-columns: minmax(0, 1fr);
-			grid-template-areas: 'page' 'side';
+			grid-template-areas: 'page' 'side' 'end';
 			grid-template-rows: auto;
 			gap: 1.5rem;
 		}

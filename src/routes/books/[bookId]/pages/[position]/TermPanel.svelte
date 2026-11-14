@@ -1,4 +1,7 @@
-<!-- Beside the text when a Word, phrase or Character part is selected: its Term form, what is known about the Term, practice, and the Dictionary panel. -->
+<!--
+	Beside the text when a Word, phrase or Character part is selected: its Term form, what is known about the Term, practice, and the Dictionary panel.
+	Tab goes around inside it.
+-->
 <script lang="ts">
 	import Button from '#lib/components/Button.svelte';
 	import CloseButton from '#lib/components/CloseButton.svelte';
@@ -7,6 +10,7 @@
 	import type { Dictionary } from '#lib/dictionaries.ts';
 	import { termKey } from '#lib/normalise.ts';
 	import { frequencyLabels, suggestedStatus, transferLabel } from '#lib/practice.ts';
+	import { guard } from '#lib/reading/focus-cycle.ts';
 	import type { DictionaryTab } from '#lib/reading/open-dictionary.svelte.ts';
 	import type { Selected } from '#lib/reading/selection.svelte.ts';
 	import type { FrequencyBand } from '#lib/server/domain/frequency.ts';
@@ -68,6 +72,8 @@
 	}: Props = $props();
 
 	let termForm = $state<ReturnType<typeof TermForm>>();
+	let dictionaryPanel = $state<ReturnType<typeof DictionaryPanel>>();
+	let panel = $state<HTMLElement>();
 	/** A Status the Tutor's assessment and Recall strength agree on, if it isn't yours. */
 	let suggestion = $derived(term && suggestedStatus(term.status, term.tutorAssessment, term.practice));
 	let translations = $derived(term?.translations.map((t) => t.text) ?? []);
@@ -81,9 +87,21 @@
 	export function pasteText(copied: string) {
 		return termForm?.pasteText(copied);
 	}
+
+	/** Takes focus to the Dictionary panel, to a meaning to add. */
+	export function reachDictionary() {
+		return dictionaryPanel?.reach();
+	}
+
+	/** Whether focus is in the Dictionary panel. */
+	export function inDictionary() {
+		return !!dictionaryPanel?.holdsFocus();
+	}
 </script>
 
-<div class="term-panel card">
+<div class="term-panel card" bind:this={panel}>
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+	<span class="guard start" data-guard tabindex="0" onfocus={(e) => guard(panel, 'start', e)}></span>
 	<CloseButton label="Close the Term form" onclick={onclose} />
 	{#if parts}
 		<div class="parts" role="group" aria-label="The whole Word or some of its characters">
@@ -125,6 +143,7 @@
 		<PracticeCard {term} onreview={(grade) => onreview(term.id, grade)} />
 	{/if}
 	<DictionaryPanel
+		bind:this={dictionaryPanel}
 		{language}
 		termKey={selected.key}
 		text={selected.text}
@@ -139,6 +158,8 @@
 		{yourLanguages}
 		onuseorigin={term?.followsParent && term.parent ? undefined : (origin) => termForm?.useOrigin(origin, 'wiktionary')}
 	/>
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+	<span class="guard end" data-guard tabindex="0" onfocus={(e) => guard(panel, 'end', e)}></span>
 </div>
 
 <style>
@@ -164,6 +185,20 @@
 		padding: 0.6rem 0.5rem;
 		background: var(--surface);
 		box-shadow: 0 -10px 12px -10px color-mix(in srgb, var(--text) 25%, transparent);
+	}
+	/* Out of the grid's flow, at the panel's two ends; focus only passes through them. */
+	.guard {
+		position: absolute;
+		inset-inline-start: 0;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+	}
+	.guard.start {
+		top: 0;
+	}
+	.guard.end {
+		bottom: 0;
 	}
 	/* Leaves room for the close button. */
 	.parts {

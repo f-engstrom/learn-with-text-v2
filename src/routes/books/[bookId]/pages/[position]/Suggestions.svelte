@@ -11,6 +11,7 @@
 	import type { Origin as OriginView } from '#lib/server/domain/terms.ts';
 	import type { WiktionaryResult } from '#lib/server/domain/wiktionary.ts';
 	import Origin from '#lib/components/Origin.svelte';
+	import { tick } from 'svelte';
 
 	interface Props {
 		/** Which Dictionary it asks, and the Source its Translations get. */
@@ -30,9 +31,11 @@
 		yourLanguages?: string[];
 		/** Takes one of Wiktionary's Etymologies as the Origin; none where the Origin isn't the Term's own. */
 		onuseorigin?: (origin: OriginSuggestion) => void;
+		/** Its answer is on screen: its meanings, or that there are none. */
+		onshown?: () => void;
 	}
 
-	let { source, language, termKey, text, translations, linked = true, onadd, origin, yourLanguages = [], onuseorigin }: Props = $props();
+	let { source, language, termKey, text, translations, linked = true, onadd, origin, yourLanguages = [], onuseorigin, onshown }: Props = $props();
 
 	/** One part of speech and its meanings, each a possible Translation. */
 	type Entry = { partOfSpeech?: string; meanings: string[] };
@@ -70,6 +73,7 @@
 				if (!response.ok) throw failure(response.status);
 				const answer = await response.json();
 				result = answer === null ? null : ({ source: asked, answer } as Result);
+				tick().then(() => onshown?.());
 			})
 			.catch((e) => {
 				// A failure of its own is its message; anything else is a lookup that never got through.

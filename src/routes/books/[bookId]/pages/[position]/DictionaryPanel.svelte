@@ -3,11 +3,12 @@
 	Wiktionary and Azure suggest meanings to add as Translations, Wiktionary with the Language's
 	Wiktionary page beneath when it has one configured; any other configured Dictionary shows its page
 	for the selected Word or phrase, or opens it in a window. Choosing the open tab closes it, and with
-	none open nothing is looked up.
+	none open nothing is looked up. `reach` takes focus to it: to the first meaning to add, once there is one.
 -->
 <script lang="ts">
 	import Button from '#lib/components/Button.svelte';
 	import { lookupUrl, type Dictionary } from '#lib/dictionaries.ts';
+	import { tick } from 'svelte';
 	import type { DictionaryTab } from '#lib/reading/open-dictionary.svelte.ts';
 	import type { Language } from '#lib/server/domain/languages.ts';
 	import type { OriginSuggestion } from '#lib/server/domain/etymology.ts';
@@ -59,12 +60,42 @@
 	let popups = $derived(dictionaries.filter((d) => d.display === 'popup'));
 	let shown = $derived(typeof open === 'number' ? embedded.find((d) => d.id === open) : undefined);
 
+	let panel = $state<HTMLElement>();
+	/** Focus went to the panel and waits for a meaning to go on to. */
+	let reaching = false;
+
+	/** Whether focus is in the panel. */
+	export function holdsFocus() {
+		return !!panel?.contains(document.activeElement);
+	}
+
+	/** Takes focus to the panel's first meaning to add, or while there is none yet, to the open tab. */
+	export async function reach() {
+		reaching = true;
+		await tick();
+		focusInside();
+	}
+
+	function focusInside() {
+		if (!panel) return;
+		const meaning = panel.querySelector<HTMLElement>('.suggestions li button:not(:disabled)');
+		const tab = panel.querySelector<HTMLElement>('.tabs [aria-pressed="true"]') ?? panel.querySelector<HTMLElement>('.tabs button');
+		(meaning ?? tab)?.focus();
+		if (meaning) reaching = false;
+	}
+
+	/** Meanings arrived: if focus is still waiting on the tab for them, it goes on to the first. */
+	function meaningsShown() {
+		if (reaching && holdsFocus()) focusInside();
+		reaching = false;
+	}
+
 	function openPopup(dictionary: Dictionary) {
 		window.open(lookupUrl(dictionary, termKey), 'dictionary', 'popup,width=760,height=820');
 	}
 </script>
 
-<section class="dictionary-panel">
+<section class="dictionary-panel" bind:this={panel}>
 	<div class="tabs" role="group" aria-label="Dictionaries">
 		<Button type="button" pressed={open === 'wiktionary'} onclick={() => onchoose('wiktionary')}>Wiktionary</Button>
 		<Button
@@ -102,6 +133,7 @@
 			{origin}
 			{yourLanguages}
 			{onuseorigin}
+			onshown={meaningsShown}
 		/>
 		{#if wiktionaryPage}{@render page(wiktionaryPage)}{/if}
 	{:else if open === 'azure' && !azureReady}
@@ -109,7 +141,7 @@
 			Azure Translator isn’t set up: add <code>AZURE_TRANSLATOR_KEY</code> and <code>AZURE_TRANSLATOR_REGION</code> to <code>.env</code> and restart.
 		</p>
 	{:else if open === 'azure'}
-		<Suggestions source="azure" {language} {termKey} {text} {translations} onadd={(meaning) => onadd(meaning, 'azure')} />
+		<Suggestions source="azure" {language} {termKey} {text} {translations} onadd={(meaning) => onadd(meaning, 'azure')} onshown={meaningsShown} />
 	{:else if shown}
 		{@render page(shown)}
 	{/if}

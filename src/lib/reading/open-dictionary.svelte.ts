@@ -68,6 +68,15 @@ export class OpenDictionary {
 		this.#set(ring[(at + by + ring.length) % ring.length]);
 	}
 
+	/**
+	 * L: goes to the panel. From outside it keeps the open tab, to read it; already in the panel, with
+	 * Shift, or with none of `tabs` open, it opens the next (or, `by` -1, the previous) as `step` does.
+	 */
+	reach(tabs: DictionaryTab[], by: 1 | -1, inPanel: boolean) {
+		const kept = this.tab !== null && tabs.includes(this.tab);
+		if (inPanel || by === -1 || !kept) this.step(tabs, by);
+	}
+
 	#key() {
 		return `reader.dictionary.${this.#language}`;
 	}

@@ -82,3 +82,24 @@ describe('panelTabs', () => {
 		expect(panelTabs(dictionaries, false)).toEqual(['wiktionary', 7]);
 	});
 });
+
+describe('reaching the panel by L', () => {
+	it('goes to the open tab from outside the panel, and steps on from inside it', () => {
+		const open = new OpenDictionary(() => memory());
+		open.load(1);
+		const tabs = panelTabs([], true);
+		open.reach(tabs, 1, false);
+		expect(open.tab).toBe('wiktionary');
+		open.reach(tabs, 1, true);
+		expect(open.tab).toBe('azure');
+		open.reach(tabs, -1, false);
+		expect(open.tab).toBe('wiktionary');
+	});
+
+	it('opens the first tab when going to a closed panel', () => {
+		const open = new OpenDictionary(() => memory({ 'reader.dictionary.1': 'none' }));
+		open.load(1);
+		open.reach(panelTabs([], true), 1, false);
+		expect(open.tab).toBe('wiktionary');
+	});
+});

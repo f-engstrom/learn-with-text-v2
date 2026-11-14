@@ -23,7 +23,9 @@
 			<dt><kbd>Enter</kbd></dt>
 			<dd>Open the Term form</dd>
 			<dt><kbd>L</kbd> <kbd>Shift</kbd> + <kbd>L</kbd></dt>
-			<dd>Next or previous Dictionary, then none</dd>
+			<dd>Go to the Dictionary, to a meaning to add; again, the next (or previous) Dictionary, then none</dd>
+			<dt><kbd>Tab</kbd></dt>
+			<dd>Around the Term form and its Dictionary</dd>
 			<dt><kbd>P</kbd> <kbd>⌘V</kbd></dt>
 			<dd>Paste as Translation</dd>
 			<dt><kbd>Esc</kbd></dt>
