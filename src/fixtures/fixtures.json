@@ -6301,6 +6301,13 @@
 		"home": {
 			"languages": [
 				{
+					"id": 5,
+					"name": "Albanian",
+					"code": "sq",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
 					"id": 1,
 					"name": "Bosnian",
 					"code": "bs",
@@ -6323,6 +6330,13 @@
 						"ي": "ی",
 						"ك": "ک"
 					}
+				},
+				{
+					"id": 6,
+					"name": "Indonesian",
+					"code": "id",
+					"rightToLeft": false,
+					"characterMap": {}
 				},
 				{
 					"id": 4,
@@ -6416,6 +6430,13 @@
 		"terms": {
 			"languages": [
 				{
+					"id": 5,
+					"name": "Albanian",
+					"code": "sq",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
 					"id": 1,
 					"name": "Bosnian",
 					"code": "bs",
@@ -6438,6 +6459,13 @@
 						"ي": "ی",
 						"ك": "ک"
 					}
+				},
+				{
+					"id": 6,
+					"name": "Indonesian",
+					"code": "id",
+					"rightToLeft": false,
+					"characterMap": {}
 				},
 				{
 					"id": 4,
@@ -7257,6 +7285,13 @@
 		"review": {
 			"languages": [
 				{
+					"id": 5,
+					"name": "Albanian",
+					"code": "sq",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
 					"id": 1,
 					"name": "Bosnian",
 					"code": "bs",
@@ -7279,6 +7314,13 @@
 						"ي": "ی",
 						"ك": "ک"
 					}
+				},
+				{
+					"id": 6,
+					"name": "Indonesian",
+					"code": "id",
+					"rightToLeft": false,
+					"characterMap": {}
 				},
 				{
 					"id": 4,
@@ -8068,6 +8110,13 @@
 		"feeds": {
 			"languages": [
 				{
+					"id": 5,
+					"name": "Albanian",
+					"code": "sq",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
 					"id": 1,
 					"name": "Bosnian",
 					"code": "bs",
@@ -8090,6 +8139,13 @@
 						"ي": "ی",
 						"ك": "ک"
 					}
+				},
+				{
+					"id": 6,
+					"name": "Indonesian",
+					"code": "id",
+					"rightToLeft": false,
+					"characterMap": {}
 				},
 				{
 					"id": 4,
@@ -8164,10 +8220,34 @@
 					"url": "https://meduza.io/rss/all"
 				},
 				{
-					"id": 11,
+					"id": 15,
 					"languageId": 4,
 					"name": "Новости науки",
 					"url": "https://example.org/science.xml"
+				},
+				{
+					"id": 14,
+					"languageId": 5,
+					"name": "DW Albanian",
+					"url": "https://rss.dw.com/rdf/rss-alb-all"
+				},
+				{
+					"id": 13,
+					"languageId": 6,
+					"name": "ANTARA",
+					"url": "https://www.antaranews.com/rss/terkini.xml"
+				},
+				{
+					"id": 11,
+					"languageId": 6,
+					"name": "BBC Indonesia",
+					"url": "https://feeds.bbci.co.uk/indonesia/rss.xml"
+				},
+				{
+					"id": 12,
+					"languageId": 6,
+					"name": "DW Indonesia",
+					"url": "https://rss.dw.com/rdf/rss-ind-all"
 				}
 			]
 		},
@@ -8202,6 +8282,13 @@
 		"newBook": {
 			"languages": [
 				{
+					"id": 5,
+					"name": "Albanian",
+					"code": "sq",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
 					"id": 1,
 					"name": "Bosnian",
 					"code": "bs",
@@ -8224,6 +8311,13 @@
 						"ي": "ی",
 						"ك": "ک"
 					}
+				},
+				{
+					"id": 6,
+					"name": "Indonesian",
+					"code": "id",
+					"rightToLeft": false,
+					"characterMap": {}
 				},
 				{
 					"id": 4,
@@ -8282,7 +8376,7 @@
 					"url": "https://meduza.io/rss/all"
 				},
 				{
-					"id": 11,
+					"id": 15,
 					"languageId": 4,
 					"name": "Новости науки",
 					"url": "https://example.org/science.xml"
@@ -8294,6 +8388,13 @@
 	"emptyRoutes": {
 		"home": {
 			"languages": [
+				{
+					"id": 5,
+					"name": "Albanian",
+					"code": "sq",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
 				{
 					"id": 1,
 					"name": "Bosnian",
@@ -8317,6 +8418,13 @@
 						"ي": "ی",
 						"ك": "ک"
 					}
+				},
+				{
+					"id": 6,
+					"name": "Indonesian",
+					"code": "id",
+					"rightToLeft": false,
+					"characterMap": {}
 				},
 				{
 					"id": 4,
@@ -8335,6 +8443,13 @@
 		"terms": {
 			"languages": [
 				{
+					"id": 5,
+					"name": "Albanian",
+					"code": "sq",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
 					"id": 1,
 					"name": "Bosnian",
 					"code": "bs",
@@ -8357,6 +8472,13 @@
 						"ي": "ی",
 						"ك": "ک"
 					}
+				},
+				{
+					"id": 6,
+					"name": "Indonesian",
+					"code": "id",
+					"rightToLeft": false,
+					"characterMap": {}
 				},
 				{
 					"id": 4,
@@ -8386,6 +8508,13 @@
 		"review": {
 			"languages": [
 				{
+					"id": 5,
+					"name": "Albanian",
+					"code": "sq",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
 					"id": 1,
 					"name": "Bosnian",
 					"code": "bs",
@@ -8408,6 +8537,13 @@
 						"ي": "ی",
 						"ك": "ک"
 					}
+				},
+				{
+					"id": 6,
+					"name": "Indonesian",
+					"code": "id",
+					"rightToLeft": false,
+					"characterMap": {}
 				},
 				{
 					"id": 4,
@@ -8429,6 +8565,13 @@
 		"feeds": {
 			"languages": [
 				{
+					"id": 5,
+					"name": "Albanian",
+					"code": "sq",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
 					"id": 1,
 					"name": "Bosnian",
 					"code": "bs",
@@ -8451,6 +8594,13 @@
 						"ي": "ی",
 						"ك": "ک"
 					}
+				},
+				{
+					"id": 6,
+					"name": "Indonesian",
+					"code": "id",
+					"rightToLeft": false,
+					"characterMap": {}
 				},
 				{
 					"id": 4,
@@ -8523,6 +8673,30 @@
 					"languageId": 4,
 					"name": "Meduza",
 					"url": "https://meduza.io/rss/all"
+				},
+				{
+					"id": 14,
+					"languageId": 5,
+					"name": "DW Albanian",
+					"url": "https://rss.dw.com/rdf/rss-alb-all"
+				},
+				{
+					"id": 13,
+					"languageId": 6,
+					"name": "ANTARA",
+					"url": "https://www.antaranews.com/rss/terkini.xml"
+				},
+				{
+					"id": 11,
+					"languageId": 6,
+					"name": "BBC Indonesia",
+					"url": "https://feeds.bbci.co.uk/indonesia/rss.xml"
+				},
+				{
+					"id": 12,
+					"languageId": 6,
+					"name": "DW Indonesia",
+					"url": "https://rss.dw.com/rdf/rss-ind-all"
 				}
 			]
 		},
@@ -8534,6 +8708,13 @@
 		},
 		"newBook": {
 			"languages": [
+				{
+					"id": 5,
+					"name": "Albanian",
+					"code": "sq",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
 				{
 					"id": 1,
 					"name": "Bosnian",
@@ -8557,6 +8738,13 @@
 						"ي": "ی",
 						"ك": "ک"
 					}
+				},
+				{
+					"id": 6,
+					"name": "Indonesian",
+					"code": "id",
+					"rightToLeft": false,
+					"characterMap": {}
 				},
 				{
 					"id": 4,

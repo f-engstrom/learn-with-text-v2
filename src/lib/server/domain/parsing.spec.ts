@@ -5,6 +5,8 @@ const russian = { code: 'ru', characterMap: { '́': '', '̀': '' } };
 const farsi = { code: 'fa', characterMap: { 'ي': 'ی', 'ك': 'ک' } };
 const bosnian = { code: 'bs', characterMap: {} };
 const chinese = { code: 'zh', characterMap: {} };
+const albanian = { code: 'sq', characterMap: {} };
+const indonesian = { code: 'id', characterMap: {} };
 
 function words(language: { code: string }, text: string) {
 	return parserFor(language)
@@ -34,6 +36,17 @@ describe('parsing', () => {
 
 	it('splits Russian Sentences, not at abbreviations', () => {
 		expect(sentences(russian, 'Я читаю. Т. е. всё хорошо.')).toEqual(['Я читаю. ', 'Т. е. всё хорошо.']);
+	});
+
+	it('splits Albanian into Words and Sentences, keeping ë and ç inside Words', () => {
+		const text = 'Unë lexoj një libër çdo ditë. Ajo është e mirë!';
+		expect(words(albanian, text)).toEqual(['Unë', 'lexoj', 'një', 'libër', 'çdo', 'ditë', 'Ajo', 'është', 'e', 'mirë']);
+		expect(sentences(albanian, text)).toEqual(['Unë lexoj një libër çdo ditë. ', 'Ajo është e mirë!']);
+	});
+
+	// Open question in docs/directions.md: whether a doubled Word should stay one Word.
+	it('splits a doubled Indonesian Word at its hyphen', () => {
+		expect(words(indonesian, 'Anak-anak membaca buku.')).toEqual(['Anak', 'anak', 'membaca', 'buku']);
 	});
 
 	it('segments Chinese into Words and Sentences', () => {

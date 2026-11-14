@@ -48,3 +48,12 @@ Unverified, from memory of Azure's offer: check the portal before relying on any
 - **The Tutor's waits:** `ask_learner` checks the database repeatedly while it waits. On a database billed by compute time, that keeps the database awake and uses up the free allowance. Request time limits (much shorter on Static Web Apps' managed Functions) may also mean a shorter default wait, which ADR 0006's `wait_for_answer` loop already allows. A push mechanism, such as Azure Web PubSub's free tier or SignalR, could replace the checking.
 
 Either way, the app and `/mcp` need auth (Static Web Apps has built-in sign-in), and Claude Code on this computer should use the hosted `/mcp`.
+
+## Albanian and Indonesian, beyond the basics
+
+Both were added quickly (migration 0023): splitting, Wiktionary and Google Translate, a few news Feeds, and a frequency list. These questions were left for when they're read in practice.
+
+- **Indonesian doubled Words.** Plurals and some other forms repeat a Word with a hyphen (*anak-anak* "children", *buku-buku*, *kupu-kupu* "butterfly"). ICU splits at the hyphen, so *anak-anak* reads as two Words, *anak* and *anak*, and the plural is lost. Options: leave it and make Multi-word Terms where it matters (the fallback [ADR 0002](adr/0002-intl-segmenter-for-all-languages.md) takes for Chinese), or have the parser keep a hyphenated pair of letters-only parts together for `id`, which would change ADR 0002. The second would also change the Words of any Indonesian Book already imported. `parsing.spec.ts` pins today's split.
+- **Albanian without ë and ç.** Informal Albanian online often writes *e* and *c* instead. A character map folding them would match both spellings, but would also merge real pairs (*të* and *te*, *ne* and *në*). Albanian's map is empty for now, like Bosnian's.
+- **More Dictionaries.** Each has only Wiktionary and Google Translate. For Indonesian, KBBI (the official dictionary, Indonesian–Indonesian) is the obvious third choice. Whether it allows being shown in the panel is unchecked. Albanian needs a search for a good online dictionary.
+- **Classics.** None are seeded; Suggestions come from Wikipedia and the Feeds. Indonesian Wikisource has some public-domain prose; Albanian Wikisource is thin.
