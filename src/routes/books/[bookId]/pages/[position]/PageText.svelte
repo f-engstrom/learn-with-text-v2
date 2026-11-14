@@ -143,6 +143,10 @@
 	.in-passage {
 		background: var(--highlight);
 	}
+	.sentence.highlighted :global(.word.status-unknown) {
+		--fill: transparent;
+		color: var(--status-unknown-text);
+	}
 	.highlight-start {
 		scroll-margin: 6rem;
 	}
@@ -168,6 +172,10 @@
 	.page.zen :global(.in-passage),
 	.page.zen .sentence.highlighted {
 		background: transparent;
+	}
+	.page.zen :global(.word.status-unknown.in-passage),
+	.page.zen .sentence :global(.word.status-unknown) {
+		color: inherit;
 	}
 	.page.zen :global(.word[data-due]::after) {
 		display: none;

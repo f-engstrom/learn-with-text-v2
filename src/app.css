@@ -28,6 +28,8 @@
 
 	/* Status colours, shared by the reading screen, the Term form and the Term list. */
 	--status-unknown: light-dark(#d6e8fb, #1f3a5c);
+	/* Unknown's blue as letters, where a fill can't go (an Unknown Word on the Tutor's Highlight). */
+	--status-unknown-text: light-dark(#2a5d9a, #9cc2f0);
 	--status-learning1: light-dark(#f8c2aa, #6e3424);
 	--status-learning2: light-dark(#f9d6a8, #6c4a20);
 	--status-learning3: light-dark(#f3e4a8, #5d5420);

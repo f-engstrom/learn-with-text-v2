@@ -106,10 +106,14 @@
 	.word.status-ignored {
 		color: var(--status-ignored);
 	}
-	/* In the Tutor's Highlight: the same band as the text around it (see PageText); an Unknown Word keeps its fill. */
-	.word.in-passage:not(.status-unknown) {
+	/* In the Tutor's Highlight: the same band as the text around it (see PageText). An Unknown Word's
+	   fill would break the band, so its letters take Unknown's blue instead. */
+	.word.in-passage {
 		--fill: var(--highlight);
 		border-radius: 0;
+	}
+	.word.in-passage.status-unknown {
+		color: var(--status-unknown-text);
 	}
 	/* A Due Word: a dot over its end in its Due colour, amber when just Due, red when long overdue. */
 	.word[data-due]::after {

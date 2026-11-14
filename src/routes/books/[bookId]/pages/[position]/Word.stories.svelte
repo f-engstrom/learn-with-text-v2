@@ -24,6 +24,7 @@
 <Story name="In a selected phrase" args={{ phrase: true }} />
 <Story name="A Multi-word Term" args={{ status: 'learning2', multi: true, text: 'дама с собачкой' }} />
 <Story name="In the Tutor's passage" args={{ status: 'learning1', inPassage: true }} />
+<Story name="Unknown, in the Tutor's passage" args={{ inPassage: true }} />
 <Story name="Due" args={{ status: 'learning1', due: 1 }} />
 <Story name="Overdue" args={{ status: 'learning2', due: 2 }} />
 <Story name="Long overdue" args={{ status: 'learning3', due: 3 }} />
