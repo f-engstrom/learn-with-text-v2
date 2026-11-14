@@ -20,7 +20,7 @@
 		gloss?: string;
 		/** The one Word the Tab key lands on. */
 		tabStop?: boolean;
-		/** Enter and Space choose it, except during a Practice run. */
+		/** Enter and Space choose it, except during a Practice run. Enter on the cursor's Word is the reading screen's, which opens the whole Selection. */
 		keys?: boolean;
 		/** Clicked or chosen by key; `shift` extends the Selection to it. */
 		onchoose?: (shift: boolean) => void;
@@ -73,7 +73,7 @@
 	bind:this={element}
 	onmousedown={(e) => e.shiftKey && e.preventDefault()}
 	onclick={(e) => onchoose?.(e.shiftKey)}
-	onkeydown={(e) => keys && (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onchoose?.(false))}
+	onkeydown={(e) => keys && (e.key === ' ' || (e.key === 'Enter' && !current)) && (e.preventDefault(), onchoose?.(false))}
 	>{text}{#if gloss}<span class="gloss" aria-hidden="true" use:keepInView={gloss}>{gloss}</span>{/if}</span
 >
 

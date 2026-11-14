@@ -67,6 +67,16 @@
 	}}
 />
 
+<Story
+	name="A phrase grown by keys, opened with Enter"
+	play={async ({ canvas, userEvent }: Play) => {
+		await userEvent.click(word(canvas, 'роста'));
+		await userEvent.keyboard('{Escape}{Shift>}{ArrowLeft}{/Shift}{Enter}');
+		// Enter on the cursor's Word opens the whole phrase, not that Word alone.
+		if (!canvas.queryByRole('heading', { name: 'невысокого роста' })) throw new Error('Enter collapsed the phrase');
+	}}
+/>
+
 <Story name="A Multi-word Term selected" play={choose('дама с собачкой')} />
 
 <Story
