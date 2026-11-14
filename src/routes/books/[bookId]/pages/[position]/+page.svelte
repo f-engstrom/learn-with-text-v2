@@ -4,31 +4,20 @@
 	import Count from '#lib/components/Count.svelte';
 	import CloseButton from '#lib/components/CloseButton.svelte';
 	import { enhance } from '$app/forms';
-	import { sendStatus } from '#lib/term-writes.ts';
 	import { invalidateAll, replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount, tick, untrack } from 'svelte';
-	import { commandFor, routeKey, type Command } from '#lib/reading/keys.ts';
-	import { OpenDictionary, panelTabs } from '#lib/reading/open-dictionary.svelte.ts';
-	import { PersistedFlag } from '#lib/reading/persisted-flag.svelte.ts';
-	import { Zen } from '#lib/reading/zen.svelte.ts';
-	import { sendReview } from '#lib/reviews.ts';
-	import { Selection, type Selected, type Word } from '#lib/reading/selection.svelte.ts';
-	import type { Answer } from '#lib/server/domain/from-tutor.ts';
-	import { FromTutor } from '#lib/reading/from-tutor.svelte.ts';
+	import { ReadingScreen } from '#lib/reading/screen.svelte.ts';
+	import type { Word } from '#lib/reading/selection.svelte.ts';
 	import type { DaySoFar } from '#lib/server/domain/progress.ts';
-	import type { Status } from '#lib/server/domain/terms.ts';
 	import type { PageProps } from './$types';
-	import type { Grade } from '#lib/server/domain/practice.ts';
 	import PracticePanel from './PracticePanel.svelte';
-	import { Practice, TOP } from '#lib/reading/practice.svelte.ts';
-	import { highlightOnPage, turnPlace } from '#lib/reading/highlight.ts';
+	import { TOP } from '#lib/reading/practice.svelte.ts';
 	import Help from './Help.svelte';
 	import PageText from './PageText.svelte';
 	import TermPanel from './TermPanel.svelte';
 	import TutorTurn from './TutorTurn.svelte';
 	import Contents from './Contents.svelte';
-
 
 	let { data, form }: PageProps = $props();
 
@@ -60,35 +49,55 @@
 		}
 	}
 
-	/** The Selection; the Bookmark follows it. The Term form shows it while `open`. */
-	const selection = new Selection(
+	/** The Page's text, for reaching a Word's element. */
+	let text = $state<PageText>();
+	let termPanel = $state<TermPanel>();
+	let tutorTurn = $state<TutorTurn>();
+	let rail = $state<HTMLElement>();
+
+	/** The reading screen's state and commands; this page is its markup. */
+	const screen = new ReadingScreen(
 		untrack(() => data),
 		{
-			onMoved: async (index, how) => {
-				await tick();
-				if (how === 'resume') text?.word(index)?.scrollIntoView({ block: 'center' });
-				else text?.word(index)?.focus();
-			}
+			view: {
+				focusWord: (index) => text?.word(index)?.focus(),
+				scrollToWord: (index, block) => text?.word(index)?.scrollIntoView({ block }),
+				scrollToHighlight: () => text?.highlightStart()?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+				focusTutor: () => tutorTurn?.focus(),
+				paste: async (copied) => {
+					await (copied === undefined ? termPanel?.pasteFromClipboard() : termPanel?.pasteText(copied));
+				},
+				inDictionary: () => !!termPanel?.inDictionary(),
+				reachDictionary: async () => {
+					await termPanel?.reachDictionary();
+				}
+			},
+			server: { reload: invalidateAll }
 		}
 	);
 	$effect(() => {
-		const page = data;
-		untrack(() => {
-			if (selection.sync(page)) {
-				open = false;
-				error = undefined;
-			}
-		});
+		const latest = data;
+		untrack(() => screen.sync(latest));
 	});
+	onMount(() => {
+		const stop = screen.start();
+		return () => {
+			stop();
+			delete document.documentElement.dataset.zen;
+		};
+	});
+
+	const { selection, practice, zen: zenMode, fromTutor } = screen;
 	let words = $derived(selection.words);
-	let sentences = $derived(selection.sentences);
 	let current = $derived(selection.cursor);
 	let range = $derived(selection.range);
 	let characters = $derived(selection.characters);
-	let picked = $derived(selection.picked);
 	let selected = $derived(selection.selected);
-	let open = $state(false);
-	let rail = $state<HTMLElement>();
+	let practising = $derived(practice.state);
+	let zen = $derived(zenMode.on);
+	let open = $derived(screen.open);
+	let dir: 'rtl' | 'ltr' = $derived(data.language.rightToLeft ? 'rtl' : 'ltr');
+
 	// On a wide screen the column beside the text sticks only once the Page header has scrolled away; until then its
 	// bottom, where Save sits, can be below the window. Opening the Term panel scrolls just enough to show it, keeping
 	// the chosen Word on screen.
@@ -104,87 +113,6 @@
 		// Not smooth: focusing the Word, which happens alongside, would cancel a smooth scroll.
 		if (by > 0) window.scrollBy({ top: by });
 	}
-	let term = $derived(selected && data.terms[selected.key]);
-	let band = $derived(selected && data.frequency[selected.key]);
-	/** Statuses set by keyboard that the server hasn't confirmed yet, so the colour changes at once. */
-	let pending = $state<Record<string, Status>>({});
-	let error = $state<string | undefined>();
-	let termPanel = $state<TermPanel>();
-	/** The open Dictionary, kept while you move between Words and for each Language. */
-	const dictionary = new OpenDictionary();
-	$effect(() => dictionary.load(data.language.id));
-	/** The Page's text, for reaching a Word's element. */
-	let text = $state<PageText>();
-	let dir: 'rtl' | 'ltr' = $derived(data.language.rightToLeft ? 'rtl' : 'ltr');
-
-	/** Due marks on the Words of the Top by priority Terms, on unless you turn them off (D). */
-	const dueMarks = new PersistedFlag('reader.due', true);
-	onMount(() => dueMarks.load());
-	let showDue = $derived(dueMarks.value);
-	const toggleDue = () => dueMarks.toggle();
-	const overdueOf = (key: string): 0 | 1 | 2 | 3 => (showDue && practice.marked.has(key) ? (data.terms[key]?.practice?.overdue ?? 0) : 0);
-
-	/** The 1-based paragraph each Sentence (by 0-based index) is in. */
-	let paragraphOf = $derived(data.paragraphs.flatMap((p, i) => p.sentences.map(() => i + 1)));
-	/** Practice on the Page: the cursor walks its queue. */
-	const practice = new Practice(
-		() => ({
-			words,
-			terms: data.terms,
-			frequency: data.frequency,
-			paragraphOf,
-			// "This paragraph" is the cursor's, else the first.
-			paragraph: current === undefined ? 1 : paragraphOf[words[current].sentence],
-			highlight: highlightHere,
-			rightToLeft: data.language.rightToLeft
-		}),
-		{
-			onReviewed: () => {
-				error = undefined;
-				return invalidateAll();
-			},
-			onRefused: (message) => (error = message),
-			// The cursor goes onto the practised Word, scrolled clear of the practice panel.
-			onShow: async (index) => {
-				selection.moveTo(index);
-				await tick();
-				text?.word(index)?.scrollIntoView({ block: 'nearest' });
-			},
-			onStop: () => selection.refocus()
-		}
-	);
-	let practising = $derived(practice.state);
-	let recalling = $derived(practice.recalling);
-
-	function startPractice() {
-		open = false;
-		practice.start();
-	}
-
-	/** A Review from the Practice card in the Term panel. */
-	async function review(termId: number, grade: Grade) {
-		error = await sendReview(termId, grade, 'page');
-		await invalidateAll();
-	}
-
-	/** Zen mode: only the text; toggling it closes the Term form. */
-	const zenMode = new Zen({ onChange: () => (open = false) });
-	let zen = $derived(zenMode.on);
-	let idle = $derived(zenMode.idle);
-	const toggleZen = () => zenMode.toggle();
-	const wake = () => zenMode.wake();
-	let gloss = $derived.by(() => {
-		if (!zen || !zenMode.glossShown || recalling || !selected) return '';
-		return term?.translations.map((t) => t.text).join('; ') || 'No Translation yet';
-	});
-
-	onMount(() => {
-		zenMode.load();
-		return () => {
-			zenMode.destroy();
-			delete document.documentElement.dataset.zen;
-		};
-	});
 
 	// The site header lives in the layout, so zen hides it by a flag on the page root.
 	$effect(() => {
@@ -196,56 +124,6 @@
 	function onpointerdown(e: PointerEvent) {
 		if (e.target instanceof Element && e.target.closest('.word, .zen-controls')) return;
 		zenMode.tapOutside();
-	}
-
-	/** From the Tutor: its Highlight and question, kept current while the Page is open. */
-	const fromTutor = new FromTutor(untrack(() => tutorState()), {
-		// The Tutor saved a Gloss or changed a Term: the Page's Statuses and Translations follow.
-		onTermsChanged: () => invalidateAll(),
-		// A new Highlight on this Page comes into view; the cursor and Bookmark stay put.
-		onNewHighlight: async (h) => {
-			if (h.page !== data.position) return;
-			await tick();
-			text?.highlightStart()?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-		}
-	});
-	function tutorState() {
-		return { bookId: data.book.id, highlight: data.highlight, question: data.question, termsVersion: data.termsVersion };
-	}
-	$effect(() => {
-		const latest = tutorState();
-		untrack(() => fromTutor.sync(latest));
-	});
-	onMount(() => fromTutor.start());
-	let highlight = $derived(fromTutor.highlight);
-	/** TutorQuestions keeps what you write, per `askedAt`. */
-	let question = $derived(fromTutor.question);
-	let tutorTurn = $state<TutorTurn>();
-	let highlightHere = $derived(highlight?.page === data.position ? highlight : undefined);
-	/** Due Terms on this Page, each counted once. */
-	let dueOnPage = $derived(showDue ? practice.dueCount : 0);
-
-	/** Where the Highlight falls on this Page: its Sentences, or its passage's tokens. */
-	let onPage = $derived(highlightOnPage(sentences, highlightHere, data.position));
-	/** The Tutor's turn follows the Sentence its Highlight ends with; with no Highlight here it opens the Page. */
-	let turnAt = $derived(turnPlace(data.paragraphs, onPage));
-
-	async function answerTutor(answer: Answer) {
-		const refused = await fromTutor.answer(answer);
-		if (refused) error = refused;
-	}
-
-	function dismissTutor() {
-		fromTutor.dismiss();
-	}
-
-	const statusOf = (key: string): Status | 'unknown' => pending[key] ?? data.terms[key]?.status ?? 'unknown';
-
-	async function setStatus(word: Selected, status: Status) {
-		pending[word.key] = status;
-		error = await sendStatus(data.language.id, word.text, status);
-		await invalidateAll();
-		delete pending[word.key];
 	}
 
 	/** Buttons and links handle Enter themselves. */
@@ -261,99 +139,24 @@
 	}
 
 	function onkeydown(e: KeyboardEvent) {
-		const route = routeKey({
+		const used = screen.key(e, {
 			handled: e.defaultPrevented,
 			inTutorCard: e.target instanceof HTMLElement && e.target.closest('.turn') !== null,
 			typing: isTyping(e.target),
-			onControl: isControl(e.target),
-			zen,
-			command: commandFor(e, data.language.rightToLeft),
-			practice: () => practice.key(e)
+			onControl: isControl(e.target)
 		});
-		if (route.to === 'none') return;
-		e.preventDefault();
-		if (route.to === 'zen') return route.key === 'enter' ? zenMode.enter() : zenMode.escape();
-		if (route.to === 'reading') run(route.command);
-	}
-
-	/** Carries out a reading command. */
-	function run(command: Command) {
-		switch (command.kind) {
-			case 'move':
-			case 'sentence':
-				selection.move(command);
-				break;
-			case 'extend':
-				error = selection.move(command);
-				break;
-			case 'status':
-				if (selected) setStatus(selected, command.status);
-				break;
-			case 'open':
-				if (selected) open = true;
-				break;
-			case 'paste':
-				if (selected) pasteTranslation();
-				break;
-			case 'zen':
-				toggleZen();
-				break;
-			case 'due':
-				toggleDue();
-				break;
-			case 'practice':
-				zenMode.leave();
-				startPractice();
-				break;
-			case 'tutor':
-				tutorTurn?.focus();
-				break;
-			case 'dictionary':
-				if (selected && !zen && !practising) goToDictionary(command.by);
-				break;
-			case 'close':
-				open = false;
-				selection.refocus();
-				break;
-		}
-	}
-
-	/** L: opens the Term form and goes to its Dictionary panel, opening the next Dictionary once there (`OpenDictionary.reach`). */
-	async function goToDictionary(by: 1 | -1) {
-		open = true;
-		await tick();
-		dictionary.reach(panelTabs(data.dictionaries, data.azureReady), by, !!termPanel?.inDictionary());
-		await termPanel?.reachDictionary();
-	}
-
-	async function pasteTranslation(copied?: string) {
-		open = true;
-		await tick();
-		await (copied === undefined ? termPanel?.pasteFromClipboard() : termPanel?.pasteText(copied));
+		if (used) e.preventDefault();
 	}
 
 	// ⌘V / Ctrl+V on the Page (not in a field) pastes as a Translation; unlike P it needs no permission.
 	function onpaste(e: ClipboardEvent) {
 		if (!selected || isTyping(e.target)) return;
 		e.preventDefault();
-		pasteTranslation(e.clipboardData?.getData('text/plain') ?? '');
-	}
-
-	function choose(word: Word, shift: boolean) {
-		const { again, error: refused } = selection.choose(word.index, shift);
-		if (shift) error = refused;
-		// In zen mode a tap shows the Word's Translations; tapping it again hides them.
-		if (zen) {
-			zenMode.tapWord(again);
-			return;
-		}
-		open = true;
-		// On a phone the Term panel is a sheet over the bottom of the screen; keep the Word above it.
-		tick().then(() => text?.word(word.index)?.scrollIntoView({ block: 'nearest' }));
+		screen.paste(e.clipboardData?.getData('text/plain') ?? '');
 	}
 </script>
 
-<svelte:window {onkeydown} {onpaste} onmousemove={wake} {onpointerdown} />
+<svelte:window {onkeydown} {onpaste} onmousemove={() => zenMode.wake()} {onpointerdown} />
 
 <svelte:head>
 	<title>{data.book.title} · Reader</title>
@@ -363,16 +166,16 @@
 	<div class="turn" lang="en" dir="ltr">
 		<TutorTurn
 			bind:this={tutorTurn}
-			{highlight}
-			{question}
-			here={turnAt !== undefined}
+			highlight={fromTutor.highlight}
+			question={fromTutor.question}
+			here={screen.turnAt !== undefined}
 			folded={fromTutor.folded}
 			bookId={data.book.id}
 			lang={data.language.code}
 			{dir}
-			onanswer={answerTutor}
-			onleave={() => (current === undefined ? selection.moveTo(0) : selection.refocus())}
-			ondismiss={dismissTutor}
+			onanswer={(answer) => screen.answerTutor(answer)}
+			onleave={() => screen.leaveTutor()}
+			ondismiss={() => fromTutor.dismiss()}
 			onfold={() => fromTutor.fold()}
 			onunfold={() => fromTutor.unfold()}
 		/>
@@ -407,11 +210,11 @@
 			<Button href="/books/{data.book.id}/edit" variant="quiet" aria-label="Edit {data.book.title}">Edit</Button>
 		</span>
 		<span class="toggles">
-			<Button type="button" onclick={startPractice} title="Practise the Due Words (R)"
-				>Practice{#if dueOnPage > 0}<Count value={dueOnPage} />{/if}</Button
+			<Button type="button" onclick={() => screen.startPractice()} title="Practise the Due Words (R)"
+				>Practice{#if screen.dueOnPage > 0}<Count value={screen.dueOnPage} />{/if}</Button
 			>
-			<Button type="button" pressed={showDue} onclick={toggleDue} title="Due marks on the top {TOP} by priority (D)">Due</Button>
-			<Button type="button" pressed={zen} onclick={toggleZen} title="Zen mode (Z)">Zen</Button>
+			<Button type="button" pressed={screen.dueMarks.value} onclick={() => screen.dueMarks.toggle()} title="Due marks on the top {TOP} by priority (D)">Due</Button>
+			<Button type="button" pressed={zen} onclick={() => zenMode.toggle()} title="Zen mode (Z)">Zen</Button>
 		</span>
 	</header>
 	{@render pages(true)}
@@ -422,8 +225,8 @@
 			<CloseButton label="Dismiss" onclick={dismissDaySoFar} inline />
 		</p>
 	{/if}
-	{#if error}
-		<p class="error" role="alert">{error}</p>
+	{#if screen.error}
+		<p class="error" role="alert">{screen.error}</p>
 	{/if}
 </div>
 
@@ -436,16 +239,16 @@
 		{zen}
 		practising={practising?.stage === 'run'}
 		wordKeys={!practising}
-		{statusOf}
-		{overdueOf}
+		statusOf={screen.statusOf}
+		overdueOf={screen.overdueOf}
 		{current}
 		inPhrase={(index) => selection.inPhrase(index)}
-		{onPage}
-		{gloss}
+		onPage={screen.onPage}
+		gloss={screen.gloss}
 		glossAt={range?.[0]}
-		turn={highlight || question ? turn : undefined}
-		{turnAt}
-		onchoose={choose}
+		turn={fromTutor.highlight || fromTutor.question ? turn : undefined}
+		turnAt={screen.turnAt}
+		onchoose={(word: Word, shift: boolean) => screen.choose(word.index, shift)}
 	/>
 
 	<!-- One sticky column beside the text; on a phone it dissolves below the Page. -->
@@ -468,22 +271,22 @@
 					bind:this={termPanel}
 					language={data.language}
 					{selected}
-					{term}
-					{band}
-					parts={characters && range ? { word: words[range[0]], characters, picked } : undefined}
-					{statusOf}
+					term={screen.term}
+					band={screen.band}
+					parts={characters && range ? { word: words[range[0]], characters, picked: selection.picked } : undefined}
+					statusOf={screen.statusOf}
 					dictionaries={data.dictionaries}
 					wiktionaryPage={data.wiktionaryPage}
 					azureReady={data.azureReady}
 					yourLanguages={data.yourLanguages}
-					dictionary={dictionary.tab}
-					onchoosedictionary={(tab) => dictionary.choose(tab)}
+					dictionary={screen.dictionary.tab}
+					onchoosedictionary={(tab) => screen.dictionary.choose(tab)}
 					error={form?.message}
-					onclose={() => (open = false)}
+					onclose={() => (screen.open = false)}
 					onwholeword={() => selection.wholeWord()}
 					onpickcharacter={(i, shift) => selection.pickCharacter(i, shift)}
-					onstatus={(status) => setStatus(selected, status)}
-					onreview={review}
+					onstatus={(status) => screen.setStatus(selected, status)}
+					onreview={(termId, grade) => screen.review(termId, grade)}
 				/>
 			{:else}
 				<Help />
@@ -502,7 +305,7 @@
 </div>
 
 {#if zen}
-	<nav class="zen-controls" class:shown={!idle} aria-label="Zen mode">
+	<nav class="zen-controls" class:shown={!zenMode.idle} aria-label="Zen mode">
 		{#if data.position > 1}
 			<Button href="/books/{data.book.id}/pages/{data.position - 1}" aria-label="Previous Page">←</Button>
 		{/if}
@@ -510,7 +313,7 @@
 		{#if data.position < data.book.pageCount}
 			<Button href="/books/{data.book.id}/pages/{data.position + 1}" aria-label="Next Page">→</Button>
 		{/if}
-		<Button type="button" onclick={toggleZen}>Exit zen</Button>
+		<Button type="button" onclick={() => zenMode.toggle()}>Exit zen</Button>
 	</nav>
 {/if}
 

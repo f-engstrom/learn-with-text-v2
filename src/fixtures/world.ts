@@ -8,21 +8,20 @@ import { migrateToLatest } from '../lib/server/db/migrate';
 import { openDatabase } from '../lib/server/db/open';
 import type { Database } from '../lib/server/db/schema';
 import { editBook, getBookForEditing } from '../lib/server/domain/book-editing';
-import { createBook, getPage, listBooks } from '../lib/server/domain/books';
+import { createBook, listBooks } from '../lib/server/domain/books';
 import { CLASSICS } from '../lib/server/domain/classics';
-import { isWiktionary } from '../lib/dictionaries';
-import { listDictionaries } from '../lib/server/domain/dictionaries';
 import { addFeed, listFeeds } from '../lib/server/domain/feeds';
 import { askLearner, answerTutor, dismissTutor, fromTutor } from '../lib/server/domain/from-tutor';
 import { listLanguages, type Language } from '../lib/server/domain/languages';
 import { findExample, recordReview } from '../lib/server/domain/practice';
-import { daySoFar, getProgress } from '../lib/server/domain/progress';
+import { getProgress } from '../lib/server/domain/progress';
 import { clearHighlight, latestBookmark, markPageRead, setBookmark, setHighlight } from '../lib/server/domain/reading';
 import { getFitRange } from '../lib/server/domain/suggestions';
 import { listTerms, saveTerm, TERM_PAGE_SIZE } from '../lib/server/domain/terms';
 import { addTopic, listTopics } from '../lib/server/domain/topics';
 import { assessTerm, saveGloss, setOrigin, setTransfer } from '../lib/server/domain/tutoring';
 import { listYourLanguages, setYourLanguage } from '../lib/server/domain/your-languages';
+import { readingScreenData } from '../lib/server/reading-screen';
 import { releaseClock, setClock } from './clock';
 import { analects, bridge, feedXml, lady, saadi, vanka } from './texts';
 
@@ -52,17 +51,7 @@ async function world() {
 
 /** What the reading screen's load returns. */
 async function reading(db: Kysely<Database>, bookId: number, position: number, read = false) {
-	const page = (await getPage(db, bookId, position))!;
-	const dictionaries = await listDictionaries(db, page.language.id);
-	return {
-		...page,
-		dictionaries: dictionaries.filter((d) => !isWiktionary(d)),
-		wiktionaryPage: dictionaries.find(isWiktionary) ?? null,
-		azureReady: true,
-		yourLanguages: (await listYourLanguages(db)).map((l) => l.name),
-		...(await fromTutor(db, bookId))!,
-		daySoFar: read ? await daySoFar(db, page.language.id) : null
-	};
+	return (await readingScreenData(db, bookId, position, { azureReady: true, read }))!;
 }
 
 /** What the Term list's load returns with no filter. */

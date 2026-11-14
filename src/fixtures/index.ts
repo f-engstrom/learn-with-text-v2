@@ -4,22 +4,21 @@
  */
 import type { Dictionary } from '#lib/dictionaries.ts';
 import type { BookForEditing } from '#lib/server/domain/book-editing.ts';
-import type { BookSummary, Bookmark, PageView } from '#lib/server/domain/books.ts';
+import type { BookSummary, Bookmark } from '#lib/server/domain/books.ts';
 import type { Feed } from '#lib/server/domain/feeds.ts';
 import type { FromTutor } from '#lib/server/domain/from-tutor.ts';
 import type { Language } from '#lib/server/domain/languages.ts';
 import type { Example } from '#lib/server/domain/practice.ts';
-import type { DaySoFar, LanguageProgress } from '#lib/server/domain/progress.ts';
+import type { LanguageProgress } from '#lib/server/domain/progress.ts';
 import type { TermListItem } from '#lib/server/domain/terms.ts';
 import type { Topic } from '#lib/server/domain/topics.ts';
 import type { YourLanguage } from '#lib/server/domain/your-languages.ts';
+import type { ReadingScreenData } from '#lib/server/reading-screen.ts';
 import type { FitRange } from '#lib/suggestions.ts';
 import json from './fixtures.json';
 
-/** The reading screen's data. */
-export type ReadingData = PageView & { dictionaries: Dictionary[]; wiktionaryPage: Dictionary | null; azureReady: boolean; yourLanguages: string[] } & FromTutor & {
-	daySoFar: DaySoFar | null;
-};
+/** The reading screen's data, as its load returns it. */
+export type ReadingData = ReadingScreenData;
 
 /** The edit screen's data. */
 export interface EditBookData {
