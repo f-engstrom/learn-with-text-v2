@@ -1,7 +1,7 @@
-import { fail } from '@sveltejs/kit';
 import { database } from '#lib/server/database.ts';
-import { addFeed, InvalidFeed, listFeeds, readFeedText, removeFeed } from '#lib/server/domain/feeds.ts';
+import { addFeed, listFeeds, readFeedText, removeFeed } from '#lib/server/domain/feeds.ts';
 import { listLanguages } from '#lib/server/domain/languages.ts';
+import { refusedAsFailure } from '#lib/server/refusals.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -17,12 +17,7 @@ export const actions: Actions = {
 			url: String(form.get('url') ?? ''),
 			name: String(form.get('name') ?? '')
 		};
-		try {
-			await addFeed(database(), (url) => readFeedText(url), values);
-		} catch (e) {
-			if (e instanceof InvalidFeed) return fail(400, { message: e.message, values });
-			throw e;
-		}
+		return refusedAsFailure(() => addFeed(database(), (url) => readFeedText(url), values), { values });
 	},
 	remove: async ({ request }) => {
 		const form = await request.formData();

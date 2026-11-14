@@ -1,10 +1,11 @@
 import { AZURE_TRANSLATOR_KEY } from '$app/env/private';
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, isActionFailure, redirect } from '@sveltejs/kit';
 import { database } from '#lib/server/database.ts';
 import { getPage } from '#lib/server/domain/books.ts';
 import { daySoFar } from '#lib/server/domain/progress.ts';
-import { InvalidBookmark, markPageRead } from '#lib/server/domain/reading.ts';
+import { markPageRead } from '#lib/server/domain/reading.ts';
 import { readingScreenData } from '#lib/server/reading-screen.ts';
+import { refusedAsFailure } from '#lib/server/refusals.ts';
 import { deleteTermAction, saveTermAction } from '#lib/server/term-actions.ts';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -24,15 +25,10 @@ export const actions: Actions = {
 	/** Marks this Page Read (optionally making the rest Known) and goes on to the next Page, showing the day so far. */
 	markRead: async ({ request, params }) => {
 		const form = await request.formData();
-		let next: number | undefined;
-		try {
-			next = await markPageRead(database(), Number(params.bookId), Number(params.position), {
-				restKnown: form.get('restKnown') === 'true'
-			});
-		} catch (e) {
-			if (e instanceof InvalidBookmark) return fail(400, { message: e.message });
-			throw e;
-		}
+		const next = await refusedAsFailure(() =>
+			markPageRead(database(), Number(params.bookId), Number(params.position), { restKnown: form.get('restKnown') === 'true' })
+		);
+		if (isActionFailure(next)) return next;
 		if (next !== undefined) redirect(303, `/books/${params.bookId}/pages/${next}?read`);
 		const page = await getPage(database(), Number(params.bookId), Number(params.position));
 		return { daySoFar: await daySoFar(database(), page!.language.id) };

@@ -5,7 +5,8 @@ import { BookExists, createBook, InvalidBook, textFromFile } from '#lib/server/d
 import { wikisourceFromWeb } from '#lib/server/domain/classics.ts';
 import { getLanguage, listLanguages } from '#lib/server/domain/languages.ts';
 import { wikipediaFromWeb } from '#lib/server/domain/suggestions.ts';
-import { fetchArticle, InvalidAddress } from '#lib/server/domain/webpages.ts';
+import { fetchArticle } from '#lib/server/domain/webpages.ts';
+import { Refused } from '#lib/server/domain/refused.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 const sources = { wikipedia: wikipediaFromWeb(), wikisource: wikisourceFromWeb() };
@@ -33,7 +34,7 @@ export const actions: Actions = {
 			const article = language ? await readAddress(sources, language, values.url) : await fetchArticle(values.url);
 			return { values: { ...values, url: article.url, title: values.title.trim() || article.title, text: article.text }, fetched: true };
 		} catch (e) {
-			if (e instanceof InvalidAddress) return fail(400, { message: e.message, values });
+			if (e instanceof Refused) return fail(400, { message: e.message, values });
 			throw e;
 		}
 	},
@@ -55,7 +56,7 @@ export const actions: Actions = {
 			}
 		} catch (e) {
 			if (e instanceof BookExists) return fail(400, { message: e.message, values, existingId: e.bookId });
-			if (e instanceof InvalidBook) return fail(400, { message: e.message, values });
+			if (e instanceof Refused) return fail(400, { message: e.message, values });
 			throw e;
 		}
 		redirect(303, `/books/${id}/pages/1`);

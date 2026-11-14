@@ -1,6 +1,6 @@
-import { fail } from '@sveltejs/kit';
 import { database } from '#lib/server/database.ts';
-import { InvalidYourLanguage, listYourLanguages, removeYourLanguage, setYourLanguage } from '#lib/server/domain/your-languages.ts';
+import { listYourLanguages, removeYourLanguage, setYourLanguage } from '#lib/server/domain/your-languages.ts';
+import { refusedAsFailure } from '#lib/server/refusals.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => ({ languages: await listYourLanguages(database()) });
@@ -8,12 +8,7 @@ export const load: PageServerLoad = async () => ({ languages: await listYourLang
 export const actions: Actions = {
 	set: async ({ request }) => {
 		const form = await request.formData();
-		try {
-			await setYourLanguage(database(), { name: String(form.get('name') ?? ''), level: String(form.get('level') ?? '') });
-		} catch (e) {
-			if (e instanceof InvalidYourLanguage) return fail(400, { message: e.message });
-			throw e;
-		}
+		return refusedAsFailure(() => setYourLanguage(database(), { name: String(form.get('name') ?? ''), level: String(form.get('level') ?? '') }));
 	},
 	remove: async ({ request }) => {
 		const form = await request.formData();

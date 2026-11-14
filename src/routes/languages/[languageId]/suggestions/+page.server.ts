@@ -1,6 +1,6 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { database } from '#lib/server/database.ts';
-import { InvalidBook } from '#lib/server/domain/books.ts';
+import { Refused } from '#lib/server/domain/refused.ts';
 import { getLanguage } from '#lib/server/domain/languages.ts';
 import { feedsFromWeb, listFeeds } from '#lib/server/domain/feeds.ts';
 import { findSuggestions, getFitRange, importArticle, importClassic, importFeedItem, wikipediaFromWeb } from '#lib/server/domain/suggestions.ts';
@@ -51,7 +51,7 @@ export const actions: Actions = {
 						? await importClassic(db, sources.wikisource, language, url)
 						: await importArticle(db, sources.wikipedia, language, String(form.get('title') ?? ''));
 		} catch (e) {
-			if (e instanceof InvalidBook) return fail(400, { message: e.message });
+			if (e instanceof Refused) return fail(400, { message: e.message });
 			console.error('Importing an article failed', e);
 			return fail(502, { message: "Couldn't fetch the article." });
 		}
