@@ -1552,12 +1552,6 @@
 			},
 			"dictionaries": [
 				{
-					"id": 6,
-					"name": "Wiktionary",
-					"url": "https://en.m.wiktionary.org/wiki/[TERM]#Russian",
-					"display": "embedded"
-				},
-				{
 					"id": 7,
 					"name": "OpenRussian",
 					"url": "https://en.openrussian.org/ru/[TERM]",
@@ -1570,6 +1564,13 @@
 					"display": "popup"
 				}
 			],
+			"wiktionaryPage": {
+				"id": 6,
+				"name": "Wiktionary",
+				"url": "https://en.m.wiktionary.org/wiki/[TERM]#Russian",
+				"display": "embedded"
+			},
+			"azureReady": true,
 			"highlight": null,
 			"question": null,
 			"termsVersion": 0,
@@ -3577,12 +3578,6 @@
 			},
 			"dictionaries": [
 				{
-					"id": 6,
-					"name": "Wiktionary",
-					"url": "https://en.m.wiktionary.org/wiki/[TERM]#Russian",
-					"display": "embedded"
-				},
-				{
 					"id": 7,
 					"name": "OpenRussian",
 					"url": "https://en.openrussian.org/ru/[TERM]",
@@ -3595,6 +3590,13 @@
 					"display": "popup"
 				}
 			],
+			"wiktionaryPage": {
+				"id": 6,
+				"name": "Wiktionary",
+				"url": "https://en.m.wiktionary.org/wiki/[TERM]#Russian",
+				"display": "embedded"
+			},
+			"azureReady": true,
 			"highlight": null,
 			"question": null,
 			"termsVersion": 68,
@@ -4085,12 +4087,6 @@
 			},
 			"dictionaries": [
 				{
-					"id": 6,
-					"name": "Wiktionary",
-					"url": "https://en.m.wiktionary.org/wiki/[TERM]#Russian",
-					"display": "embedded"
-				},
-				{
 					"id": 7,
 					"name": "OpenRussian",
 					"url": "https://en.openrussian.org/ru/[TERM]",
@@ -4103,6 +4099,13 @@
 					"display": "popup"
 				}
 			],
+			"wiktionaryPage": {
+				"id": 6,
+				"name": "Wiktionary",
+				"url": "https://en.m.wiktionary.org/wiki/[TERM]#Russian",
+				"display": "embedded"
+			},
+			"azureReady": true,
 			"highlight": null,
 			"question": null,
 			"termsVersion": 68,
@@ -4651,12 +4654,6 @@
 			},
 			"dictionaries": [
 				{
-					"id": 3,
-					"name": "Wiktionary",
-					"url": "https://en.m.wiktionary.org/wiki/[TERM]#Persian",
-					"display": "embedded"
-				},
-				{
 					"id": 4,
 					"name": "Abadis",
 					"url": "https://abadis.ir/fatoen/[TERM]/",
@@ -4669,6 +4666,13 @@
 					"display": "popup"
 				}
 			],
+			"wiktionaryPage": {
+				"id": 3,
+				"name": "Wiktionary",
+				"url": "https://en.m.wiktionary.org/wiki/[TERM]#Persian",
+				"display": "embedded"
+			},
+			"azureReady": true,
 			"highlight": null,
 			"question": null,
 			"termsVersion": 8,
@@ -5248,18 +5252,19 @@
 					"display": "embedded"
 				},
 				{
-					"id": 10,
-					"name": "Wiktionary",
-					"url": "https://en.m.wiktionary.org/wiki/[TERM]#Chinese",
-					"display": "embedded"
-				},
-				{
 					"id": 11,
 					"name": "Google Translate",
 					"url": "https://translate.google.com/?sl=zh-CN&tl=en&text=[TERM]",
 					"display": "popup"
 				}
 			],
+			"wiktionaryPage": {
+				"id": 10,
+				"name": "Wiktionary",
+				"url": "https://en.m.wiktionary.org/wiki/[TERM]#Chinese",
+				"display": "embedded"
+			},
+			"azureReady": true,
 			"highlight": null,
 			"question": null,
 			"termsVersion": 10,
@@ -6156,12 +6161,6 @@
 			},
 			"dictionaries": [
 				{
-					"id": 6,
-					"name": "Wiktionary",
-					"url": "https://en.m.wiktionary.org/wiki/[TERM]#Russian",
-					"display": "embedded"
-				},
-				{
 					"id": 7,
 					"name": "OpenRussian",
 					"url": "https://en.openrussian.org/ru/[TERM]",
@@ -6174,6 +6173,13 @@
 					"display": "popup"
 				}
 			],
+			"wiktionaryPage": {
+				"id": 6,
+				"name": "Wiktionary",
+				"url": "https://en.m.wiktionary.org/wiki/[TERM]#Russian",
+				"display": "embedded"
+			},
+			"azureReady": true,
 			"highlight": null,
 			"question": null,
 			"termsVersion": 75,

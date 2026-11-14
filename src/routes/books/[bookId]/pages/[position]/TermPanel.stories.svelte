@@ -19,13 +19,16 @@
 			parts: undefined,
 			statusOf: statusOf(mixed.terms),
 			dictionaries: mixed.dictionaries,
-			dictionary: undefined,
+			wiktionaryPage: mixed.wiktionaryPage,
+			azureReady: true,
+			dictionary: 'wiktionary',
 			error: undefined,
 			onclose: fn(),
 			onwholeword: fn(),
 			onpickcharacter: fn(),
 			onstatus: fn(),
-			onreview: fn()
+			onreview: fn(),
+			onchoosedictionary: fn()
 		}
 	});
 </script>
@@ -34,6 +37,7 @@
 <Story name="An Unknown Word" args={of('блондинка')} />
 <Story name="Frequency, Transfer and the Tutor's assessment" args={of('интересоваться')} />
 <Story name="A suggested Status" args={of('появилось')} />
+<Story name="The Dictionary panel closed" args={{ dictionary: null }} />
 <Story name="Refused" args={{ error: 'A Term cannot be its own Parent.' }} />
 <Story
 	name="Character parts, one picked"
@@ -44,6 +48,7 @@
 		band: characters.frequency['学'],
 		parts: { word: { key: '学习', text: '学习' }, characters: ['学', '习'], picked: [0, 0] },
 		statusOf: statusOf(characters.terms),
-		dictionaries: characters.dictionaries
+		dictionaries: characters.dictionaries,
+		wiktionaryPage: characters.wiktionaryPage
 	}}
 />

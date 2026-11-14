@@ -9,6 +9,7 @@
 	import { page } from '$app/state';
 	import { onMount, tick, untrack } from 'svelte';
 	import { commandFor, routeKey, type Command } from '#lib/reading/keys.ts';
+	import { OpenDictionary, panelTabs } from '#lib/reading/open-dictionary.svelte.ts';
 	import { PersistedFlag } from '#lib/reading/persisted-flag.svelte.ts';
 	import { Zen } from '#lib/reading/zen.svelte.ts';
 	import { sendReview } from '#lib/reviews.ts';
@@ -108,8 +109,9 @@
 	let pending = $state<Record<string, Status>>({});
 	let error = $state<string | undefined>();
 	let termPanel = $state<TermPanel>();
-	/** The open Dictionary tab, kept while you move between Words. */
-	let dictionary = $state<number | undefined>();
+	/** The open Dictionary, kept while you move between Words and for each Language. */
+	const dictionary = new OpenDictionary();
+	$effect(() => dictionary.load(data.language.id));
 	/** The Page's text, for reaching a Word's element. */
 	let text = $state<PageText>();
 	let dir: 'rtl' | 'ltr' = $derived(data.language.rightToLeft ? 'rtl' : 'ltr');
@@ -305,6 +307,9 @@
 			case 'tutor':
 				tutorTurn?.focus();
 				break;
+			case 'dictionary':
+				if (open && selected) dictionary.step(panelTabs(data.dictionaries, data.azureReady), command.by);
+				break;
 			case 'close':
 				open = false;
 				selection.refocus();
@@ -454,7 +459,10 @@
 					parts={characters && range ? { word: words[range[0]], characters, picked } : undefined}
 					{statusOf}
 					dictionaries={data.dictionaries}
-					bind:dictionary
+					wiktionaryPage={data.wiktionaryPage}
+					azureReady={data.azureReady}
+					dictionary={dictionary.tab}
+					onchoosedictionary={(tab) => dictionary.choose(tab)}
 					error={form?.message}
 					onclose={() => (open = false)}
 					onwholeword={() => selection.wholeWord()}

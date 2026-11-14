@@ -6,7 +6,7 @@ export const variables = defineEnvVars({
 		schema: (value) => value || 'data/reader.db'
 	},
 	AZURE_TRANSLATOR_KEY: {
-		description: "An Azure Translator resource's key, for the Azure panel; without one the panel says it isn't set up.",
+		description: "An Azure Translator resource's key, for the Azure Dictionary; without one its tab says how to set it up.",
 		schema: (value) => value ?? ''
 	},
 	AZURE_TRANSLATOR_REGION: {

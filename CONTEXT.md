@@ -71,7 +71,7 @@ One short meaning attached to a Term; a Term has an ordered list of them. Each T
 _Avoid_: Definition, gloss (except for what the Tutor says during a session)
 
 **Source**:
-Who added a Translation: you, the Wiktionary panel, or the Tutor.
+Who added a Translation: you, Wiktionary, Azure, or the Tutor.
 _Avoid_: Origin, author
 
 **Pronunciation**:
@@ -120,7 +120,7 @@ A short, well-known public-domain work (a story, fable or essay) built into the 
 _Avoid_: Book (that's what it becomes once picked), literature, work
 
 **Dictionary**:
-An external lookup source configured for a Language, shown alongside the Page. You copy from it and paste as a Translation.
+A lookup source for the selected Word or phrase, opened in the Dictionary panel. Two are built in, **Wiktionary** (English Wiktionary definitions) and **Azure** (Azure Translator's dictionary entries, or a machine translation when it has none): each suggests meanings you add as a Translation with one click, with that Dictionary as its Source. The others are configured for a Language and show their own page, in the panel or a window, to copy from and paste as a Translation; a configured Wiktionary page shows beneath Wiktionary's suggestions.
 
 ### Tutoring
 
@@ -178,7 +178,7 @@ The order Due Terms come up in: Frequency first, then Transfer (harder first), t
 Going through Due Terms on a Page with the cursor, in a subset you choose (by priority, a paragraph, the Highlight, most overdue), recalling each in its Sentence and grading it as a Review.
 
 **Dictionary panel**:
-A built-in lookup beside the text for the selected Word or Multi-word Term, whose meanings can each be added as a Translation with one click, with the panel's Source. There are two: the **Wiktionary panel** (English Wiktionary definitions) and the **Azure panel** (Azure Translator's dictionary entries, or a machine translation when it has none).
+The part of the Term panel with a tab for each Dictionary, at most one open, kept as you move between Words and for each Language. With none open nothing is looked up.
 
 ### Progress
 

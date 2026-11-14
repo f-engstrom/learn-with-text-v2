@@ -52,7 +52,7 @@ export interface TermView {
 export interface TranslationInput {
 	id?: number;
 	text: string;
-	/** Who added a new Translation (e.g. picked from the Wiktionary panel); you by default. */
+	/** Who added a new Translation (e.g. picked from Wiktionary's suggestions); you by default. */
 	source?: string;
 }
 

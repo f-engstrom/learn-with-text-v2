@@ -19,7 +19,7 @@
 	type Play = {
 		canvas: {
 			getAllByRole: (role: string, options: { name: string | RegExp }) => HTMLElement[];
-			getByRole: (role: string, options: { name: string | RegExp }) => HTMLElement;
+			getByRole: (role: string, options: { name: string | RegExp; pressed?: boolean }) => HTMLElement;
 			queryByRole: (role: string, options: { name: string | RegExp }) => HTMLElement | null;
 			findByRole: (role: string, options?: { name: string | RegExp }) => Promise<HTMLElement>;
 			getByText: (text: string) => HTMLElement;
@@ -183,12 +183,34 @@
 
 <Story name="From the Tutor: its Highlight is on another Page" args={{ data: { ...lastPage, ...passage } }} parameters={at('/books/2/pages/3')} />
 
-<Story name="Wiktionary and Azure looking up" play={choose('привыкший')} parameters={{ server: { 'GET /api/wiktionary': { delay: 'never' }, 'GET /api/azure': { delay: 'never' } } }} />
+<Story name="Wiktionary looking up" play={choose('привыкший')} parameters={{ server: { 'GET /api/wiktionary': { delay: 'never' } } }} />
+
+<Story name="Wiktionary failed" play={choose('привыкший')} parameters={{ server: { 'GET /api/wiktionary': { status: 502 } } }} />
 
 <Story
-	name="Wiktionary and Azure failed"
-	play={choose('привыкший')}
-	parameters={{ server: { 'GET /api/wiktionary': { status: 502 }, 'GET /api/azure': { status: 503 } } }}
+	name="Azure open, by L"
+	play={async ({ canvas, userEvent }: Play) => {
+		await userEvent.click(word(canvas, 'привыкший'));
+		await userEvent.keyboard('l');
+		await canvas.findByRole('button', { name: '+ got used' });
+	}}
+/>
+
+<Story
+	name="Azure not set up"
+	args={{ data: { ...mixed, azureReady: false } }}
+	play={async ({ canvas, userEvent }: Play) => {
+		await userEvent.click(word(canvas, 'привыкший'));
+		await userEvent.click(canvas.getByRole('button', { name: 'Azure' }));
+	}}
+/>
+
+<Story
+	name="The Dictionary panel closed"
+	play={async ({ canvas, userEvent }: Play) => {
+		await userEvent.click(word(canvas, 'привыкший'));
+		await userEvent.click(canvas.getByRole('button', { name: 'Wiktionary', pressed: true }));
+	}}
 />
 
 <Story name="Just after Mark as read: the day so far" args={{ data: afterRead }} parameters={at('/books/2/pages/2?read')} />

@@ -37,6 +37,12 @@ describe('commandFor', () => {
 		expect(commandFor(press('в', 'KeyD'), false)).toEqual({ kind: 'due' });
 	});
 
+	it('steps through the Dictionaries with L, back with Shift+L, on any keyboard layout', () => {
+		expect(commandFor(press('l', 'KeyL'), false)).toEqual({ kind: 'dictionary', by: 1 });
+		expect(commandFor(press('д', 'KeyL'), false)).toEqual({ kind: 'dictionary', by: 1 });
+		expect(commandFor(press('L', 'KeyL', { shiftKey: true }), false)).toEqual({ kind: 'dictionary', by: -1 });
+	});
+
 	it('toggles zen mode with Z, on any keyboard layout', () => {
 		expect(commandFor(press('z', 'KeyZ'), false)).toEqual({ kind: 'zen' });
 		expect(commandFor(press('я', 'KeyZ'), false)).toEqual({ kind: 'zen' });

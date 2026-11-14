@@ -17,6 +17,8 @@ export type Command =
 	| { kind: 'practice' }
 	/** Go to the Tutor's question. */
 	| { kind: 'tutor' }
+	/** Open the next (Shift: the previous) Dictionary in the Term panel, or close it after the last. */
+	| { kind: 'dictionary'; by: 1 | -1 }
 	| { kind: 'close' };
 
 export type KeyInput = Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'metaKey' | 'altKey' | 'shiftKey'>;
@@ -62,6 +64,7 @@ export function commandFor(e: KeyInput, rightToLeft: boolean): Command | undefin
 	if (e.code === 'KeyD') return { kind: 'due' };
 	if (e.code === 'KeyR') return { kind: 'practice' };
 	if (e.code === 'KeyT') return { kind: 'tutor' };
+	if (e.code === 'KeyL') return { kind: 'dictionary', by: e.shiftKey ? -1 : 1 };
 	const status = statusKeys[e.code];
 	return status && { kind: 'status', status };
 }

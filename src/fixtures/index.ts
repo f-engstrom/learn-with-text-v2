@@ -16,7 +16,9 @@ import type { FitRange } from '#lib/suggestions.ts';
 import json from './fixtures.json';
 
 /** The reading screen's data. */
-export type ReadingData = PageView & { dictionaries: Dictionary[] } & FromTutor & { daySoFar: DaySoFar | null };
+export type ReadingData = PageView & { dictionaries: Dictionary[]; wiktionaryPage: Dictionary | null; azureReady: boolean } & FromTutor & {
+	daySoFar: DaySoFar | null;
+};
 
 /** Every other route's data. */
 export interface RouteData {
@@ -71,7 +73,10 @@ const standIn = (dictionary: Dictionary): Dictionary => ({
 });
 
 const loaded = json as unknown as Fixtures;
-for (const page of Object.values(loaded.reading)) page.dictionaries = page.dictionaries.map(standIn);
+for (const page of Object.values(loaded.reading)) {
+	page.dictionaries = page.dictionaries.map(standIn);
+	page.wiktionaryPage = page.wiktionaryPage && standIn(page.wiktionaryPage);
+}
 
 export const fixtures = loaded;
 

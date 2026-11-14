@@ -1,6 +1,8 @@
+import { AZURE_TRANSLATOR_KEY } from '$app/env/private';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { database } from '#lib/server/database.ts';
 import { getPage } from '#lib/server/domain/books.ts';
+import { isWiktionary } from '#lib/dictionaries.ts';
 import { listDictionaries } from '#lib/server/domain/dictionaries.ts';
 import { daySoFar } from '#lib/server/domain/progress.ts';
 import { InvalidBookmark, markPageRead } from '#lib/server/domain/reading.ts';
@@ -11,9 +13,14 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ params, url }) => {
 	const page = await getPage(database(), Number(params.bookId), Number(params.position));
 	if (!page) error(404, 'Page not found');
+	const dictionaries = await listDictionaries(database(), page.language.id);
 	return {
 		...page,
-		dictionaries: await listDictionaries(database(), page.language.id),
+		// The Wiktionary page shows in the Wiktionary tab, beneath its suggestions.
+		dictionaries: dictionaries.filter((d) => !isWiktionary(d)),
+		wiktionaryPage: dictionaries.find(isWiktionary) ?? null,
+		// Without its key Azure's tab only says how to set it up, and asks nothing.
+		azureReady: !!AZURE_TRANSLATOR_KEY,
 		...(await fromTutor(database(), page.book.id))!,
 		// Just after Mark as read, which sends you here with ?read.
 		daySoFar: url.searchParams.has('read') ? await daySoFar(database(), page.language.id) : null

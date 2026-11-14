@@ -22,6 +22,8 @@
 			<dd>Known, Ignored</dd>
 			<dt><kbd>Enter</kbd></dt>
 			<dd>Open the Term form</dd>
+			<dt><kbd>L</kbd> <kbd>Shift</kbd> + <kbd>L</kbd></dt>
+			<dd>Next or previous Dictionary, then none</dd>
 			<dt><kbd>P</kbd> <kbd>⌘V</kbd></dt>
 			<dd>Paste as Translation</dd>
 			<dt><kbd>Esc</kbd></dt>

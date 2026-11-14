@@ -9,6 +9,7 @@ import { openDatabase } from '../lib/server/db/open';
 import type { Database } from '../lib/server/db/schema';
 import { createBook, getPage, listBooks } from '../lib/server/domain/books';
 import { CLASSICS } from '../lib/server/domain/classics';
+import { isWiktionary } from '../lib/dictionaries';
 import { listDictionaries } from '../lib/server/domain/dictionaries';
 import { addFeed, listFeeds } from '../lib/server/domain/feeds';
 import { askLearner, answerTutor, dismissTutor, fromTutor } from '../lib/server/domain/from-tutor';
@@ -51,9 +52,12 @@ async function world() {
 /** What the reading screen's load returns. */
 async function reading(db: Kysely<Database>, bookId: number, position: number, read = false) {
 	const page = (await getPage(db, bookId, position))!;
+	const dictionaries = await listDictionaries(db, page.language.id);
 	return {
 		...page,
-		dictionaries: await listDictionaries(db, page.language.id),
+		dictionaries: dictionaries.filter((d) => !isWiktionary(d)),
+		wiktionaryPage: dictionaries.find(isWiktionary) ?? null,
+		azureReady: true,
 		...(await fromTutor(db, bookId))!,
 		daySoFar: read ? await daySoFar(db, page.language.id) : null
 	};

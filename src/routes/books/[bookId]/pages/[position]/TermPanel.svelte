@@ -1,4 +1,4 @@
-<!-- Beside the text when a Word, phrase or Character part is selected: its Term form, what is known about the Term, practice, and the dictionaries. -->
+<!-- Beside the text when a Word, phrase or Character part is selected: its Term form, what is known about the Term, practice, and the Dictionary panel. -->
 <script lang="ts">
 	import Button from '#lib/components/Button.svelte';
 	import CloseButton from '#lib/components/CloseButton.svelte';
@@ -6,13 +6,13 @@
 	import type { Dictionary } from '#lib/dictionaries.ts';
 	import { termKey } from '#lib/normalise.ts';
 	import { frequencyLabels, suggestedStatus, transferLabel } from '#lib/practice.ts';
+	import type { DictionaryTab } from '#lib/reading/open-dictionary.svelte.ts';
 	import type { Selected } from '#lib/reading/selection.svelte.ts';
 	import type { FrequencyBand } from '#lib/server/domain/frequency.ts';
 	import type { Language } from '#lib/server/domain/languages.ts';
 	import type { Grade } from '#lib/server/domain/practice.ts';
 	import type { Status, TermView } from '#lib/server/domain/terms.ts';
 	import { statusLabels } from '#lib/terms.ts';
-	import Dictionaries from './Dictionaries.svelte';
 	import PracticeCard from './PracticeCard.svelte';
 	import DictionaryPanel from './DictionaryPanel.svelte';
 
@@ -27,8 +27,12 @@
 		parts: { word: { key: string; text: string }; characters: string[]; picked: readonly [number, number] | undefined } | undefined;
 		statusOf: (key: string) => Status | 'unknown';
 		dictionaries: Dictionary[];
-		/** The open Dictionary tab, kept while you move between Words. */
-		dictionary: number | undefined;
+		/** The Language's Wiktionary page, shown in the Wiktionary tab. */
+		wiktionaryPage: Dictionary | null;
+		/** Whether Azure Translator has its key. */
+		azureReady: boolean;
+		/** The open Dictionary, kept while you move between Words; none when the panel is closed. */
+		dictionary: DictionaryTab | null;
 		/** Why the last save was refused. */
 		error: string | undefined;
 		onclose: () => void;
@@ -36,6 +40,7 @@
 		onpickcharacter: (index: number, shift: boolean) => void;
 		onstatus: (status: Status) => void;
 		onreview: (termId: number, grade: Grade) => void;
+		onchoosedictionary: (tab: DictionaryTab) => void;
 	}
 
 	let {
@@ -46,13 +51,16 @@
 		parts,
 		statusOf,
 		dictionaries,
-		dictionary = $bindable(),
+		wiktionaryPage,
+		azureReady,
+		dictionary,
 		error,
 		onclose,
 		onwholeword,
 		onpickcharacter,
 		onstatus,
-		onreview
+		onreview,
+		onchoosedictionary
 	}: Props = $props();
 
 	let termForm = $state<ReturnType<typeof TermForm>>();
@@ -112,22 +120,17 @@
 		<PracticeCard {term} onreview={(grade) => onreview(term.id, grade)} />
 	{/if}
 	<DictionaryPanel
-		source="wiktionary"
 		{language}
 		termKey={selected.key}
 		text={selected.text}
 		{translations}
-		onadd={(definition) => termForm?.addTranslation(definition, 'wiktionary')}
+		{dictionaries}
+		{wiktionaryPage}
+		{azureReady}
+		open={dictionary}
+		onchoose={onchoosedictionary}
+		onadd={(meaning, source) => termForm?.addTranslation(meaning, source)}
 	/>
-	<DictionaryPanel
-		source="azure"
-		{language}
-		termKey={selected.key}
-		text={selected.text}
-		{translations}
-		onadd={(translation) => termForm?.addTranslation(translation, 'azure')}
-	/>
-	<Dictionaries {dictionaries} term={selected.key} bind:chosen={dictionary} />
 </div>
 
 <style>

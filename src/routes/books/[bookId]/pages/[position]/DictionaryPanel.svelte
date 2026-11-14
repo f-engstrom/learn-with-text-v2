@@ -1,151 +1,124 @@
 <!--
-	A Dictionary panel beside the text: the Wiktionary panel (definitions) or the Azure panel (Azure Translator).
-	It looks the selected Word or phrase up, then shows "Looking up…", why it failed, that there's nothing,
-	or its entries, each meaning a button that adds it as a Translation from that Source.
+	The Dictionary panel, at the bottom of the Term panel: a tab for each Dictionary, at most one open.
+	Wiktionary and Azure suggest meanings to add as Translations, Wiktionary with the Language's
+	Wiktionary page beneath when it has one configured; any other configured Dictionary shows its page
+	for the selected Word or phrase, or opens it in a window. Choosing the open tab closes it, and with
+	none open nothing is looked up.
 -->
 <script lang="ts">
-	import type { AzureResult } from '#lib/server/domain/azure.ts';
+	import Button from '#lib/components/Button.svelte';
+	import { lookupUrl, type Dictionary } from '#lib/dictionaries.ts';
+	import type { DictionaryTab } from '#lib/reading/open-dictionary.svelte.ts';
 	import type { Language } from '#lib/server/domain/languages.ts';
-	import type { WiktionaryResult } from '#lib/server/domain/wiktionary.ts';
+	import Suggestions from './Suggestions.svelte';
 
 	interface Props {
-		/** Which dictionary it asks, and the Source its Translations get. */
-		source: 'wiktionary' | 'azure';
 		language: Language;
 		/** The selected Word or phrase: its Normalised form and its text as written. */
 		termKey: string;
 		text: string;
 		/** The Term's current Translations, so a meaning already added shows as such. */
 		translations: string[];
-		onadd: (meaning: string) => void;
+		/** The Language's configured Dictionaries, but for its Wiktionary page. */
+		dictionaries: Dictionary[];
+		/** The Language's Wiktionary page, shown beneath Wiktionary's suggestions. */
+		wiktionaryPage: Dictionary | null;
+		/** Whether Azure Translator has its key; without one its tab only says how to set it up. */
+		azureReady: boolean;
+		/** The open tab; none when the panel is closed. */
+		open: DictionaryTab | null;
+		onchoose: (tab: DictionaryTab) => void;
+		onadd: (meaning: string, source: 'wiktionary' | 'azure') => void;
 	}
 
-	let { source, language, termKey, text, translations, onadd }: Props = $props();
+	let { language, termKey, text, translations, dictionaries, wiktionaryPage, azureReady, open, onchoose, onadd }: Props = $props();
 
-	/** One part of speech and its meanings, each a possible Translation. */
-	type Entry = { partOfSpeech?: string; meanings: string[] };
-	type Result = { source: 'wiktionary'; answer: WiktionaryResult } | { source: 'azure'; answer: AzureResult };
+	let embedded = $derived(dictionaries.filter((d) => d.display === 'embedded'));
+	let popups = $derived(dictionaries.filter((d) => d.display === 'popup'));
+	let shown = $derived(typeof open === 'number' ? embedded.find((d) => d.id === open) : undefined);
 
-	let result = $state<Result | null | undefined>();
-	let failed = $state<string | undefined>();
-	let dir: 'rtl' | 'ltr' = $derived(language.rightToLeft ? 'rtl' : 'ltr');
-
-	let entries: Entry[] | null | undefined = $derived(
-		result &&
-			(result.source === 'wiktionary'
-				? result.answer.entries.map((e) => ({ partOfSpeech: e.partOfSpeech, meanings: e.definitions }))
-				: result.answer.entries.map((e) => ({ partOfSpeech: e.partOfSpeech || undefined, meanings: e.translations })))
-	);
-
-	/** Why a lookup failed, in the panel's words. */
-	function failure(status: number) {
-		if (source === 'wiktionary') return "Couldn't reach Wiktionary.";
-		return status === 503 ? 'Azure Translator isn’t set up.' : 'Couldn’t reach Azure Translator.';
+	function openPopup(dictionary: Dictionary) {
+		window.open(lookupUrl(dictionary, termKey), 'dictionary', 'popup,width=760,height=820');
 	}
-
-	$effect(() => {
-		const asked = source;
-		const params = new URLSearchParams({ language: String(language.id), key: termKey, text });
-		const controller = new AbortController();
-		result = undefined;
-		failed = undefined;
-		fetch(`/api/${asked}?${params}`, { signal: controller.signal })
-			.then(async (response) => {
-				if (!response.ok) throw failure(response.status);
-				const answer = await response.json();
-				result = answer === null ? null : ({ source: asked, answer } as Result);
-			})
-			.catch((e) => {
-				// A failure of its own is its message; anything else is a lookup that never got through.
-				if (!controller.signal.aborted) failed = typeof e === 'string' ? e : failure(0);
-			});
-		return () => controller.abort();
-	});
-
-	const added = (meaning: string) => translations.some((t) => t.toLocaleLowerCase() === meaning.toLocaleLowerCase());
 </script>
 
-<section class="dictionary" aria-label={source === 'wiktionary' ? 'Wiktionary' : 'Azure Translator'}>
-	<h3>
-		{source === 'wiktionary' ? 'Wiktionary' : 'Azure'}
-		{#if result?.source === 'wiktionary'}
-			<small
-				><a href="https://en.wiktionary.org/wiki/{encodeURIComponent(result.answer.title.replaceAll(' ', '_'))}" target="_blank" rel="noreferrer"
-					><span lang={language.code} {dir}>{result.answer.title}</span> ↗</a
-				></small
-			>
-		{:else if result?.source === 'azure' && result.answer.kind === 'translation'}
-			<small>machine translation</small>
-		{/if}
-	</h3>
-	{#if failed}
-		<p class="note">{failed}</p>
-	{:else if entries === undefined}
-		<p class="note">Looking up…</p>
-	{:else if entries === null}
-		<p class="note">{source === 'wiktionary' ? `No ${language.name} entry.` : 'No translation.'}</p>
-	{:else}
-		{#each entries as entry, i (i)}
-			{#if entry.partOfSpeech}<p class="part">{entry.partOfSpeech}</p>{/if}
-			<ol>
-				{#each entry.meanings as meaning, j (j)}
-					<li>
-						<button type="button" disabled={added(meaning)} onclick={() => onadd(meaning)} title="Add as a Translation"
-							>{added(meaning) ? '✓' : '+'} {meaning}</button
-						>
-					</li>
-				{/each}
-			</ol>
+<section class="dictionary-panel">
+	<div class="tabs" role="group" aria-label="Dictionaries">
+		<Button type="button" pressed={open === 'wiktionary'} onclick={() => onchoose('wiktionary')}>Wiktionary</Button>
+		<Button
+			type="button"
+			class={azureReady ? undefined : 'unready'}
+			title={azureReady ? undefined : 'Not set up'}
+			pressed={open === 'azure'}
+			onclick={() => onchoose('azure')}>Azure</Button
+		>
+		{#each embedded as dictionary (dictionary.id)}
+			<Button type="button" pressed={open === dictionary.id} onclick={() => onchoose(dictionary.id)}>{dictionary.name}</Button>
 		{/each}
+		{#each popups as dictionary (dictionary.id)}
+			<Button type="button" variant="quiet" title="Opens in a new window" onclick={() => openPopup(dictionary)}>{dictionary.name} ↗</Button>
+		{/each}
+	</div>
+	{#snippet page(dictionary: Dictionary)}
+		<!-- Sandboxed so a dictionary site can't navigate the reading screen away. -->
+		<iframe
+			title="{dictionary.name}: {termKey}"
+			src={lookupUrl(dictionary, termKey)}
+			sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+			referrerpolicy="no-referrer"
+		></iframe>
+	{/snippet}
+	{#if open === 'wiktionary'}
+		<Suggestions
+			source="wiktionary"
+			{language}
+			{termKey}
+			{text}
+			{translations}
+			linked={!wiktionaryPage}
+			onadd={(meaning) => onadd(meaning, 'wiktionary')}
+		/>
+		{#if wiktionaryPage}{@render page(wiktionaryPage)}{/if}
+	{:else if open === 'azure' && !azureReady}
+		<p class="note">
+			Azure Translator isn’t set up: add <code>AZURE_TRANSLATOR_KEY</code> and <code>AZURE_TRANSLATOR_REGION</code> to <code>.env</code> and restart.
+		</p>
+	{:else if open === 'azure'}
+		<Suggestions source="azure" {language} {termKey} {text} {translations} onadd={(meaning) => onadd(meaning, 'azure')} />
+	{:else if shown}
+		{@render page(shown)}
 	{/if}
 </section>
 
 <style>
-	.dictionary {
+	.dictionary-panel {
 		display: grid;
-		gap: 0.25rem;
+		gap: 0.6rem;
 	}
-	h3 {
-		margin: 0;
-		font-size: 1rem;
+	.tabs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
 	}
-	h3 small {
-		font-weight: normal;
-		margin-inline-start: 0.35rem;
+	.tabs :global(button) {
+		padding-block: 0.2rem;
+		font-size: 0.9rem;
+	}
+	/* Azure without its key: there, but not in reach. */
+	.tabs :global(.unready:not([aria-pressed='true'])) {
 		color: var(--muted);
+		border-style: dashed;
 	}
 	.note {
 		margin: 0;
+		font-size: 0.9rem;
 	}
-	.part {
-		margin: 0.25rem 0 0;
-		font-size: 0.85rem;
-		font-variant: small-caps;
-		color: var(--muted);
-	}
-	ol {
-		display: grid;
-		gap: 0.2rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-	button {
-		width: 100%;
-		padding: 0.2rem 0.4rem;
-		border: 1px solid transparent;
+	/* iOS Safari widens an iframe to its page's width; a 1px width with a full min-width keeps it in the panel. */
+	iframe {
+		width: 1px;
+		min-width: 100%;
+		height: 28rem;
+		border: 1px solid var(--border);
 		border-radius: 0.25rem;
-		background: none;
-		text-align: start;
-		font: inherit;
-		cursor: pointer;
-	}
-	button:hover:not(:disabled) {
-		border-color: var(--accent);
-		background: var(--accent-soft);
-	}
-	button:disabled {
-		color: var(--ok);
-		cursor: default;
 	}
 </style>

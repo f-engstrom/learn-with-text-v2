@@ -5,30 +5,36 @@
 	import Column from '#stories/Column.svelte';
 	import DictionaryPanel from './DictionaryPanel.svelte';
 
+	const { mixed, characters } = fixtures.reading;
 	const { Story } = preview.meta({
 		title: 'Components/Reading/Dictionary panel',
 		component: DictionaryPanel,
 		// As wide as the column beside the text.
 		decorators: [() => ({ Component: Column })],
-		args: { source: 'wiktionary', language: fixtures.reading.mixed.language, termKey: 'привыкший', text: 'привыкший', translations: [], onadd: fn() }
+		args: {
+			language: mixed.language,
+			termKey: 'привыкший',
+			text: 'привыкший',
+			translations: [],
+			dictionaries: mixed.dictionaries,
+			wiktionaryPage: mixed.wiktionaryPage,
+			azureReady: true,
+			open: 'wiktionary',
+			onchoose: fn(),
+			onadd: fn()
+		}
 	});
-	const azure = { source: 'azure' as const };
+	const embedded = mixed.dictionaries.find((d) => d.display === 'embedded')!.id;
 </script>
 
-<Story name="Wiktionary: definitions" />
-<Story name="Wiktionary: one already a Translation" args={{ translations: ['accustomed, used to'] }} />
-<Story name="Wiktionary: looking up" parameters={{ server: { 'GET /api/wiktionary': { delay: 'never' } } }} />
-<Story name="Wiktionary: no entry" parameters={{ server: { 'GET /api/wiktionary': { body: null } } }} />
-<Story name="Wiktionary: failed" parameters={{ server: { 'GET /api/wiktionary': { status: 502, body: { message: "Couldn't reach Wiktionary" } } } }} />
-
-<Story name="Azure: dictionary entries" args={azure} />
-<Story name="Azure: one already a Translation" args={{ ...azure, translations: ['accustomed'] }} />
+<Story name="Closed" args={{ open: null }} />
+<Story name="Wiktionary open" />
+<Story name="Azure open" args={{ open: 'azure' }} />
+<Story name="Azure not set up" args={{ open: 'azure', azureReady: false }} />
+<Story name="Azure not set up, Wiktionary open" args={{ azureReady: false }} />
+<Story name="A Dictionary's page open" args={{ open: embedded }} />
 <Story
-	name="Azure: machine translation"
-	args={{ ...azure, termKey: 'дама с собачкой', text: 'дама с собачкой' }}
-	parameters={{ server: { 'GET /api/azure': { body: { kind: 'translation', entries: [{ partOfSpeech: '', translations: ['lady with a dog'] }] } } } }}
+	name="Chinese"
+	args={{ language: characters.language, termKey: '学习', text: '学习', dictionaries: characters.dictionaries, wiktionaryPage: characters.wiktionaryPage, open: null }}
 />
-<Story name="Azure: looking up" args={azure} parameters={{ server: { 'GET /api/azure': { delay: 'never' } } }} />
-<Story name="Azure: nothing found" args={azure} parameters={{ server: { 'GET /api/azure': { body: null } } }} />
-<Story name="Azure: not set up" args={azure} parameters={{ server: { 'GET /api/azure': { status: 503 } } }} />
-<Story name="Azure: failed" args={azure} parameters={{ server: { 'GET /api/azure': { status: 502 } } }} />
+<Story name="Wiktionary, no page of its own" args={{ dictionaries: [], wiktionaryPage: null }} />
