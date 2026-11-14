@@ -151,10 +151,21 @@
 		font-weight: 600;
 		text-decoration: none;
 	}
-	.title a:hover {
+	tbody tr:hover .title a {
 		color: var(--accent);
 	}
+	/* The whole row opens the Book: the title's link stretches over it, and Edit sits above. */
+	tbody tr {
+		position: relative;
+	}
+	.title a::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+	}
 	td.edit {
+		position: relative;
+		z-index: 1;
 		width: 1%;
 		text-align: end;
 	}
