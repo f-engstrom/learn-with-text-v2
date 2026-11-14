@@ -8529,6 +8529,65 @@
 				}
 			]
 		},
+		"editBook": {
+			"book": {
+				"id": 5,
+				"title": "论语",
+				"languageId": 2,
+				"pageCount": 1,
+				"text": "学而时习之，不亦说乎？有朋自远方来，不亦乐乎？人不知而不愠，不亦君子乎？\n我们今天学习中文。老师喜欢读书，学生也喜欢。"
+			},
+			"languages": [
+				{
+					"id": 5,
+					"name": "Albanian",
+					"code": "sq",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 1,
+					"name": "Bosnian",
+					"code": "bs",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 2,
+					"name": "Chinese",
+					"code": "zh",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 3,
+					"name": "Farsi",
+					"code": "fa",
+					"rightToLeft": true,
+					"characterMap": {
+						"ي": "ی",
+						"ك": "ک"
+					}
+				},
+				{
+					"id": 6,
+					"name": "Indonesian",
+					"code": "id",
+					"rightToLeft": false,
+					"characterMap": {}
+				},
+				{
+					"id": 4,
+					"name": "Russian",
+					"code": "ru",
+					"rightToLeft": false,
+					"characterMap": {
+						"́": "",
+						"̀": ""
+					}
+				}
+			]
+		},
 		"suggestions": {
 			"language": {
 				"id": 4,

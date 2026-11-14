@@ -3,7 +3,7 @@
  * fixtures.json. Shared with the browser, so only types come from lib/server.
  */
 import type { Dictionary } from '#lib/dictionaries.ts';
-import type { BookSummary, Bookmark, PageView } from '#lib/server/domain/books.ts';
+import type { BookDetails, BookSummary, Bookmark, PageView } from '#lib/server/domain/books.ts';
 import type { Feed } from '#lib/server/domain/feeds.ts';
 import type { FromTutor } from '#lib/server/domain/from-tutor.ts';
 import type { Language } from '#lib/server/domain/languages.ts';
@@ -22,6 +22,8 @@ export type ReadingData = PageView & { dictionaries: Dictionary[]; wiktionaryPag
 
 /** Every other route's data. */
 export interface RouteData {
+	/** The newest Book's Edit screen; none in an empty Reader. */
+	editBook?: { book: BookDetails; languages: Language[] };
 	home: {
 		languages: Language[];
 		books: BookSummary[];

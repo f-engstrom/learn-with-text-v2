@@ -64,6 +64,7 @@
 					<th scope="col" class="number">Pages</th>
 					<th scope="col">Bookmark</th>
 					<th scope="col" class="number">Unknown</th>
+					<th scope="col" class="edit"><span class="visually-hidden">Edit</span></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -88,6 +89,7 @@
 								{percent.format(book.unknownShare)}
 							</span>
 						</td>
+						<td class="edit"><Button href="/books/{book.id}/edit" variant="quiet" aria-label="Edit {book.title}">Edit</Button></td>
 					</tr>
 				{/each}
 			</tbody>
@@ -152,6 +154,10 @@
 	.title a:hover {
 		color: var(--accent);
 	}
+	td.edit {
+		width: 1%;
+		text-align: end;
+	}
 	.share {
 		display: inline-flex;
 		align-items: center;
@@ -160,7 +166,7 @@
 	/* A phone: one line per Book, its details folded under the title, no sideways scroll. */
 	@media (max-width: 40rem) {
 		thead,
-		td:not(.title) {
+		td:not(.title, .edit) {
 			display: none;
 		}
 		.meta {

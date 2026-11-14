@@ -128,11 +128,8 @@ export async function createBook(db: Kysely<Database>, input: NewBook): Promise<
 		if (had !== undefined) throw new BookExists(had);
 	}
 
-	const parser = parserFor(language);
-	const pages = splitIntoPages(input.text, parser);
-	if (!pages.some((page) => parser.parse(page).some((p) => p.sentences.some((s) => s.tokens.some((t) => t.isWord))))) {
-		throw new InvalidBook('The text has no Words to read.');
-	}
+	const pages = splitIntoPages(input.text, parserFor(language));
+	if (!hasWords(pages, parserFor(language))) throw new InvalidBook('The text has no Words to read.');
 
 	return db.transaction().execute(async (trx) => {
 		const book = await trx
@@ -140,33 +137,146 @@ export async function createBook(db: Kysely<Database>, input: NewBook): Promise<
 			.values({ language_id: language.id, title, url: input.url ?? null, created_at: new Date().toISOString() })
 			.returning('id')
 			.executeTakeFirstOrThrow();
-
-		for (const [i, text] of pages.entries()) {
-			const page = await trx
-				.insertInto('page')
-				.values({ book_id: book.id, position: i + 1, text, words: countWords(parser.parse(text)) })
-				.returning('id')
-				.executeTakeFirstOrThrow();
-			const sentences = parser
-				.parse(text)
-				.flatMap((p) => p.sentences)
-				.map((s, j) => ({ page_id: page.id, position: j + 1, text: s.tokens.map((t) => t.text).join('') }));
-			await trx.insertInto('sentence').values(sentences).execute();
-		}
-
-		const words = new Set(
-			pages.flatMap((text) =>
-				parser
-					.parse(text)
-					.flatMap((p) => p.sentences.flatMap((s) => s.tokens.filter((t) => t.isWord).map((t) => normalise(t.text, language))))
-			)
-		);
-		await trx
-			.insertInto('book_word')
-			.values([...words].map((normalised) => ({ book_id: book.id, normalised })))
-			.execute();
+		await writePages(trx, book.id, language, pages);
 		return book.id;
 	});
+}
+
+/** What the Edit screen shows of a Book. */
+export interface BookDetails {
+	id: number;
+	title: string;
+	languageId: number;
+	pageCount: number;
+	/** The whole text, a line containing only `---` between its Pages. */
+	text: string;
+	url?: string;
+}
+
+/** The line between Pages in a Book's whole text. */
+const PAGE_BREAK = '\n---\n';
+
+export async function getBook(db: Kysely<Database>, bookId: number): Promise<BookDetails | undefined> {
+	const row = await db.selectFrom('book').select(['id', 'title', 'language_id', 'url']).where('id', '=', bookId).executeTakeFirst();
+	if (!row) return undefined;
+	const pages = await db.selectFrom('page').select('text').where('book_id', '=', bookId).orderBy('position').execute();
+	return {
+		id: row.id,
+		title: row.title,
+		languageId: row.language_id,
+		pageCount: pages.length,
+		text: pages.map((p) => p.text).join(PAGE_BREAK),
+		...(row.url ? { url: row.url } : {})
+	};
+}
+
+export interface BookEdit {
+	title: string;
+	languageId: number;
+	/** The whole text, split into Pages as when creating a Book. */
+	text: string;
+}
+
+/**
+ * Changes a Book's title, Language or text. A new text or Language splits the Book into Pages,
+ * Sentences and Words again: a Page whose text is unchanged stays Read, the Bookmark stays on its
+ * Page (or the last one, if there are fewer now), and the Highlight is cleared.
+ */
+export async function editBook(db: Kysely<Database>, bookId: number, input: BookEdit): Promise<void> {
+	const book = await getBook(db, bookId);
+	if (!book) throw new InvalidBook('There is no such Book.');
+	const title = input.title.trim();
+	if (title === '') throw new InvalidBook('Give the Book a title.');
+	const language = await getLanguage(db, input.languageId);
+	if (!language) throw new InvalidBook('Choose a Language.');
+	const parser = parserFor(language);
+	const pages = splitIntoPages(input.text, parser);
+	if (!hasWords(pages, parser)) throw new InvalidBook('The text has no Words to read.');
+
+	await db.transaction().execute(async (trx) => {
+		await trx.updateTable('book').set({ title }).where('id', '=', bookId).execute();
+		if (language.id === book.languageId && pages.join(PAGE_BREAK) === book.text) return;
+
+		// Read marks follow the Page's text, wherever it now falls.
+		const old = await trx.selectFrom('page').select(['text', 'read_at']).where('book_id', '=', bookId).orderBy('position').execute();
+		const readAt = (text: string) => {
+			const i = old.findIndex((p) => p.text === text);
+			return i === -1 ? null : old.splice(i, 1)[0].read_at;
+		};
+		// Their Sentences go with them.
+		await trx.deleteFrom('page').where('book_id', '=', bookId).execute();
+		await trx.deleteFrom('book_word').where('book_id', '=', bookId).execute();
+		await writePages(trx, bookId, language, pages, readAt);
+
+		const bookmark = await trx.selectFrom('book').select(['bookmark_page', 'bookmark_sentence', 'bookmark_word']).where('id', '=', bookId).executeTakeFirstOrThrow();
+		const page = Math.min(bookmark.bookmark_page, pages.length);
+		const sentences = parser.parse(pages[page - 1]).flatMap((p) => p.sentences).length;
+		const sentence = Math.max(1, Math.min(bookmark.bookmark_sentence, sentences));
+		const moved = page !== bookmark.bookmark_page || sentence !== bookmark.bookmark_sentence;
+		await trx
+			.updateTable('book')
+			.set({
+				language_id: language.id,
+				bookmark_page: page,
+				bookmark_sentence: sentence,
+				...(moved ? { bookmark_word: null } : {}),
+				highlight_page: null,
+				highlight_first: null,
+				highlight_last: null,
+				highlight_note: null,
+				highlight_text: null,
+				highlighted_at: null
+			})
+			.where('id', '=', bookId)
+			.execute();
+	});
+}
+
+function hasWords(pages: string[], parser: Parser): boolean {
+	return pages.some((page) => parser.parse(page).some((p) => p.sentences.some((s) => s.tokens.some((t) => t.isWord))));
+}
+
+/** Stores a Book's Pages with their Sentences, Read as `readAt` says, and adds their Words to the Book's. */
+async function writePages(
+	trx: Kysely<Database>,
+	bookId: number,
+	language: Language,
+	pages: string[],
+	readAt: (text: string) => string | null = () => null
+): Promise<void> {
+	const parser = parserFor(language);
+	for (const [i, text] of pages.entries()) {
+		const paragraphs = parser.parse(text);
+		const page = await trx
+			.insertInto('page')
+			.values({ book_id: bookId, position: i + 1, text, words: countWords(paragraphs), read_at: readAt(text) })
+			.returning('id')
+			.executeTakeFirstOrThrow();
+		await insertSentences(trx, page.id, paragraphs);
+	}
+	await addBookWords(trx, bookId, language, pages);
+}
+
+async function insertSentences(trx: Kysely<Database>, pageId: number, paragraphs: ReturnType<Parser['parse']>): Promise<void> {
+	const sentences = paragraphs
+		.flatMap((p) => p.sentences)
+		.map((s, j) => ({ page_id: pageId, position: j + 1, text: s.tokens.map((t) => t.text).join('') }));
+	if (sentences.length > 0) await trx.insertInto('sentence').values(sentences).execute();
+}
+
+async function addBookWords(trx: Kysely<Database>, bookId: number, language: Language, pages: string[]): Promise<void> {
+	const parser = parserFor(language);
+	const words = new Set(
+		pages.flatMap((text) =>
+			parser.parse(text).flatMap((p) => p.sentences.flatMap((s) => s.tokens.filter((t) => t.isWord).map((t) => normalise(t.text, language))))
+		)
+	);
+	if (words.size === 0) return;
+	await trx
+		.insertInto('book_word')
+		.values([...words].map((normalised) => ({ book_id: bookId, normalised })))
+		.onConflict((oc) => oc.doNothing())
+		.execute();
 }
 
 /** Every Book, newest first, with its Pages, Bookmark and Unknown share. */

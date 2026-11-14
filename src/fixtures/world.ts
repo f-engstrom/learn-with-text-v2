@@ -7,7 +7,7 @@ import { sql, type Kysely } from 'kysely';
 import { migrateToLatest } from '../lib/server/db/migrate';
 import { openDatabase } from '../lib/server/db/open';
 import type { Database } from '../lib/server/db/schema';
-import { createBook, getPage, listBooks } from '../lib/server/domain/books';
+import { createBook, getBook, getPage, listBooks } from '../lib/server/domain/books';
 import { CLASSICS } from '../lib/server/domain/classics';
 import { isWiktionary } from '../lib/dictionaries';
 import { listDictionaries } from '../lib/server/domain/dictionaries';
@@ -105,6 +105,13 @@ async function suggestions(db: Kysely<Database>, language: Language) {
 	};
 }
 
+/** The Edit screen's data for the newest Book, if there is one. */
+async function editBook(db: Kysely<Database>) {
+	const [newest] = await listBooks(db);
+	const book = newest && (await getBook(db, newest.id));
+	return book && { book, languages: await listLanguages(db) };
+}
+
 /** Every route's data for one database, apart from the reading screen's. */
 async function routes(db: Kysely<Database>, russian: Language) {
 	return {
@@ -116,6 +123,7 @@ async function routes(db: Kysely<Database>, russian: Language) {
 		you: { languages: await listYourLanguages(db) },
 		topics: { topics: await listTopics(db) },
 		newBook: { languages: await listLanguages(db) },
+		editBook: await editBook(db),
 		suggestions: await suggestions(db, russian)
 	};
 }

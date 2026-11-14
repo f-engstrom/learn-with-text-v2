@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { openDatabase } from '../db/open';
 import { migrateToLatest } from '../db/migrate';
 import { listLanguages } from './languages';
-import { createBook, getPage, InvalidBook, listBooks, MAX_FILE_BYTES, splitIntoPages, textFromFile } from './books';
-import { markPageRead } from './reading';
+import { createBook, editBook, getBook, getPage, InvalidBook, listBooks, MAX_FILE_BYTES, splitIntoPages, textFromFile } from './books';
+import { markPageRead, setBookmark } from './reading';
 import { saveTerm } from './terms';
 import { parserFor } from './parsing';
 
@@ -132,5 +132,67 @@ describe('textFromFile', () => {
 	it('rejects text that is not UTF-8, and files that are too large', () => {
 		expect(() => textFromFile(new Uint8Array([0xca, 0xee, 0xf2]))).toThrow(InvalidBook);
 		expect(() => textFromFile(new Uint8Array(MAX_FILE_BYTES + 1))).toThrow('larger than 5 MB');
+	});
+});
+
+describe('editBook', () => {
+	const tale = 'Жил-был кот.';
+	const edit = (more: { title?: string; languageId: number; text?: string }) => ({ title: 'Сказка', text: tale, ...more });
+
+	it('gives the whole text back, a --- line between Pages', async () => {
+		const { db, byName } = await setup();
+		const id = await createBook(db, { languageId: byName.Russian, title: 'Сказка', text: 'Жил-был кот.\n---\nКонец.' });
+		expect(await getBook(db, id)).toEqual({ id, title: 'Сказка', languageId: byName.Russian, pageCount: 2, text: 'Жил-был кот.\n---\nКонец.' });
+	});
+
+	it('renames a Book', async () => {
+		const { db, byName } = await setup();
+		const id = await createBook(db, { languageId: byName.Russian, title: 'Сказка', text: tale });
+		await editBook(db, id, edit({ title: ' Кот ', languageId: byName.Russian }));
+		expect((await getBook(db, id))?.title).toBe('Кот');
+	});
+
+	it('refuses an empty title or a text with no Words', async () => {
+		const { db, byName } = await setup();
+		const id = await createBook(db, { languageId: byName.Russian, title: 'Сказка', text: tale });
+		await expect(editBook(db, id, edit({ title: ' ', languageId: byName.Russian }))).rejects.toThrow(InvalidBook);
+		await expect(editBook(db, id, edit({ text: '…', languageId: byName.Russian }))).rejects.toThrow(InvalidBook);
+	});
+
+	it('moves a Book to another Language, keeping Read Pages and the Bookmark on its Page', async () => {
+		const { db, byName } = await setup();
+		const text = 'Shkuam në park.\n---\nHëngrëm bukë. Pimë ujë. Ikëm.';
+		const id = await createBook(db, { languageId: byName.Russian, title: 'Piknik', text });
+		await markPageRead(db, id, 1);
+		await setBookmark(db, id, { page: 2, sentence: 3 });
+		await editBook(db, id, { title: 'Piknik', languageId: byName.Albanian, text });
+
+		const page = await getPage(db, id, 2);
+		expect(page?.language.name).toBe('Albanian');
+		expect(page?.book.bookmark).toEqual({ page: 2, sentence: 3 });
+		expect((await getPage(db, id, 1))?.read).toBe(true);
+		const [book] = await listBooks(db);
+		expect(book).toMatchObject({ languageName: 'Albanian', readCount: 1, unknownShare: 1 });
+	});
+
+	it('adds Pages to the end, with their Words, and unchanged Pages stay Read', async () => {
+		const { db, byName } = await setup();
+		const id = await createBook(db, { languageId: byName.Russian, title: 'Сказка', text: tale });
+		await markPageRead(db, id, 1);
+		await saveTerm(db, { languageId: byName.Russian, text: 'кот', status: 'known' });
+		await editBook(db, id, edit({ languageId: byName.Russian, text: `${tale}\n---\nКот спал.\n---\nКонец.` }));
+
+		const [book] = await listBooks(db);
+		expect(book).toMatchObject({ pageCount: 3, readCount: 1 });
+		// жил, был, спал, конец Unknown; кот Known.
+		expect(book.unknownShare).toBeCloseTo(4 / 5);
+	});
+
+	it('keeps the Bookmark on the last Page when Pages are taken away', async () => {
+		const { db, byName } = await setup();
+		const id = await createBook(db, { languageId: byName.Russian, title: 'Сказка', text: 'Раз. Два.\n---\nТри.' });
+		await setBookmark(db, id, { page: 2, sentence: 1, word: 'Три' });
+		await editBook(db, id, edit({ languageId: byName.Russian, text: 'Раз. Два.' }));
+		expect((await getPage(db, id, 1))?.book.bookmark).toEqual({ page: 1, sentence: 1 });
 	});
 });
