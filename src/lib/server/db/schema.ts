@@ -50,6 +50,8 @@ export interface PageTable {
 	read_at: string | null;
 	/** How many Words the Page has, for Words read. */
 	words: Generated<number>;
+	/** The title of the Chapter this Page starts, empty for an untitled one; null if it starts none. */
+	chapter: string | null;
 }
 
 export interface SentenceTable {

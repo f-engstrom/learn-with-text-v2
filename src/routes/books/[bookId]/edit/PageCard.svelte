@@ -1,6 +1,7 @@
 <!--
-  One Page in the edit screen: its number, whether it is Read, its Words and the Bookmark, collapsed
-  to its first lines until opened to edit its text, move it, join it, add after it or remove it.
+  One Page in the edit screen: its number, whether it is Read, its Words, the Bookmark and the Chapter
+  it starts, collapsed to its first lines until opened to edit its text, mark it as starting a Chapter,
+  move it, join it, add after it or remove it.
 -->
 <script lang="ts">
 	import Button from '#lib/components/Button.svelte';
@@ -14,6 +15,8 @@
 		/** Its number once saved; null when removed. */
 		number: number | null;
 		words: number;
+		/** The number of the Chapter it starts; null when it starts none. */
+		chapterNumber?: number | null;
 		/** The Bookmark is on this Page. */
 		bookmark?: boolean;
 		first?: boolean;
@@ -25,6 +28,7 @@
 		onrestore?: () => void;
 		onunmark?: () => void;
 		onjoin?: () => void;
+		onchapter?: (starts: boolean) => void;
 	}
 
 	let {
@@ -32,6 +36,7 @@
 		text = $bindable(),
 		number,
 		words,
+		chapterNumber = null,
 		bookmark = false,
 		first = false,
 		last = false,
@@ -41,7 +46,8 @@
 		onremove,
 		onrestore,
 		onunmark,
-		onjoin
+		onjoin,
+		onchapter
 	}: Props = $props();
 
 	const dir = $derived(rtl ? 'rtl' : 'auto');
@@ -62,7 +68,13 @@
 		<Button variant="link" type="button" onclick={onrestore}>Undo</Button>
 	</li>
 {:else}
-	<li class={['card page', { open: page.open, bookmark }]} data-key={page.key} {id}>
+	<li class={['card page', { open: page.open, bookmark, chapter: chapterNumber !== null }]} data-key={page.key} {id}>
+		{#if chapterNumber !== null}
+			<p class="chapter-start">
+				<span class="label">Chapter {chapterNumber}</span>
+				{#if page.chapter}<span class="title" {lang} {dir}>{page.chapter}</span>{/if}
+			</p>
+		{/if}
 		<header>
 			<span class="number" aria-label="Page {number}">{number}</span>
 			<button type="button" class="summary" aria-expanded={page.open} aria-controls="{id}-text" onclick={() => (page.open = !page.open)}>
@@ -94,6 +106,22 @@
 		{#if page.open}
 			<!-- svelte-ignore a11y_autofocus -->
 			<textarea id="{id}-text" bind:value={text} {lang} {dir} aria-label="Text of Page {number}" autofocus={page.id === null}></textarea>
+			<div class="chapter-fields">
+				<label class="starts">
+					<input type="checkbox" checked={page.chapter !== null} onchange={(e) => onchapter?.(e.currentTarget.checked)} />
+					Starts a Chapter
+				</label>
+				{#if page.chapter !== null}
+					<input
+						class="title-field"
+						bind:value={page.chapter}
+						{lang}
+						{dir}
+						placeholder="Chapter {chapterNumber}"
+						aria-label="Title of the Chapter Page {number} starts"
+					/>
+				{/if}
+			</div>
 			<div class="actions">
 				<Button variant="quiet" type="button" onclick={onjoin} disabled={last}>Join with next</Button>
 				{#if page.readAt}<Button variant="quiet" type="button" onclick={onunmark}>Not Read</Button>{/if}
@@ -109,6 +137,44 @@
 		gap: 0.4rem;
 		padding: 0.75rem 1rem;
 		list-style: none;
+	}
+	.chapter-start {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.5rem;
+		margin: 0 0 0.1rem;
+		padding-inline-start: 2.55rem;
+	}
+	.chapter-start .label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--accent);
+	}
+	.chapter-start .title {
+		font-family: var(--font-text);
+		font-weight: 600;
+	}
+	.page.chapter {
+		border-top: 3px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+	}
+	.chapter-fields {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 1rem;
+	}
+	.starts {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+	.title-field {
+		flex: 1 1 14rem;
+		min-width: 0;
+		font-family: var(--font-text);
 	}
 	.page.bookmark {
 		border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
@@ -213,7 +279,8 @@
 			padding: 0.65rem 0.75rem;
 		}
 		.facts,
-		.note {
+		.note,
+		.chapter-start {
 			padding-inline-start: 0;
 		}
 	}

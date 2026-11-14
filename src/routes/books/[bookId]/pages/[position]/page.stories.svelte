@@ -6,7 +6,7 @@
 	import { expect, waitFor } from 'storybook/test';
 	import Page from './+page.svelte';
 
-	const { fresh, mixed, lastPage, rightToLeft, characters, afterRead } = fixtures.reading;
+	const { fresh, mixed, lastPage, rightToLeft, characters, afterRead, chapters, beforeChapters } = fixtures.reading;
 	const { highlight, passage, question, answered } = fixtures.tutor;
 	const at = (path: string) => ({ sveltekit_experimental: { state: { page: { url: new URL(path, location.origin) } } } });
 
@@ -24,6 +24,7 @@
 			queryByRole: (role: string, options: { name: string | RegExp }) => HTMLElement | null;
 			findByRole: (role: string, options?: { name: string | RegExp }) => Promise<HTMLElement>;
 			getByText: (text: string) => HTMLElement;
+			getByTitle: (title: string) => HTMLElement;
 		};
 		userEvent: { click: (element: Element, init?: object) => Promise<void>; keyboard: (keys: string) => Promise<void>; type: (element: Element, text: string) => Promise<void> };
 	};
@@ -257,6 +258,20 @@
 <Story name="Just after Mark as read: the day so far" args={{ data: afterRead }} parameters={at('/books/2/pages/2?read')} />
 
 <Story name="The last Page, Read" args={{ data: lastPage }} parameters={at('/books/2/pages/3')} />
+
+<Story name="A Book in Chapters" args={{ data: chapters }} parameters={at(`/books/${chapters.book.id}/pages/4`)} />
+
+<Story
+	name="A Book in Chapters, its Contents open"
+	args={{ data: chapters }}
+	parameters={at(`/books/${chapters.book.id}/pages/4`)}
+	play={async ({ canvas, userEvent }: Play) => {
+		await userEvent.click(canvas.getByTitle('Chapters'));
+		await expect(canvas.getByRole('link', { name: /Глава II · Письмо/ })).toBeVisible();
+	}}
+/>
+
+<Story name="Before a Book's first Chapter" args={{ data: beforeChapters }} parameters={at(`/books/${beforeChapters.book.id}/pages/1`)} />
 
 <Story name="A Status was refused" play={async ({ canvas, userEvent }: Play) => {
 		await userEvent.click(word(canvas, 'блондинка'));

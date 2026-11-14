@@ -335,6 +335,23 @@ describe('Cleaning up a Book', () => {
 			error: expect.stringContaining('Page 1 is Read')
 		});
 	});
+
+	it('marks where Chapters start, on a Read Page too, and says which Chapter a Page is in', async () => {
+		const { call, bookId } = await connect();
+		const { pages } = await call('get_pages', { book_id: bookId });
+		await call('mark_page_read', { book_id: bookId, page: 1 });
+		const edited = await call('edit_pages', {
+			book_id: bookId,
+			operations: [
+				{ op: 'set_chapter', page: pages[0].id, title: 'Начало' },
+				{ op: 'set_chapter', page: pages[1].id, title: '' }
+			]
+		});
+		expect(edited.pages.map((p: { startsChapter?: unknown }) => p.startsChapter)).toEqual([{ title: 'Начало' }, { title: '' }]);
+		expect((await call('get_pages', { book_id: bookId })).pages[1]).toMatchObject({ chapter: { number: 2, label: 'Chapter 2' }, startsChapter: { title: '' } });
+		expect((await call('get_sentences', { book_id: bookId, page: 1 })).page.chapter).toEqual({ number: 1, label: 'Начало', page: 1, pages: 1 });
+		expect((await call('get_bookmark', { book_id: bookId })).chapter).toMatchObject({ label: expect.any(String) });
+	});
 });
 
 describe('wikipediaTitle', () => {

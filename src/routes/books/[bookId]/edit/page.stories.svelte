@@ -5,7 +5,7 @@
 	import Screen from '#stories/Screen.svelte';
 	import Page from './+page.svelte';
 
-	const { messy, many, long } = fixtures.editing;
+	const { messy, many, long, chapters } = fixtures.editing;
 	const at = (id: number) => ({ sveltekit_experimental: { state: { page: { url: new URL(`/books/${id}/edit`, location.origin) } } } });
 	const { Story } = preview.meta({
 		title: 'Screens/Edit Book',
@@ -55,3 +55,19 @@
 <Story name="Refused" args={{ form: { message: 'Another Book came from that web address.' } }} />
 
 <Story name="A short Book" args={{ data: fixtures.routes.editBook! }} parameters={at(fixtures.routes.editBook!.book.id)} />
+
+<Story name="A Book in Chapters" args={{ data: chapters }} parameters={at(chapters.book.id)} />
+
+<Story
+	name="Marking where a Chapter starts"
+	args={{ data: chapters }}
+	parameters={at(chapters.book.id)}
+	play={async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		await userEvent.click(canvas.getByRole('button', { name: /^Предисловие/ }));
+		await userEvent.click(canvas.getByRole('checkbox', { name: 'Starts a Chapter' }));
+		await userEvent.type(canvas.getByRole('textbox', { name: 'Title of the Chapter Page 1 starts' }), 'Предисловие');
+		// The Chapters after it are numbered on.
+		await expect(canvas.getAllByText(/^Chapter \d$/).map((e) => e.textContent)).toEqual(['Chapter 1', 'Chapter 2', 'Chapter 3', 'Chapter 4']);
+	}}
+/>

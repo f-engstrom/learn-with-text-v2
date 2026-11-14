@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { fits, rankSuggestions } from '../../suggestions';
 import type { Database } from '../db/schema';
 import { editPagesAsTutor, listPages } from '../domain/book-editing';
+import { chapterAt, listChapters } from '../domain/chapters';
 import { createBook, getPage, listBooks } from '../domain/books';
 import { importFromAddress } from '../domain/addresses';
 import { listLanguages, type Language } from '../domain/languages';
@@ -94,6 +95,7 @@ export function createReaderServer(
 			return json({
 				book: { id: latest.bookId, title: latest.title, language: page.language.name, pageCount: page.book.pageCount },
 				bookmark: latest.bookmark,
+				...(page.chapter ? { chapter: page.chapter } : {}),
 				movedAt: latest.at,
 				sentence: current && text(current),
 				paragraphSoFar: current && sentences.filter((s, i) => s.paragraph === current.paragraph && i < latest.bookmark.sentence).map(text).join(' '),
@@ -108,7 +110,7 @@ export function createReaderServer(
 		{
 			title: 'Get Bookmark',
 			description:
-				"Where the learner is in a Book: the Page and the Sentence on it (both 1-based), with that Sentence's text, and the Word they last selected there if any.",
+				"Where the learner is in a Book: the Page and the Sentence on it (both 1-based), with that Sentence's text, the Word they last selected there if any, and the Chapter the Page is in.",
 			inputSchema: { book_id: z.number().int().describe('The Book, from list_books.') },
 			annotations: readOnly
 		},
@@ -120,6 +122,7 @@ export function createReaderServer(
 			return json({
 				book: { id: book_id, title: page?.book.title, language: page?.language.name, pageCount: page?.book.pageCount },
 				bookmark,
+				...(page?.chapter ? { chapter: page.chapter } : {}),
 				sentence: sentence?.tokens.map((t) => t.text).join('').trim()
 			});
 		}
@@ -132,7 +135,8 @@ export function createReaderServer(
 			description:
 				"Sentences of a Book's Page, from the Bookmark unless a Page and Sentence are given, with each Word's Status and Translations. " +
 				'Status "unknown" means the Word has no Term. A matched Multi-word Term (e.g. "в течение") is one entry. ' +
-				'Each Sentence carries its paragraph number on the Page; the Word the learner selected in the Bookmark Sentence is marked selected, and Sentences in your Highlight are marked highlighted. Stays within one Page; nextPage says where to continue.',
+				'Each Sentence carries its paragraph number on the Page; the Word the learner selected in the Bookmark Sentence is marked selected, and Sentences in your Highlight are marked highlighted. Stays within one Page; nextPage says where to continue. ' +
+				"The Page's chapter (its number, label, and which of its Pages this is) is given when the Book has Chapters; the next Chapter starts at the next Page whose chapter.page is 1.",
 			inputSchema: {
 				book_id: z.number().int().describe('The Book, from list_books.'),
 				page: z.number().int().min(1).optional().describe("1-based Page; the Bookmark's by default."),
@@ -177,7 +181,7 @@ export function createReaderServer(
 			const last = from - 1 + sentences.length;
 			return json({
 				book: { id: book_id, title: page.book.title, language: page.language.name, pageCount: page.book.pageCount },
-				page: { position, read: page.read, sentenceCount: all.length },
+				page: { position, read: page.read, sentenceCount: all.length, ...(page.chapter ? { chapter: page.chapter } : {}) },
 				bookmark,
 				...(highlight ? { highlight } : {}),
 				sentences,
@@ -608,7 +612,8 @@ export function createReaderServer(
 		{
 			title: 'Get Pages',
 			description:
-				"A Book's Pages as stored, for cleaning it up: each Page's id, position, whether it is Read, its Words and its raw text with line breaks. " +
+				"A Book's Pages as stored, for cleaning it up: each Page's id, position, whether it is Read, its Words, its raw text with line breaks, " +
+				'the Chapter it is in (number and label), and startsChapter with the stored title (empty for an untitled one) on a Page that starts one. ' +
 				'Give from and to (1-based positions) to read a long Book a stretch at a time.',
 			inputSchema: {
 				book_id: z.number().int(),
@@ -621,9 +626,21 @@ export function createReaderServer(
 			const pages = await listPages(db, book_id, from, to);
 			const [book] = (await listBooks(db)).filter((b) => b.id === book_id);
 			if (!book) return failure(`There is no Book ${book_id}.`);
+			const chapters = await listChapters(db, book_id);
 			return json({
-				book: { id: book.id, title: book.title, pageCount: book.pageCount },
-				pages: pages.map((p) => ({ id: p.id, position: p.position, read: p.readAt !== null, words: p.words, text: p.text }))
+				book: { id: book.id, title: book.title, pageCount: book.pageCount, chapterCount: chapters.length },
+				pages: pages.map((p) => {
+					const chapter = chapterAt(chapters, p.position);
+					return {
+						id: p.id,
+						position: p.position,
+						read: p.readAt !== null,
+						words: p.words,
+						...(chapter ? { chapter: { number: chapter.number, label: chapter.label } } : {}),
+						...(p.chapter !== null ? { startsChapter: { title: p.chapter } } : {}),
+						text: p.text
+					};
+				})
 			});
 		}
 	);
@@ -634,8 +651,9 @@ export function createReaderServer(
 			title: 'Edit Pages',
 			description:
 				"Cleans up a Book's Pages, naming them by id from get_pages: set_text, remove, join_next (joins the next Page onto it), move (after another Page, or first with after null), " +
-				'add (new text after a Page, or first; a line containing only --- starts another Page), and optionally a new title. ' +
-				'The operations apply in order and save at once, or not at all. Read Pages are the learner\'s and are refused: ask them first. ' +
+				'add (new text after a Page, or first; a line containing only --- starts another Page), set_chapter (the Page starts a Chapter with this title, "" for an untitled one, or null for none; ' +
+				'a Chapter runs to the next one, and the heading stays in the text too), and optionally a new title. ' +
+				'The operations apply in order and save at once, or not at all. Read Pages are the learner\'s and are refused, except for set_chapter: ask them first. ' +
 				"Offer a cleanup after importing a page that looks messy; don't do it unasked.",
 			inputSchema: {
 				book_id: z.number().int(),
@@ -646,7 +664,8 @@ export function createReaderServer(
 						z.object({ op: z.literal('remove'), page: z.number().int() }),
 						z.object({ op: z.literal('join_next'), page: z.number().int() }),
 						z.object({ op: z.literal('move'), page: z.number().int(), after: z.number().int().nullable() }),
-						z.object({ op: z.literal('add'), after: z.number().int().nullable(), text: z.string() })
+						z.object({ op: z.literal('add'), after: z.number().int().nullable(), text: z.string() }),
+						z.object({ op: z.literal('set_chapter'), page: z.number().int(), title: z.string().nullable() })
 					])
 				)
 			},
@@ -656,7 +675,16 @@ export function createReaderServer(
 			guard(async () => {
 				await editPagesAsTutor(db, book_id, { title, operations });
 				const pages = await listPages(db, book_id);
-				return json({ pages: pages.map((p) => ({ id: p.id, position: p.position, read: p.readAt !== null, words: p.words, start: p.text.slice(0, 80) })) });
+				return json({
+					pages: pages.map((p) => ({
+						id: p.id,
+						position: p.position,
+						read: p.readAt !== null,
+						words: p.words,
+						...(p.chapter !== null ? { startsChapter: { title: p.chapter } } : {}),
+						start: p.text.slice(0, 80)
+					}))
+				});
 			})
 	);
 

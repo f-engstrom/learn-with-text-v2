@@ -27,6 +27,7 @@
 	import PageText from './PageText.svelte';
 	import TermPanel from './TermPanel.svelte';
 	import TutorTurn from './TutorTurn.svelte';
+	import Contents from './Contents.svelte';
 
 
 	let { data, form }: PageProps = $props();
@@ -378,7 +379,7 @@
 	</div>
 {/snippet}
 
-{#snippet pages()}
+{#snippet pages(contents = false)}
 	<nav class="pages" aria-label="Pages">
 		{#if data.position > 1}
 			<Button href="/books/{data.book.id}/pages/{data.position - 1}">← Previous</Button>
@@ -388,6 +389,7 @@
 		<span class="position">
 			Page {data.position} of {data.book.pageCount}
 			{#if data.read}<Tag tone="ok">Read</Tag>{/if}
+			{#if contents}<Contents bookId={data.book.id} chapters={data.book.chapters} here={data.chapter} lang={data.language.code} {dir} />{/if}
 		</span>
 		{#if data.position < data.book.pageCount}
 			<Button href="/books/{data.book.id}/pages/{data.position + 1}">Next →</Button>
@@ -412,7 +414,7 @@
 			<Button type="button" pressed={zen} onclick={toggleZen} title="Zen mode (Z)">Zen</Button>
 		</span>
 	</header>
-	{@render pages()}
+	{@render pages(true)}
 	{#if daySoFar && !daySoFarDismissed}
 		<p class="day-so-far" role="status">
 			<span><strong>Today</strong> · {daySoFarParts.join(' · ')}</span>

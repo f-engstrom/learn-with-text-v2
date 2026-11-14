@@ -15,6 +15,8 @@ export interface DraftPage {
 	was: number | null;
 	text: string;
 	readAt: string | null;
+	/** The title of the Chapter it starts, '' for an untitled one; null if it starts none (ADR 0009). */
+	chapter: string | null;
 	/** Removed on Save; Undo brings it back until then. */
 	removed: boolean;
 	open: boolean;
@@ -33,7 +35,7 @@ export class PageDraft {
 	readonly #initial: string;
 
 	constructor(pages: EditablePage[]) {
-		this.pages = pages.map((p, i) => ({ key: `page-${p.id}`, id: p.id, was: i + 1, text: p.text, readAt: p.readAt, removed: false, open: false }));
+		this.pages = pages.map((p, i) => ({ key: `page-${p.id}`, id: p.id, was: i + 1, text: p.text, readAt: p.readAt, chapter: p.chapter, removed: false, open: false }));
 		this.#initial = this.#snapshot();
 	}
 
@@ -73,6 +75,17 @@ export class PageDraft {
 		page.readAt = null;
 	}
 
+	/** Makes the Page start a Chapter, untitled, or start none. */
+	toggleChapter(page: DraftPage, starts: boolean): void {
+		page.chapter = starts ? (page.chapter ?? '') : null;
+	}
+
+	/** The number of the Chapter a kept Page starts; null when it starts none or is removed. */
+	chapterOf(page: DraftPage): number | null {
+		if (page.chapter === null || page.removed) return null;
+		return this.kept.filter((p) => p.chapter !== null).indexOf(page) + 1;
+	}
+
 
 	/** The next kept Page's text joins this one; it stays Read only if both were. */
 	joinWithNext(page: DraftPage): void {
@@ -90,16 +103,16 @@ export class PageDraft {
 	addPages(text: string, after: DraftPage | null): number {
 		const parts = splitAtBreaks(text);
 		const at = after ? this.pages.indexOf(after) + 1 : 0;
-		this.pages.splice(at, 0, ...parts.map((part) => ({ key: newKey(), id: null, was: null, text: part, readAt: null, removed: false, open: false })));
+		this.pages.splice(at, 0, ...parts.map((part) => ({ key: newKey(), id: null, was: null, text: part, readAt: null, chapter: null, removed: false, open: false })));
 		return parts.length;
 	}
 
-	/** What Save sends: the kept Pages in order, each with its id, text and whether it is still Read. */
-	toJSON(): { id: number | null; text: string; read: boolean }[] {
-		return this.kept.map((p) => ({ id: p.id, text: p.text, read: p.readAt !== null }));
+	/** What Save sends: the kept Pages in order, each with its id, text, whether it is still Read and its Chapter mark. */
+	toJSON(): { id: number | null; text: string; read: boolean; chapter: string | null }[] {
+		return this.kept.map((p) => ({ id: p.id, text: p.text, read: p.readAt !== null, chapter: p.chapter }));
 	}
 
 	#snapshot(): string {
-		return JSON.stringify(this.pages.map((p) => [p.id, p.text, p.readAt, p.removed]));
+		return JSON.stringify(this.pages.map((p) => [p.id, p.text, p.readAt, p.chapter, p.removed]));
 	}
 }

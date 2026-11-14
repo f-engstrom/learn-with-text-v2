@@ -13,7 +13,9 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 /** The Pages as the screen sends them: every kept Page in order, by id, or new. */
-const pagesField = z.array(z.object({ id: z.number().int().nullable(), text: z.string(), read: z.boolean().optional() }));
+const pagesField = z.array(
+	z.object({ id: z.number().int().nullable(), text: z.string(), read: z.boolean().optional(), chapter: z.string().nullable().optional() })
+);
 
 export const actions: Actions = {
 	default: async ({ request, params }) => {

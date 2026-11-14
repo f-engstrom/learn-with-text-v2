@@ -4,6 +4,7 @@ import { addBookWords, findBookByUrl, hasWords, insertSentences, InvalidBook, sp
 import { getLanguage } from './languages';
 import { countWords, parserFor, type Parser } from './parsing';
 import { joinTexts } from '../../pages';
+import { cleanChapterTitle } from '../../chapters';
 
 /** A Page as the edit screen and the Tutor see it. */
 export interface EditablePage {
@@ -14,6 +15,8 @@ export interface EditablePage {
 	/** When it was marked Read; null while it isn't. */
 	readAt: string | null;
 	words: number;
+	/** The title of the Chapter it starts, empty for an untitled one; null if it starts none (ADR 0009). */
+	chapter: string | null;
 }
 
 /** What the edit screen shows of a Book. */
@@ -49,13 +52,13 @@ export async function getBookForEditing(db: Kysely<Database>, bookId: number): P
 export async function listPages(db: Kysely<Database>, bookId: number, from = 1, to = Number.MAX_SAFE_INTEGER): Promise<EditablePage[]> {
 	const rows = await db
 		.selectFrom('page')
-		.select(['id', 'position', 'text', 'read_at', 'words'])
+		.select(['id', 'position', 'text', 'read_at', 'words', 'chapter'])
 		.where('book_id', '=', bookId)
 		.where('position', '>=', from)
 		.where('position', '<=', to)
 		.orderBy('position')
 		.execute();
-	return rows.map((r) => ({ id: r.id, position: r.position, text: r.text, readAt: r.read_at, words: r.words }));
+	return rows.map((r) => ({ id: r.id, position: r.position, text: r.text, readAt: r.read_at, words: r.words, chapter: r.chapter }));
 }
 
 /** One Page in an edit, in its new place: an existing Page by id, or a new one with no id. */
@@ -65,6 +68,11 @@ export interface PageEdit {
 	text: string;
 	/** false takes away the Page's Read mark. A Page is marked Read only in the reading screen. */
 	read?: boolean;
+	/**
+	 * The title of the Chapter it starts ('' for an untitled one), or null for none; left out, an
+	 * existing Page keeps its mark. Of a split Page only the first part keeps it.
+	 */
+	chapter?: string | null;
 }
 
 export interface BookEdit {
@@ -117,7 +125,7 @@ export async function editBook(db: Kysely<Database>, bookId: number, input: Book
 
 		for (const [i, page] of pages.entries()) {
 			const paragraphs = parser.parse(page.text);
-			const values = { position: i + 1, text: page.text, read_at: page.readAt, words: countWords(paragraphs) };
+			const values = { position: i + 1, text: page.text, read_at: page.readAt, words: countWords(paragraphs), chapter: page.chapter };
 			if (page.id === null) {
 				const row = await trx
 					.insertInto('page')
@@ -157,7 +165,11 @@ export async function editBook(db: Kysely<Database>, bookId: number, input: Book
 }
 
 /** The Pages an edit leaves, in order, each part of a split one of its own. */
-function planPages(edits: PageEdit[], byId: Map<number, EditablePage>, parser: Parser): { id: number | null; text: string; readAt: string | null }[] {
+function planPages(
+	edits: PageEdit[],
+	byId: Map<number, EditablePage>,
+	parser: Parser
+): { id: number | null; text: string; readAt: string | null; chapter: string | null }[] {
 	const seen = new Set<number>();
 	return edits.flatMap((edit) => {
 		const page = edit.id === null ? undefined : byId.get(edit.id);
@@ -167,7 +179,9 @@ function planPages(edits: PageEdit[], byId: Map<number, EditablePage>, parser: P
 		const parts = splitIntoPages(edit.text, parser, Number.POSITIVE_INFINITY);
 		if (page && parts.length === 0) throw new InvalidBook(`Page ${page.position} has no text; remove it instead.`);
 		const readAt = page && edit.read !== false ? page.readAt : null;
-		return parts.map((text, i) => ({ id: i === 0 && page ? page.id : null, text, readAt }));
+		const mark = edit.chapter === undefined ? (page?.chapter ?? null) : edit.chapter;
+		const chapter = mark === null ? null : cleanChapterTitle(mark);
+		return parts.map((text, i) => ({ id: i === 0 && page ? page.id : null, text, readAt, chapter: i === 0 ? chapter : null }));
 	});
 }
 
@@ -228,9 +242,10 @@ export type PageOperation =
 	| { op: 'remove'; page: number }
 	| { op: 'join_next'; page: number }
 	| { op: 'move'; page: number; after: number | null }
-	| { op: 'add'; after: number | null; text: string };
+	| { op: 'add'; after: number | null; text: string }
+	| { op: 'set_chapter'; page: number; title: string | null };
 
-/** A Read Page is the learner's: the Tutor may not change, remove, join or move it. */
+/** A Read Page is the learner's: the Tutor may not change, remove, join or move it, only mark where a Chapter starts. */
 export class ReadPageRefused extends InvalidBook {
 	constructor(position: number) {
 		super(`Page ${position} is Read, so it is the learner's to change. Ask them first, or leave it.`);
@@ -245,7 +260,13 @@ export async function editPagesAsTutor(db: Kysely<Database>, bookId: number, inp
 	const book = await db.selectFrom('book').select(['title', 'language_id', 'url']).where('id', '=', bookId).executeTakeFirst();
 	if (!book) throw new InvalidBook('There is no such Book.');
 	const old = await listPages(db, bookId);
-	const pages: (PageEdit & { readAt?: string | null; position?: number })[] = old.map((p) => ({ id: p.id, text: p.text, readAt: p.readAt, position: p.position }));
+	const pages: (PageEdit & { readAt?: string | null; position?: number })[] = old.map((p) => ({
+		id: p.id,
+		text: p.text,
+		readAt: p.readAt,
+		position: p.position,
+		chapter: p.chapter
+	}));
 
 	const find = (id: number) => {
 		const i = pages.findIndex((p) => p.id === id);
@@ -282,6 +303,10 @@ export async function editPagesAsTutor(db: Kysely<Database>, bookId: number, inp
 			case 'add':
 				pages.splice(at(operation.after), 0, { id: null, text: operation.text });
 				break;
+			case 'set_chapter':
+				// A mark changes nothing the learner read, so Read Pages take one too.
+				pages[find(operation.page)].chapter = operation.title;
+				break;
 		}
 	}
 
@@ -289,6 +314,6 @@ export async function editPagesAsTutor(db: Kysely<Database>, bookId: number, inp
 		title: input.title ?? book.title,
 		languageId: book.language_id,
 		url: book.url,
-		pages: pages.map(({ id, text }) => ({ id, text }))
+		pages: pages.map(({ id, text, chapter }) => ({ id, text, chapter }))
 	});
 }

@@ -1,6 +1,6 @@
 <!--
   A Book's edit screen: its title, Language and web address, then one card per Page to edit, move,
-  join or remove, and a place between any two to add Pages. Saved at once by `editBook` (ADR 0008).
+  join, remove or mark as starting a Chapter, and a place between any two to add Pages. Saved at once by `editBook` (ADR 0008).
 -->
 <script lang="ts">
 	import { enhance } from '$app/forms';
@@ -30,6 +30,7 @@
 	const wordsOf = (text: string) => countWords(text, language.code);
 	const kept = $derived(draft.kept);
 	const read = $derived(kept.filter((p) => p.readAt).length);
+	const chapters = $derived(kept.filter((p) => p.chapter !== null).length);
 	const total = $derived(kept.reduce((n, p) => n + wordsOf(p.text), 0));
 	const bookmarkPage = $derived(draft.pages.find((p) => p.id === bookmarkPageId));
 	const bookmarkAt = $derived(bookmarkPage && draft.numberOf(bookmarkPage));
@@ -82,7 +83,7 @@
 	<h1 dir="auto">{title || book.title}</h1>
 	<p class="lede">
 		{kept.length}
-		{kept.length === 1 ? 'Page' : 'Pages'} · {read} Read · about {total.toLocaleString('en')} Words ·
+		{kept.length === 1 ? 'Page' : 'Pages'} · {#if chapters > 0}{chapters} {chapters === 1 ? 'Chapter' : 'Chapters'} ·{' '}{/if}{read} Read · about {total.toLocaleString('en')} Words ·
 		<a href="/books/{book.id}">Open it</a>
 	</p>
 
@@ -137,6 +138,7 @@
 				bind:text={page.text}
 				{number}
 				words={wordsOf(page.text)}
+				chapterNumber={draft.chapterOf(page)}
 				bookmark={page.id === bookmarkPageId}
 				first={number === 1}
 				last={number === kept.length}
@@ -147,6 +149,7 @@
 				onrestore={() => draft.restore(page)}
 				onunmark={() => draft.unmarkRead(page)}
 				onjoin={() => draft.joinWithNext(page)}
+				onchapter={(starts) => draft.toggleChapter(page, starts)}
 			/>
 			<AddPages
 				where={number ? `after Page ${number}` : `where Page ${page.was} was`}

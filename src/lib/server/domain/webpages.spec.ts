@@ -51,6 +51,15 @@ describe('extractArticle', () => {
 		});
 	}
 
+	it('starts a Chapter at each <h2> when there are two or more, each long enough', () => {
+		const section = (n: number) => `<p>${Array.from({ length: n }, () => 'Слово').join(' ')}.</p>`;
+		const page = (body: string) => `<html><head><title>Повесть</title></head><body><article><h1>Повесть</h1>${body}</article></body></html>`;
+		const long = extractArticle(page(`${section(40)}<h2>Первая</h2>${section(40)}<h2>Вторая</h2>${section(40)}`), 'https://example.org/a');
+		expect(long?.text.split('\n').filter((l) => l.startsWith('# '))).toEqual(['# Первая', '# Вторая']);
+		const short = extractArticle(page(`${section(40)}<h2>Первая</h2>${section(40)}<h2>Вторая</h2>${section(5)}`), 'https://example.org/a');
+		expect(short?.text).not.toContain('# ');
+	});
+
 	it('finds nothing on a page without an article', () => {
 		expect(extractArticle('<html><body><nav><a href="/">Home</a></nav></body></html>', 'https://x.example/')).toBeUndefined();
 	});

@@ -137,7 +137,26 @@ async function editingWorld() {
 	const [page] = (await getBookForEditing(db, long))!.pages;
 	await on(2, () => editBook(db, long, { title: 'Вставленный текст', languageId: russian.id, pages: [{ id: page.id, text: whole }] }));
 
-	return { messy: (await editScreen(db, messy))!, many: (await editScreen(db, many))!, long: (await editScreen(db, long))! };
+	// Its "Глава" headings, found on import, start its Chapters (ADR 0009).
+	const chaptered = await on(20, () =>
+		createBook(db, {
+			languageId: russian.id,
+			title: 'Повести',
+			text: ['Предисловие.', 'Глава I', 'На набережной', lady, 'Глава II', 'Письмо', vanka, 'Глава III', lady].join('\n')
+		})
+	);
+	for (let page = 1; page <= 3; page++) await on(20 - page, () => markPageRead(db, chaptered, page));
+	await on(16, () => setBookmark(db, chaptered, { page: 4, sentence: 1 }));
+
+	return {
+		editing: {
+			messy: (await editScreen(db, messy))!,
+			many: (await editScreen(db, many))!,
+			long: (await editScreen(db, long))!,
+			chapters: (await editScreen(db, chaptered))!
+		},
+		reading: { chapters: await reading(db, chaptered, 4), beforeChapters: await reading(db, chaptered, 1) }
+	};
 }
 
 /** Every route's data for one database, apart from the reading screen's. */
@@ -356,11 +375,11 @@ export async function buildFixtures() {
 		return JSON.parse(
 			JSON.stringify({
 				now: NOW,
-				reading: { fresh: empty.fresh, ...reader.reading },
+				reading: { fresh: empty.fresh, ...reader.reading, ...editing.reading },
 				tutor: reader.tutor,
 				routes: reader.routes,
 				emptyRoutes: empty.routes,
-				editing
+				editing: editing.editing
 			})
 		);
 	} finally {

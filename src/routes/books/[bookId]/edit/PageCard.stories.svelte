@@ -6,7 +6,7 @@
 	const { Story } = preview.meta({ title: 'Components/Edit Book/PageCard', component: PageCard });
 
 	const text = 'Старый мост через реку снова открыт. Его ремонтировали почти два года, и жители города очень ждали этого дня.\n\nУтром на мосту собрались люди.';
-	const page = (over: Partial<DraftPage> = {}): DraftPage => ({ key: 'a', id: 1, was: 2, text, readAt: null, removed: false, open: false, ...over });
+	const page = (over: Partial<DraftPage> = {}): DraftPage => ({ key: 'a', id: 1, was: 2, text, readAt: null, chapter: null, removed: false, open: false, ...over });
 </script>
 
 {#snippet one(p: DraftPage, props: Record<string, unknown> = {})}
@@ -26,4 +26,10 @@
 </Story>
 <Story name="Splits on Save">{#snippet template()}{@render one(page({ open: true, text: `${text}\n---\nВторая часть.` }))}{/snippet}</Story>
 <Story name="Longer than usual">{#snippet template()}{@render one(page(), { words: 640 })}{/snippet}</Story>
+<Story name="Starts a Chapter">
+	{#snippet template()}{@render one(page({ chapter: 'Глава 3. Старый мост' }), { chapterNumber: 3 })}{/snippet}
+</Story>
+<Story name="Starts a Chapter, open">
+	{#snippet template()}{@render one(page({ open: true, chapter: '' }), { chapterNumber: 3 })}{/snippet}
+</Story>
 <Story name="Removed, was Read">{#snippet template()}{@render one(page({ removed: true, readAt: '2026-11-10T19:12:00Z' }))}{/snippet}</Story>

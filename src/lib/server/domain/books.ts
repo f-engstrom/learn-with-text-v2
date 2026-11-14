@@ -6,6 +6,7 @@ import { candidateSpans, chooseSpans } from './multiword';
 import { countWords, normalise, parserFor, partKeys, type Parser, type Token } from './parsing';
 import { findTerms, type TermView } from './terms';
 import { Refused } from './refused';
+import { chapterAt, detectChapters, listChapters, splitIntoChapters, type Chapter, type ChapterPlace, type NewPage } from './chapters';
 import { PAGE_BREAK_LINE, PAGE_WORD_TARGET } from '../../pages';
 
 export { PAGE_WORD_TARGET };
@@ -70,7 +71,9 @@ export function toBookmark(row: { bookmark_page: number; bookmark_sentence: numb
 }
 
 export interface PageView {
-	book: { id: number; title: string; pageCount: number; bookmark: Bookmark };
+	book: { id: number; title: string; pageCount: number; bookmark: Bookmark; chapters: Chapter[] };
+	/** The Chapter this Page is in, and where in it; undefined when it is in none. */
+	chapter?: ChapterPlace;
 	language: Language;
 	position: number;
 	read: boolean;
@@ -130,8 +133,10 @@ export async function createBook(db: Kysely<Database>, input: NewBook): Promise<
 		if (had !== undefined) throw new BookExists(had);
 	}
 
-	const pages = splitIntoPages(input.text, parserFor(language));
-	if (!hasWords(pages, parserFor(language))) throw new InvalidBook('The text has no Words to read.');
+	const parser = parserFor(language);
+	// Chapter headings become marks on the Pages they start (ADR 0009).
+	const pages = splitIntoChapters(detectChapters(input.text, parser), (text) => splitIntoPages(text, parser));
+	if (!hasWords(pages.map((p) => p.text), parser)) throw new InvalidBook('The text has no Words to read.');
 
 	return db.transaction().execute(async (trx) => {
 		const book = await trx
@@ -150,18 +155,23 @@ export function hasWords(pages: string[], parser: Parser): boolean {
 }
 
 /** Stores a new Book's Pages with their Sentences, and adds their Words to the Book's. */
-async function writePages(trx: Kysely<Database>, bookId: number, language: Language, pages: string[]): Promise<void> {
+async function writePages(trx: Kysely<Database>, bookId: number, language: Language, pages: NewPage[]): Promise<void> {
 	const parser = parserFor(language);
-	for (const [i, text] of pages.entries()) {
+	for (const [i, { text, chapter }] of pages.entries()) {
 		const paragraphs = parser.parse(text);
 		const page = await trx
 			.insertInto('page')
-			.values({ book_id: bookId, position: i + 1, text, words: countWords(paragraphs) })
+			.values({ book_id: bookId, position: i + 1, text, chapter, words: countWords(paragraphs) })
 			.returning('id')
 			.executeTakeFirstOrThrow();
 		await insertSentences(trx, page.id, paragraphs);
 	}
-	await addBookWords(trx, bookId, language, pages);
+	await addBookWords(
+		trx,
+		bookId,
+		language,
+		pages.map((p) => p.text)
+	);
 }
 
 /** Stores a Page's Sentences, in order. */
@@ -284,6 +294,8 @@ export async function getPage(db: Kysely<Database>, bookId: number, position: nu
 
 	const language = await getLanguage(db, row.language_id);
 	if (!language) return undefined;
+	const chapters = await listChapters(db, bookId);
+	const chapter = chapterAt(chapters, position);
 	const parsed = parserFor(language).parse(row.text);
 	const spans = parsed.map((p) => p.sentences.map((s) => candidateSpans(s.tokens, language)));
 	const wordKeys = [
@@ -321,8 +333,10 @@ export async function getPage(db: Kysely<Database>, bookId: number, position: nu
 			id: row.bookId,
 			title: row.title,
 			pageCount: Number(row.pageCount),
-			bookmark: toBookmark(row)
+			bookmark: toBookmark(row),
+			chapters
 		},
+		...(chapter ? { chapter } : {}),
 		language,
 		position,
 		read: row.read_at !== null,

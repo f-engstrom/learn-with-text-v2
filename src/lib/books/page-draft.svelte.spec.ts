@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { countWords, PageDraft } from './page-draft.svelte';
 
-const page = (id: number, text: string, readAt: string | null = null) => ({ id, position: id, text, readAt, words: 0 });
+const page = (id: number, text: string, readAt: string | null = null, chapter: string | null = null) => ({ id, position: id, text, readAt, words: 0, chapter });
 
 function draft() {
 	return new PageDraft([page(1, 'Раз.', '2026-11-10T10:00:00Z'), page(2, 'Музыканты играли до'), page(3, 'поздней ночи.'), page(4, 'Конец.')]);
@@ -49,9 +49,9 @@ describe('PageDraft', () => {
 		d.unmarkRead(d.pages[0]);
 		d.remove(d.pages[3]);
 		expect(d.toJSON()).toEqual([
-			{ id: 1, text: 'Раз.', read: false },
-			{ id: 2, text: 'Музыканты играли до', read: false },
-			{ id: 3, text: 'поздней ночи.', read: false }
+			{ id: 1, text: 'Раз.', read: false, chapter: null },
+			{ id: 2, text: 'Музыканты играли до', read: false, chapter: null },
+			{ id: 3, text: 'поздней ночи.', read: false, chapter: null }
 		]);
 	});
 });
@@ -61,5 +61,19 @@ describe('countWords', () => {
 		expect(countWords('Жил-был кот.', 'ru')).toBe(2);
 		expect(countWords('Жил — был кот, 5-й.', 'ru')).toBe(4);
 		expect(countWords('我们今天学习中文。', 'zh')).toBeGreaterThan(1);
+	});
+
+	it('marks where Chapters start, numbering them among the kept Pages, and sends the marks on Save', () => {
+		const d = new PageDraft([page(1, 'Пролог.'), page(2, 'Глава 1.', null, 'Глава 1'), page(3, 'Ещё.'), page(4, 'Глава 2.')]);
+		const [, second, , fourth] = d.pages;
+		d.toggleChapter(fourth, true);
+		expect(d.chapterOf(second)).toBe(1);
+		expect(d.chapterOf(fourth)).toBe(2);
+		expect(d.changed).toBe(true);
+		d.remove(second);
+		expect(d.chapterOf(fourth)).toBe(1);
+		d.restore(second);
+		d.toggleChapter(second, false);
+		expect(d.toJSON().map((p) => p.chapter)).toEqual([null, null, null, '']);
 	});
 });

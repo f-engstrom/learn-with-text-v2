@@ -28,7 +28,7 @@ describe('getBookForEditing', () => {
 		await setBookmark(db, id, { page: 2, sentence: 1 });
 		const book = await getBookForEditing(db, id);
 		expect(book).toMatchObject({ id, title: 'Сказка', bookmarkPageId: pages[1].id });
-		expect(book?.pages[0]).toEqual({ id: pages[0].id, position: 1, text: 'Раз. Два.', readAt: '2026-11-10T10:00:00.000Z', words: 2 });
+		expect(book?.pages[0]).toEqual({ id: pages[0].id, position: 1, text: 'Раз. Два.', readAt: '2026-11-10T10:00:00.000Z', words: 2, chapter: null });
 	});
 });
 

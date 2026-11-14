@@ -1,6 +1,7 @@
 import { Readability } from '@mozilla/readability';
 import { parseHTML } from 'linkedom';
 import { Refused } from './refused';
+import { MIN_CHAPTER_WORDS } from './chapters';
 
 /** An article as the New Book screen shows it, to edit before saving. */
 export interface WebArticle {
@@ -56,18 +57,34 @@ export function extractArticle(html: string, url: string): Omit<WebArticle, 'url
 
 	const { document: content } = parseHTML(`<!doctype html><html><body>${article.content}</body></html>`);
 	const blocks = [...content.querySelectorAll(BLOCKS)].filter((el) => !el.querySelector(BLOCKS) && !isOnlyALink(el));
-	const paragraphs = (blocks.length > 0 ? blocks.map((el) => el.textContent ?? '') : (content.body.textContent ?? '').split('\n'))
-		.map((p) => p.replace(/\s+/g, ' ').trim())
+	const lines = (
+		blocks.length > 0
+			? blocks.map((el) => ({ text: el.textContent ?? '', heading: el.tagName === 'H2' }))
+			: (content.body.textContent ?? '').split('\n').map((text) => ({ text, heading: false }))
+	)
+		.map((p) => ({ ...p, text: p.text.replace(/\s+/g, ' ').trim() }))
 		// Lines without letters (dates, a row of dashes, which would start a new Page) aren't reading.
-		.filter((p) => /\p{L}/u.test(p));
+		.filter((p) => /\p{L}/u.test(p.text));
 	// A copyright line at the end is the site's, not the article's.
-	while (paragraphs.length > 1 && /^(©|\(c\)|copyright)/i.test(paragraphs.at(-1)!)) paragraphs.pop();
+	while (lines.length > 1 && /^(©|\(c\)|copyright)/i.test(lines.at(-1)!.text)) lines.pop();
 	const title = headline ?? ((article.title ?? '').replace(/\s+/g, ' ').trim() || fallbackTitle);
 	// The headline is the Book's title, not its first line.
-	if (paragraphs[0] === title) paragraphs.shift();
-	if (paragraphs.join('').length < MIN_ARTICLE_CHARS) return undefined;
+	if (lines[0]?.text === title) lines.shift();
+	if (lines.map((l) => l.text).join('').length < MIN_ARTICLE_CHARS) return undefined;
 
-	return { title, text: paragraphs.join('\n') };
+	const chapters = chapterHeadings(lines);
+	return { title, text: lines.map((l, i) => (chapters.has(i) ? `# ${l.text}` : l.text)).join('\n') };
+}
+
+/**
+ * Which lines are `<h2>` headings to start Chapters at, as `# ` lines (ADR 0009): none unless there
+ * are two or more, each over at least MIN_CHAPTER_WORDS Words, so a short article stays in one piece.
+ */
+function chapterHeadings(lines: { text: string; heading: boolean }[]): Set<number> {
+	const at = lines.flatMap((l, i) => (l.heading ? [i] : []));
+	const words = (from: number, to: number) => lines.slice(from, to).reduce((n, l) => n + (l.text.match(/\p{L}+/gu)?.length ?? 0), 0);
+	const long = at.length >= 2 && at.every((i, k) => words(i + 1, at[k + 1] ?? lines.length) >= MIN_CHAPTER_WORDS);
+	return new Set(long ? at : []);
 }
 
 /**

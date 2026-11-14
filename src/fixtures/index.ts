@@ -63,15 +63,18 @@ export interface RouteData {
 export interface Fixtures {
 	/** The moment the fixtures were read at; the stories' clock is set to it. */
 	now: string;
-	reading: Record<'fresh' | 'mixed' | 'lastPage' | 'rightToLeft' | 'characters' | 'afterRead', ReadingData>;
+	reading: Record<'fresh' | 'mixed' | 'lastPage' | 'rightToLeft' | 'characters' | 'afterRead' | 'chapters' | 'beforeChapters', ReadingData>;
 	/** From the Tutor on the first Page of `reading.mixed`, a step at a time. */
 	tutor: Record<'highlight' | 'passage' | 'question' | 'answered', FromTutor>;
 	/** A Reader some weeks in. */
 	routes: RouteData;
 	/** A Reader nobody has used yet. */
 	emptyRoutes: RouteData;
-	/** The edit screen: a messy web import (two Pages Read, the Bookmark on the fourth), forty Pages, and one Page far too long. */
-	editing: Record<'messy' | 'many' | 'long', EditBookData>;
+	/**
+	 * The edit screen: a messy web import (two Pages Read, the Bookmark on the fourth), forty Pages, one Page
+	 * far too long, and a Book in three Chapters after a foreword (`reading.chapters` and `reading.beforeChapters` read it).
+	 */
+	editing: Record<'messy' | 'many' | 'long' | 'chapters', EditBookData>;
 }
 
 /**

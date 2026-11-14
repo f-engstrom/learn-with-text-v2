@@ -57,7 +57,9 @@
 		Or a text file
 		<input type="file" name="file" accept=".txt,text/plain" />
 	</label>
-	<small>UTF-8 text, up to 5 MB. A line containing only <code>---</code> starts a new Page.</small>
+	<small
+		>UTF-8 text, up to 5 MB. A line containing only <code>---</code> starts a new Page, and one starting <code># </code> starts a Chapter. Headings like “Chapter 3” are found by themselves.</small
+	>
 
 	<div class="actions">
 		<Button type="submit" variant="primary">Create Book</Button>

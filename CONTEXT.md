@@ -15,7 +15,11 @@ _Avoid_: Text, document, article (an article becomes a Book once you pick it)
 
 **Page**:
 One readable chunk of a Book, in order; the unit you open and mark as read. A Page keeps its Read mark and the Bookmark when you move it or change its text on the Book's edit screen; a `---` line in it splits it into Pages, the first keeping it. The Tutor may clean up a Book's Pages too, but not one that is Read.
-_Avoid_: Text (Lute's name for it), chapter
+_Avoid_: Text (Lute's name for it), chapter (that's a run of Pages)
+
+**Chapter**:
+A run of a Book's Pages, from a Page marked as starting one to the next such mark, with an optional title (untitled, it is "Chapter n"). A Chapter always starts a Page; Pages before the first mark are in none, and Chapters don't nest. Headings like "Chapter 3", "Глава 3" or "IV", a `# ` line, or a web page's `<h2>`s mark them when a Book is created, the heading staying in the text; you mark them on the edit screen, and the Tutor may mark them on Read Pages too.
+_Avoid_: Section, part
 
 **Sentence**:
 One sentence of a Page, in order, as split by its Language's rules. Multi-word Terms never cross a Sentence boundary.
