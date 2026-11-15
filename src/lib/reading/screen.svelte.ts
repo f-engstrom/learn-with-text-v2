@@ -278,6 +278,14 @@ export class ReadingScreen {
 		tick().then(() => this.#view.scrollToWord(index, 'nearest'));
 	}
 
+	/**
+	 * A tap outside the Term panel's sheet on a phone closes it. The Selection stays, and focus isn't moved, so
+	 * the page doesn't scroll under the finger.
+	 */
+	tapOutside() {
+		this.open = false;
+	}
+
 	/** Closes the Term panel and puts focus back on the text. */
 	close() {
 		this.open = false;

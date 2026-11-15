@@ -126,6 +126,18 @@
 		zenMode.tapOutside();
 	}
 
+	/**
+	 * On a phone the Term panel is a sheet over the text: a tap outside it, not on a Word, closes it. A click, not a
+	 * pointerdown, so scrolling the text with the sheet open leaves it open.
+	 */
+	function onclick(e: MouseEvent) {
+		if (!open || !(e.target instanceof Element) || !e.target.isConnected) return;
+		if (e.target.closest('.term-panel, .word') || !matchMedia(SHEET).matches) return;
+		screen.tapOutside();
+	}
+	/** When the Term panel is a sheet; the width TermPanel's styles break at. */
+	const SHEET = '(max-width: 60rem)';
+
 	/** Buttons and links handle Enter themselves. */
 	function isControl(target: EventTarget | null) {
 		return target instanceof HTMLElement && target.closest('button, a, summary') !== null;
@@ -156,7 +168,7 @@
 	}
 </script>
 
-<svelte:window {onkeydown} {onpaste} onmousemove={() => zenMode.wake()} {onpointerdown} />
+<svelte:window {onkeydown} {onpaste} onmousemove={() => zenMode.wake()} {onpointerdown} {onclick} />
 
 <svelte:head>
 	<title>{data.book.title} · Reader</title>

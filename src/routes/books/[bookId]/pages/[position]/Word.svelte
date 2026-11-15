@@ -22,7 +22,7 @@
 		tabStop?: boolean;
 		/** Enter and Space choose it, except during a Practice run. Enter on the cursor's Word is the reading screen's, which opens the whole Selection. */
 		keys?: boolean;
-		/** Clicked or chosen by key; `shift` extends the Selection to it. */
+		/** Clicked or chosen by key; `shift` (Shift-click, or holding it on a touch screen) extends the Selection to it. */
 		onchoose?: (shift: boolean) => void;
 		element?: HTMLElement;
 	}
@@ -41,6 +41,47 @@
 		onchoose,
 		element = $bindable()
 	}: Props = $props();
+
+	/** How long a finger rests on a Word to extend the Selection to it, and how far it may drift (a scroll). */
+	const HOLD_MS = 450;
+	const DRIFT_PX = 10;
+	let hold: { timer: ReturnType<typeof setTimeout>; x: number; y: number } | undefined;
+	/** The hold has extended the Selection; the click that follows the finger lifting is not a tap. */
+	let held = false;
+
+	/** On a touch screen, holding a Word is Shift-click: there is no Shift to hold. */
+	function onpointerdown(e: PointerEvent) {
+		held = false;
+		if (e.pointerType !== 'touch') return;
+		cancelHold();
+		hold = {
+			x: e.clientX,
+			y: e.clientY,
+			timer: setTimeout(() => {
+				hold = undefined;
+				held = true;
+				navigator.vibrate?.(10);
+				onchoose?.(true);
+			}, HOLD_MS)
+		};
+	}
+
+	function onpointermove(e: PointerEvent) {
+		if (hold && Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > DRIFT_PX) cancelHold();
+	}
+
+	function cancelHold() {
+		if (hold) clearTimeout(hold.timer);
+		hold = undefined;
+	}
+
+	function onclick(e: MouseEvent) {
+		if (held) {
+			held = false;
+			return;
+		}
+		onchoose?.(e.shiftKey);
+	}
 
 	/** Shifts the zen tooltip sideways so it stays on screen under a Word near either edge. */
 	function keepInView(node: HTMLElement, _text: string) {
@@ -72,7 +113,12 @@
 	data-due={due || undefined}
 	bind:this={element}
 	onmousedown={(e) => e.shiftKey && e.preventDefault()}
-	onclick={(e) => onchoose?.(e.shiftKey)}
+	{onpointerdown}
+	{onpointermove}
+	onpointerup={cancelHold}
+	onpointercancel={cancelHold}
+	oncontextmenu={(e) => (held || hold) && e.preventDefault()}
+	{onclick}
 	onkeydown={(e) => keys && (e.key === ' ' || (e.key === 'Enter' && !current)) && (e.preventDefault(), onchoose?.(false))}
 	>{text}{#if gloss}<span class="gloss" aria-hidden="true" use:keepInView={gloss}>{gloss}</span>{/if}</span
 >
@@ -88,6 +134,14 @@
 	}
 	.word:focus {
 		outline: none;
+	}
+	/* Holding a Word makes a phrase, not a text selection or the callout menu. */
+	@media (pointer: coarse) {
+		.word {
+			-webkit-touch-callout: none;
+			-webkit-user-select: none;
+			user-select: none;
+		}
 	}
 	/* Above its neighbours, so a tooltip under it isn't covered by the next line's Words. */
 	.word.current {

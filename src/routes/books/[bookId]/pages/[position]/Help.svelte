@@ -4,7 +4,7 @@
 </script>
 
 <div class="help card">
-	<p class="start"><span class="pointer">Click a Word, or press <kbd>→</kbd> to start.</span><span class="touch">Tap a Word to open it.</span></p>
+	<p class="start"><span class="pointer">Click a Word, or press <kbd>→</kbd> to start.</span><span class="touch">Tap a Word to open it; then hold another Word in its Sentence to select a phrase.</span></p>
 	<details>
 		<summary>Keys</summary>
 		<dl class="keys">
@@ -13,7 +13,7 @@
 			<dt><kbd>↑</kbd> <kbd>↓</kbd></dt>
 			<dd>Previous or next Sentence</dd>
 			<dt><kbd>Shift</kbd> + <kbd>←</kbd> <kbd>→</kbd></dt>
-			<dd>Select a phrase (or Shift-click)</dd>
+			<dd>Select a phrase (or Shift-click; on a touch screen, hold a Word)</dd>
 			<dt>Characters</dt>
 			<dd>In the Term form, pick part of a Chinese Word</dd>
 			<dt><kbd>1</kbd>–<kbd>4</kbd></dt>

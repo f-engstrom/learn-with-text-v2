@@ -76,6 +76,30 @@ describe('ReadingScreen', () => {
 		expect(screen.open).toBe(false);
 	});
 
+	it('closes the Term panel on a tap outside it, leaving the Selection and focus where they were', async () => {
+		const { screen, view, index } = await setup();
+		screen.tapOutside();
+		expect(screen.open).toBe(false);
+
+		screen.choose(index('спит'), false);
+		await tick();
+		vi.mocked(view.focusWord).mockClear();
+		screen.tapOutside();
+		expect(screen.open).toBe(false);
+		expect(screen.selection.selected?.text).toBe('спит');
+		// Focusing the Word would scroll a phone's page under the finger.
+		await tick();
+		expect(view.focusWord).not.toHaveBeenCalled();
+	});
+
+	it('makes a phrase from a held Word, as Shift-click does', async () => {
+		const { screen, index } = await setup();
+		screen.choose(index('Кот'), false);
+		screen.choose(index('на'), true);
+		expect(screen.open).toBe(true);
+		expect(screen.selection.selected?.text).toBe('Кот спит на');
+	});
+
 	it('opens with Enter only once something is selected, and not from a button', async () => {
 		const { screen, press } = await setup();
 		press('Enter');
