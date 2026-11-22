@@ -10,8 +10,12 @@ A personal tool for learning languages by reading: you read real texts, look up 
 A language being studied, with its own rules for splitting text into words and normalising them, and its own dictionaries.
 
 **Book**:
-A text you have imported to read, in one Language, split into Pages. It comes from pasted text, a file, a web address or a Suggestion; one from the web keeps its address.
+A text you have imported to read, in one Language, split into Pages. It comes from pasted text, Recognised photos or files, a web address or a Suggestion; one from the web keeps its address.
 _Avoid_: Text, document, article (an article becomes a Book once you pick it)
+
+**Recognise**:
+To read the text in photos, PDFs or text files on the server, in a Language, into the text box of a new Book or of "Add Pages here" (or for the Tutor, `recognise_files`), to check before it becomes Pages. A photo is one printed page: its page number and the edges of a facing page are left out, Words hyphenated at line ends joined, a paragraph made a line, and the next photo's text follows on. The photos aren't kept.
+_Avoid_: Scan (that's the hardware), OCR, read (a Page is Read)
 
 **Page**:
 One readable chunk of a Book, in order; the unit you open and mark as read. A Page keeps its Read mark and the Bookmark when you move it or change its text on the Book's edit screen; a `---` line in it splits it into Pages, the first keeping it. The Tutor may clean up a Book's Pages too, but not one that is Read.

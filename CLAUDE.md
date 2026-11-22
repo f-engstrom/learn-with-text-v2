@@ -12,6 +12,7 @@ Domain rules sit in `src/lib/server/domain`, which the web app and the Tutor's M
 | Normalised form, Character part | `lib/normalise.ts` (shared with the browser) |
 | Book, Page, importing text or a file | `domain/books.ts` |
 | Editing a Book: its Pages by id, moved, split, joined, removed or added; the Tutor's cleanup | `domain/book-editing.ts` (ADR 0008); on the screen `lib/books/page-draft.svelte.ts`, splitting and joining text in `lib/pages.ts` |
+| Recognise: text from photos and PDFs | `domain/recognise.ts` (ADR 0010; its clean-up rules, each shown on a recorded photo in `fixtures/recognise`), the Mac helper in `native/recognise` (`pnpm build:native`), joining photos in `lib/recognise.ts`; the picker is `components/RecogniseFiles.svelte` |
 | Chapter (a mark on the Page that starts it), finding headings at import | `domain/chapters.ts` (ADR 0009), the `# ` line and labels in `lib/chapters.ts`; shown by the reading screen's `Contents` |
 | Import from a web address (one address, one Book) | `domain/addresses.ts`, for the web page and the Tutor alike; readers in `domain/webpages.ts`, `suggestions.ts`, `classics.ts`, `feeds.ts` |
 | Bookmark, Highlight, Read; the Sentences at a place as the Tutor reads them (`sentencesAt`) | `domain/reading.ts`; the Bookmark's Word in `lib/reading/bookmark.ts` |
@@ -65,4 +66,4 @@ Storybook (`pnpm storybook`, port 6006) shows the theme, the components and ever
 
 For what needs the server: saving, imports, the Tutor's tools.
 
-`data/reader.db` holds real reading progress, and a Tutor session may be using it. Point the dev server's `DATABASE_PATH` at a copy (`sqlite3 data/reader.db ".backup <copy>"`). `pnpm check` and `pnpm test` (and `vitest`) regenerate SvelteKit's env config, which switches a running dev server back to `.env`'s database. Run neither while it is up, and before anything that writes, confirm it is on the copy: give the copy a marker (e.g. rename a Book) and look for it.
+`data/reader.db` holds real reading progress, and a Tutor session or the learner's own `pnpm dev` may be using it. Start the app with `pnpm dev:sandbox` (the `reader` entry in `.claude/launch.json`): it copies the database to `data/sandbox.db`, reads `.env.sandbox` on top of `.env`, and generates into `.svelte-kit-sandbox`, so `pnpm check` and `pnpm test` can run while it is up without moving it back to the real database. Each start copies afresh, discarding what the last run wrote. Plain `pnpm dev` is the real database.

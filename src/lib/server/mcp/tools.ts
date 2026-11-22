@@ -28,6 +28,7 @@ import { askLearner, awaitAnswer, feedbackLength, withdrawQuestion } from '../do
 import { listYourLanguages, removeYourLanguage, setYourLanguage, YOUR_LANGUAGE_LEVELS } from '../domain/your-languages';
 import { byPriority } from '../../practice';
 import { fetchArticle, type WebArticle } from '../domain/webpages';
+import { recogniseFiles, visionReader, type ReadFiles } from '../domain/recognise';
 import { Refused } from '../domain/refused';
 
 /**
@@ -37,7 +38,8 @@ import { Refused } from '../domain/refused';
 export function createReaderServer(
 	db: Kysely<Database>,
 	sources: SuggestionSources,
-	readArticle: (url: string) => Promise<WebArticle> = fetchArticle
+	readArticle: (url: string) => Promise<WebArticle> = fetchArticle,
+	readFiles: ReadFiles = visionReader()
 ): McpServer {
 	const server = new McpServer(
 		{ name: 'reader', version: '0.1.0' },
@@ -50,6 +52,7 @@ export function createReaderServer(
 				'assess_term after the learner answers about a Term (it moves your own assessment, never their Status, and counts as a Review), set_transfer when you judge how hard a Term is to carry over from their languages (list_your_languages), set_origin when you tell them where a word comes from or what it is related to (read a Term\'s origin before inventing a bridge), ' +
 				'set_bookmark as you move through the text, set_highlight to point the learner at Sentences in their reading screen, ask_learner to put your question there and wait for their answer, and mark_page_read at the end of a Page. ' +
 				'get_due_terms lists Terms due for practice, by priority, for warm-ups and quizzes. get_progress shows Words read, Milestones and Known Terms. ' +
+				'recognise_files reads the text in photos, PDFs or text files on this computer for you to check before import_book or edit_pages. ' +
 				'To clean up a messy import (menus, footers, a sentence cut across Pages), read it with get_pages and fix it with edit_pages; Read Pages are the learner\'s. Only the learner sets a Status.'
 		}
 	);
@@ -580,6 +583,28 @@ export function createReaderServer(
 				// Wikipedia articles and Classics come in through their APIs, without the pages' notices.
 				if (url !== undefined) return json(await importFromAddress(db, { ...sources, readArticle }, language, url, title));
 				return json({ bookId: await createBook(db, { languageId: language.id, title: title ?? '', text: text! }) });
+			})
+	);
+
+	server.registerTool(
+		'recognise_files',
+		{
+			title: 'Recognise files',
+			description:
+				'Reads the text in photos (one Page each), PDFs and text files on this computer, in the order given, as one text: page numbers and the edges of facing pages left out, ' +
+				'Words hyphenated at line ends joined, a paragraph to a line. Check it, then create a Book with import_book (text) or add Pages to one with edit_pages. ' +
+				'Nothing is saved.',
+			inputSchema: {
+				language: z.string().describe('Language name or code of the text.'),
+				paths: z.array(z.string()).min(1).describe('Absolute paths of photos, PDFs or .txt files.')
+			},
+			annotations: readOnly
+		},
+		async ({ language: name, paths }) =>
+			guard(async () => {
+				const language = await findLanguage(db, name);
+				if (!language) return failure(`Unknown Language "${name}". Use list_languages.`);
+				return json({ text: await recogniseFiles(readFiles, language, paths) });
 			})
 	);
 

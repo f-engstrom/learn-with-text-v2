@@ -1,12 +1,14 @@
 <!--
   Where new Pages can go: between two Page cards, before the first or after the last. A quiet
-  "Add Pages here" until used, then a box to paste into, a `---` line between Pages. A photo taken
-  there (or picked) shows above the box, for the phone's own text recognition (Live Text, Lens) to
-  select and copy from; the Reader reads nothing from it.
+  "Add Pages here" until used, then a box to paste into, a `---` line between Pages. Photos taken
+  there (or picked, or a PDF) are read on the server one at a time and their text added to the box,
+  to check against the photos before adding the Pages (ADR 0010).
 -->
 <script lang="ts">
 	import Button from '#lib/components/Button.svelte';
+	import RecogniseFiles from '#lib/components/RecogniseFiles.svelte';
 	import { splitAtBreaks } from '#lib/pages.ts';
+	import { appendRecognised } from '#lib/recognise.ts';
 
 	interface Props {
 		/** Open to paste into. */
@@ -15,39 +17,25 @@
 		shown?: boolean;
 		/** Says where, for screen readers and the button: "after Page 3". */
 		where: string;
+		/** The Book's Language, which photos are read in. */
+		languageId: number;
 		lang?: string;
 		onopen?: () => void;
 		onclose?: () => void;
 		onadd?: (text: string) => void;
 	}
 
-	let { open = false, shown = false, where, lang, onopen, onclose, onadd }: Props = $props();
+	let { open = false, shown = false, where, languageId, lang, onopen, onclose, onadd }: Props = $props();
 
 	const uid = $props.id();
 	let text = $state('');
 	const parts = $derived(splitAtBreaks(text).length);
-
-	/** Object URLs of the photos taken here, newest last; gone when the box closes. */
-	let photos = $state<string[]>([]);
-
-	function takePhoto(event: Event & { currentTarget: HTMLInputElement }) {
-		const input = event.currentTarget;
-		for (const file of input.files ?? []) photos.push(URL.createObjectURL(file));
-		input.value = '';
-	}
-
-	function dropPhoto(url: string) {
-		URL.revokeObjectURL(url);
-		photos = photos.filter((p) => p !== url);
-	}
+	let files = $state<RecogniseFiles>();
 
 	function clear() {
-		for (const url of photos) URL.revokeObjectURL(url);
-		photos = [];
+		files?.clear();
 		text = '';
 	}
-
-	$effect(() => clear);
 
 	function add() {
 		onadd?.(text);
@@ -62,26 +50,12 @@
 
 {#if open}
 	<li class="card add">
-		<div class="head">
-			<label for="{uid}-text">Add Pages {where}</label>
-			<label class="button photo">
-				📷 Photo of text
-				<input type="file" accept="image/*" capture="environment" multiple onchange={takePhoto} />
-			</label>
-		</div>
-		{#each photos as url (url)}
-			<figure>
-				<img src={url} alt="Text to copy from" />
-				<figcaption>
-					Hold on the text to select it, then copy and paste it below.
-					<Button type="button" variant="quiet" onclick={() => dropPhoto(url)}>Remove photo</Button>
-				</figcaption>
-			</figure>
-		{/each}
+		<label for="{uid}-text">Add Pages {where}</label>
+		<RecogniseFiles bind:this={files} {languageId} onread={(read) => (text = appendRecognised(text, read))} />
 		<label class="text">
 			<span class="visually-hidden">Text</span>
 			<!-- svelte-ignore a11y_autofocus -->
-			<textarea id="{uid}-text" bind:value={text} rows="4" {lang} dir="auto" autofocus placeholder="Paste or type. A line containing only --- starts a new Page."
+			<textarea id="{uid}-text" bind:value={text} rows={text ? 12 : 4} {lang} dir="auto" autofocus placeholder="Paste, type, or take a photo of the text. A line containing only --- starts a new Page."
 			></textarea>
 		</label>
 		<div class="actions">
@@ -152,47 +126,6 @@
 	}
 	.add .text {
 		display: grid;
-	}
-	.head {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-	}
-	.photo input {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		opacity: 0;
-	}
-	.photo {
-		position: relative;
-	}
-	.photo:focus-within {
-		outline: 2px solid var(--accent);
-		outline-offset: 2px;
-	}
-	figure {
-		display: grid;
-		gap: 0.25rem;
-		margin: 0;
-	}
-	figure img {
-		max-width: 100%;
-		max-height: 70vh;
-		justify-self: start;
-		border-radius: var(--radius);
-		border: 1px solid var(--border);
-	}
-	figcaption {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 0.25rem;
-		font-size: 0.9rem;
-		color: var(--muted);
 	}
 	.add textarea {
 		font-family: var(--font-text);

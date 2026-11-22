@@ -7,6 +7,8 @@ import { networkInterfaces } from 'node:os';
 // says otherwise. Marking every request plain http lets forms work at whichever address you use
 // (localhost, this computer's network address, its .local name) without baking one in.
 process.env.PROTOCOL_HEADER = 'x-reader-protocol';
+// Photos straight from a phone (several MB each) and whole PDFs are uploaded to be recognised (ADR 0010).
+process.env.BODY_SIZE_LIMIT ??= '200M';
 const { handler } = await import('./build/handler.js');
 
 const network = process.argv.includes('--host');
@@ -17,6 +19,8 @@ const server = createServer((req, res) => {
 	req.headers['x-reader-protocol'] = 'http';
 	handler(req, res);
 });
+// Recognising a long scanned PDF takes minutes on an older Mac; the default cuts it off at five.
+server.requestTimeout = 30 * 60 * 1000;
 
 server.listen(port, host, () => {
 	console.log(`  Local:   http://localhost:${port}/`);

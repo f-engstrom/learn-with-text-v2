@@ -125,6 +125,7 @@
 	<ol class="pages" bind:this={list}>
 		<AddPages
 			where="before Page 1"
+			languageId={language.id}
 			lang={language.code}
 			open={addingAt === 'start'}
 			onopen={() => (addingAt = 'start')}
@@ -154,6 +155,7 @@
 			<AddPages
 				where={number ? `after Page ${number}` : `where Page ${page.was} was`}
 				shown={i === draft.pages.length - 1}
+				languageId={language.id}
 				lang={language.code}
 				open={addingAt === page.key}
 				onopen={() => (addingAt = page.key)}

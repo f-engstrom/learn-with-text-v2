@@ -64,7 +64,11 @@ export const defaults: Server = {
 	'PUT /books/*/bookmark': {},
 	'POST /terms/*/reviews': {},
 	'PUT /terms/status': {},
-	'PUT /languages/*/fit-range': {}
+	'PUT /languages/*/fit-range': {},
+	// Each photo reads as the next stretch of the same text.
+	'POST /languages/*/recognise': { body: { text: 'Старый мост через реку снова открыт. Его ремонтировали почти два года, и жители города очень ждали этого дня.' }, delay: 300 },
+	// A photo the browser can't show is never asked for here: the stories' photos are PNGs.
+	'POST /recognise/preview': { status: 404 }
 };
 
 const matches = (pattern: string, call: Call) => {

@@ -6,6 +6,7 @@ node_modules
 .netlify
 .wrangler
 /.svelte-kit
+/.svelte-kit-sandbox
 /build
 
 # OS
@@ -17,6 +18,7 @@ Thumbs.db
 .env.*
 !.env.example
 !.env.test
+!.env.sandbox
 
 # Vite
 vite.config.js.timestamp-*
@@ -31,3 +33,8 @@ debug-storybook.log
 .vitest-attachments
 # Snapshots are taken before a design change and compared after it, not kept (ADR 0007).
 /src/stories/snapshots
+
+# Photos for recording text-recognition fixtures (ADR 0010); kept locally, not committed.
+/ocr-samples
+# The Mac helper for text recognition, built by `pnpm build:native`.
+/bin

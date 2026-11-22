@@ -35,7 +35,8 @@ async function connect() {
 		if (url.includes('missing')) throw new (await import('../domain/webpages')).InvalidAddress('The site answered 404.');
 		return { url: `${url}?final`, title: 'Новости', text: 'Сегодня тепло. Кот гуляет.' };
 	};
-	await createReaderServer(db, sources, article).connect(serverSide);
+	const readFiles = async (paths: string[]) => paths.map((path) => ({ file: path, text: `Текст из ${path.split('/').at(-1)}.` }));
+	await createReaderServer(db, sources, article, readFiles).connect(serverSide);
 	const client = new Client({ name: 'test', version: '1' });
 	await client.connect(clientSide);
 	const call = async (name: string, args: Record<string, unknown> = {}) => {
@@ -76,6 +77,7 @@ describe('Reader MCP server', () => {
 			withdraw_question: false,
 			mark_page_read: false,
 			import_book: false,
+			recognise_files: true,
 			get_pages: true,
 			edit_pages: false
 		});
@@ -219,6 +221,16 @@ describe('Reader MCP server', () => {
 		expect(await call('set_bookmark', { book_id: bookId, page: 9 })).toEqual({ error: 'No such Page.' });
 		expect(await call('mark_page_read', { book_id: bookId, page: 1 })).toEqual({ read: 1, bookmark: { page: 2, sentence: 1 }, nextPage: 2 });
 		expect((await call('look_up_term', { language: 'ru', text: 'мышь' })).status).toBe('unknown');
+	});
+
+	it('reads the text in files on this computer, saving nothing', async () => {
+		const { call } = await connect();
+		expect(await call('recognise_files', { language: 'Russian', paths: ['/photos/1.heic', '/photos/2.pdf'] })).toEqual({
+			text: 'Текст из 1.heic.\nТекст из 2.pdf.'
+		});
+		expect(await call('recognise_files', { language: 'ru', paths: ['/photos/book.epub'] })).toEqual({
+			error: "book.epub isn't a photo, a PDF or a text file."
+		});
 	});
 
 	it('imports a Book from text or a web address, once per address', async () => {

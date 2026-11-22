@@ -1,8 +1,24 @@
 <script lang="ts">
 	import Button from '#lib/components/Button.svelte';
+	import RecogniseFiles from '#lib/components/RecogniseFiles.svelte';
+	import { appendRecognised } from '#lib/recognise.ts';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
+
+	// The form is posted without JavaScript's help, so a refused one comes back as a new page.
+	// svelte-ignore state_referenced_locally
+	let languageId = $state(form?.values.languageId || data.languages[0]?.id);
+	// svelte-ignore state_referenced_locally
+	let title = $state(form?.values.title ?? '');
+	// svelte-ignore state_referenced_locally
+	let text = $state(form?.values.text ?? '');
+
+	/** A file's text goes into the box to check; the first one names the Book unless you have. */
+	function read(more: string, file: File) {
+		if (text.trim() === '' && title.trim() === '') title = file.name.replace(/\.[^.]+$/, '');
+		text = appendRecognised(text, more);
+	}
 </script>
 
 <svelte:head>
@@ -10,9 +26,9 @@
 </svelte:head>
 
 <h1>New Book</h1>
-<p class="lede">Paste a text, fetch an article from a web address, or upload a text file.</p>
+<p class="lede">Paste a text, fetch an article from a web address, or read one from photos, a PDF or a text file.</p>
 
-<form method="POST" action="?/create" class="new-book card" enctype="multipart/form-data">
+<form method="POST" action="?/create" class="new-book card">
 	{#if form?.message}
 		<p class="error" role="alert">
 			{form.message}
@@ -22,9 +38,9 @@
 
 	<label>
 		Language
-		<select name="languageId" required>
+		<select name="languageId" bind:value={languageId} required>
 			{#each data.languages as language (language.id)}
-				<option value={language.id} selected={form?.values.languageId === language.id}>{language.name}</option>
+				<option value={language.id}>{language.name}</option>
 			{/each}
 		</select>
 	</label>
@@ -44,21 +60,22 @@
 
 	<label>
 		Title
-		<input name="title" value={form?.values.title ?? ''} />
+		<input name="title" bind:value={title} />
 	</label>
-	<small>Leave it empty to use the article's headline or the file's name.</small>
+	<small>Leave it empty to use the article's headline.</small>
+
+	<div class="read">
+		<span>Or read the text from photos, a PDF or a text file</span>
+		{#if languageId}<RecogniseFiles {languageId} onread={read} />{/if}
+	</div>
+	<small>Each is read into the text below as it comes, to check against the photo before you create the Book.</small>
 
 	<label>
 		Text
-		<textarea name="text" rows="16" value={form?.values.text ?? ''}></textarea>
-	</label>
-
-	<label>
-		Or a text file
-		<input type="file" name="file" accept=".txt,text/plain" />
+		<textarea name="text" rows="16" bind:value={text}></textarea>
 	</label>
 	<small
-		>UTF-8 text, up to 5 MB. A line containing only <code>---</code> starts a new Page, and one starting <code># </code> starts a Chapter. Headings like “Chapter 3” are found by themselves.</small
+		>A line containing only <code>---</code> starts a new Page, and one starting <code># </code> starts a Chapter. Headings like “Chapter 3” are found by themselves.</small
 	>
 
 	<div class="actions">
@@ -92,6 +109,10 @@
 		grid-template-columns: minmax(0, 1fr) auto;
 		gap: 0.5rem;
 		align-items: end;
+	}
+	.read {
+		display: grid;
+		gap: 0.4rem;
 	}
 	.fetched {
 		color: var(--ok);

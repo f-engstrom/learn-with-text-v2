@@ -13,7 +13,10 @@ export default defineConfig({
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
 			// Served by serve.js, which tells the adapter requests are plain http (see there).
-			adapter: adapter()
+			adapter: adapter(),
+			// `pnpm dev:sandbox` generates into its own folder: the env modules there carry its
+			// database, and `svelte-kit sync` (in `pnpm check` and `pnpm test`) rewrites only `.svelte-kit`.
+			outDir: process.env.SVELTEKIT_OUT_DIR ?? '.svelte-kit'
 		})
 	],
 	test: {
