@@ -72,6 +72,11 @@ describe('appendRecognised', () => {
 		expect(appendRecognised('Тут я даже закряхтел.', '— Нельзя мне.')).toBe('Тут я даже закряхтел.\n— Нельзя мне.');
 		expect(appendRecognised('', 'Первая.')).toBe('Первая.');
 	});
+
+	it('starts the next photo on a line of its own after a `---` line, so it begins a new Page', () => {
+		expect(appendRecognised('Конец страницы.\n---\n', 'Ты должен')).toBe('Конец страницы.\n---\nТы должен');
+		expect(appendRecognised('а сам примостился\n---', 'рядом на подоконнике.')).toBe('а сам примостился\n---\nрядом на подоконнике.');
+	});
 });
 
 describe('the clean-up rules', () => {
