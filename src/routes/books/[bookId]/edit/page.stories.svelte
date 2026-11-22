@@ -1,24 +1,25 @@
 <script module lang="ts">
-	import { expect, userEvent, within } from 'storybook/test';
+	import { expect, userEvent, waitFor, within } from 'storybook/test';
 	import preview from '../../../../../.storybook/preview';
 	import { fixtures } from '#fixtures';
 	import Screen from '#stories/Screen.svelte';
 	import Page from './+page.svelte';
+	import { pagesSoFar, photosOfPages, readsPages } from '#stories/photos.ts';
 
 	const { messy, many, long, chapters } = fixtures.editing;
 	const at = (id: number) => ({ sveltekit_experimental: { state: { page: { url: new URL(`/books/${id}/edit`, location.origin) } } } });
 	const { Story } = preview.meta({
-		title: 'Screens/Edit Book',
+		title: 'Screens/Book',
 		component: Screen,
 		args: { screen: Page, data: messy },
 		parameters: { layout: 'fullscreen', ...at(messy.book.id) }
 	});
 </script>
 
-<Story name="A messy web import" />
+<Story name="Edit: A messy web import" />
 
 <Story
-	name="Cleaned up"
+	name="Edit: Cleaned up"
 	play={async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 		const edit = async (start: RegExp, action: string) => {
@@ -34,10 +35,10 @@
 	}}
 />
 
-<Story name="Many Pages" args={{ data: many }} parameters={at(many.book.id)} />
+<Story name="Edit: Many Pages" args={{ data: many }} parameters={at(many.book.id)} />
 
 <Story
-	name="Adding Pages in the middle"
+	name="Edit: Adding Pages in the middle"
 	args={{ data: many }}
 	parameters={at(many.book.id)}
 	play={async ({ canvasElement }) => {
@@ -50,16 +51,35 @@
 	}}
 />
 
-<Story name="A Page longer than usual" args={{ data: long }} parameters={at(long.book.id)} />
+<Story
+	name="Edit: A photo beside new Pages"
+	args={{ data: many }}
+	parameters={{ ...at(many.book.id), ...readsPages }}
+	play={async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		await userEvent.click(canvas.getByRole('button', { name: 'Add Pages after Page 12' }));
+		// Two Pages are in the box already, and a `---` line to start the next.
+		await userEvent.click(canvas.getByRole('textbox', { name: /Add Pages after Page 12/ }));
+		await userEvent.paste(pagesSoFar);
+		await userEvent.upload(canvas.getByLabelText(/Choose photos or files/), await photosOfPages());
+		await waitFor(() => expect(canvas.getAllByText('Read')).toHaveLength(3), { timeout: 5000 });
+		await expect((canvas.getByRole('textbox', { name: /Add Pages after Page 12/ }) as HTMLTextAreaElement).value).toMatch(/\n---\nТы должен сделать добро/);
+		await userEvent.click(canvas.getByRole('button', { name: 'Show IMG_0320.jpg' }));
+		const photo = canvas.getByRole('img', { name: /Photo 2/ }) as HTMLImageElement;
+		await waitFor(() => expect(photo.complete && photo.naturalWidth > 0).toBe(true));
+	}}
+/>
 
-<Story name="Refused" args={{ form: { message: 'Another Book came from that web address.' } }} />
+<Story name="Edit: A Page longer than usual" args={{ data: long }} parameters={at(long.book.id)} />
 
-<Story name="A short Book" args={{ data: fixtures.routes.editBook! }} parameters={at(fixtures.routes.editBook!.book.id)} />
+<Story name="Edit: Refused" args={{ form: { message: 'Another Book came from that web address.' } }} />
 
-<Story name="A Book in Chapters" args={{ data: chapters }} parameters={at(chapters.book.id)} />
+<Story name="Edit: A short Book" args={{ data: fixtures.routes.editBook! }} parameters={at(fixtures.routes.editBook!.book.id)} />
+
+<Story name="Edit: A Book in Chapters" args={{ data: chapters }} parameters={at(chapters.book.id)} />
 
 <Story
-	name="Marking where a Chapter starts"
+	name="Edit: Marking where a Chapter starts"
 	args={{ data: chapters }}
 	parameters={at(chapters.book.id)}
 	play={async ({ canvasElement }) => {

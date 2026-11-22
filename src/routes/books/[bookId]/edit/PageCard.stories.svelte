@@ -4,7 +4,7 @@
 	import { fn } from 'storybook/test';
 	import type { DraftPage } from '#lib/books/page-draft.svelte.ts';
 
-	const { Story } = preview.meta({ title: 'Components/Edit Book/PageCard', component: PageCard });
+	const { Story } = preview.meta({ title: 'Components/Book/PageCard', component: PageCard });
 
 	const text = 'Старый мост через реку снова открыт. Его ремонтировали почти два года, и жители города очень ждали этого дня.\n\nУтром на мосту собрались люди.';
 	const page = (over: Partial<DraftPage> = {}): DraftPage => ({ key: 'a', id: 1, was: 2, text, readAt: null, chapter: null, removed: false, open: false, ...over });

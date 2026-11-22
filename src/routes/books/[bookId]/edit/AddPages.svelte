@@ -51,13 +51,14 @@
 {#if open}
 	<li class="card add">
 		<label for="{uid}-text">Add Pages {where}</label>
-		<RecogniseFiles bind:this={files} {languageId} onread={(read) => (text = appendRecognised(text, read))} />
-		<label class="text">
-			<span class="visually-hidden">Text</span>
-			<!-- svelte-ignore a11y_autofocus -->
-			<textarea id="{uid}-text" bind:value={text} rows={text ? 12 : 4} {lang} dir="auto" autofocus placeholder="Paste, type, or take a photo of the text. A line containing only --- starts a new Page."
-			></textarea>
-		</label>
+		<RecogniseFiles bind:this={files} {languageId} onread={(read) => (text = appendRecognised(text, read))}>
+			<label class="text">
+				<span class="visually-hidden">Text</span>
+				<!-- svelte-ignore a11y_autofocus -->
+				<textarea id="{uid}-text" bind:value={text} rows={text ? 12 : 4} {lang} dir="auto" autofocus placeholder="Paste, type, or take a photo of the text. A line containing only --- starts a new Page."
+				></textarea>
+			</label>
+		</RecogniseFiles>
 		<div class="actions">
 			<Button type="button" variant="primary" onclick={add} disabled={parts === 0}>
 				{parts > 1 ? `Add ${parts} Pages` : 'Add a Page'}

@@ -4,7 +4,7 @@
 	import AddPages from './AddPages.svelte';
 	import { photoOfText } from '#stories/photos.ts';
 
-	const { Story } = preview.meta({ title: 'Components/Edit Book/AddPages', component: AddPages, args: { where: 'after Page 3', lang: 'ru', languageId: 4 } });
+	const { Story } = preview.meta({ title: 'Components/Book/AddPages', component: AddPages, args: { where: 'after Page 3', lang: 'ru', languageId: 4 } });
 </script>
 
 {#snippet list(args: { where: string; languageId: number; open?: boolean; shown?: boolean })}

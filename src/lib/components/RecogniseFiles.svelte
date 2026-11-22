@@ -4,8 +4,11 @@
   as it's added, so the next photo can be taken while the last is read. Their thumbnails stay beside
   the text to check it against, until the box is cleared; a photo that can't be read holds back the
   ones after it until it's tried again or removed, so the order of the text is never mixed up.
+  The text box is given as `children`: a photo opened to check against shows above it, or beside it
+  where the screen is wide enough.
 -->
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import Button from '#lib/components/Button.svelte';
 	import { RECOGNISABLE } from '#lib/recognise.ts';
 
@@ -14,9 +17,11 @@
 		languageId: number;
 		/** Each file's text, in order. */
 		onread: (text: string, file: File) => void;
+		/** The text box the files are read into, to check against them. */
+		children?: Snippet;
 	}
 
-	let { languageId, onread }: Props = $props();
+	let { languageId, onread, children }: Props = $props();
 
 	interface Item {
 		id: number;
@@ -159,15 +164,18 @@
 			{/each}
 		</ol>
 	{/if}
-	{#if shown?.url}
-		<figure>
-			<img src={shown.url} alt="Photo {items.indexOf(shown) + 1}, to check the text against" />
-			<figcaption>
-				<Button type="button" variant="quiet" onclick={() => (shown = null)}>Close</Button>
-				<Button type="button" variant="quiet" onclick={() => shown && remove(shown)}>Remove photo</Button>
-			</figcaption>
-		</figure>
-	{/if}
+	<div class={['compare', { comparing: shown?.url }]}>
+		{#if shown?.url}
+			<figure>
+				<img src={shown.url} alt="Photo {items.indexOf(shown) + 1}, to check the text against" />
+				<figcaption>
+					<Button type="button" variant="quiet" onclick={() => (shown = null)}>Close</Button>
+					<Button type="button" variant="quiet" onclick={() => shown && remove(shown)}>Remove photo</Button>
+				</figcaption>
+			</figure>
+		{/if}
+		{#if children}<div class="text">{@render children()}</div>{/if}
+	</div>
 </div>
 
 <style>
@@ -175,6 +183,7 @@
 		display: grid;
 		gap: 0.5rem;
 		min-width: 0;
+		container-type: inline-size;
 	}
 	.pick {
 		display: flex;
@@ -279,5 +288,34 @@
 	figcaption {
 		display: flex;
 		gap: 0.25rem;
+	}
+	.compare {
+		display: grid;
+		gap: 0.75rem;
+		min-width: 0;
+	}
+	.text {
+		display: grid;
+		min-width: 0;
+	}
+	/*
+	  The photo on the left and the text read from it on the right, the photo kept in view, where
+	  there's room for both: the screens widen to give it (from 60rem).
+	*/
+	@container (min-width: 52rem) {
+		.comparing {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			align-items: start;
+		}
+		.comparing figure {
+			position: sticky;
+			inset-block-start: 1rem;
+		}
+		.comparing figure img {
+			max-height: calc(100vh - 5rem);
+		}
+		.comparing .text :global(textarea) {
+			min-height: min(calc(100vh - 5rem), 44rem);
+		}
 	}
 </style>

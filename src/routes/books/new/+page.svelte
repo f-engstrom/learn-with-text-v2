@@ -64,16 +64,21 @@
 	</label>
 	<small>Leave it empty to use the article's headline.</small>
 
+	{#snippet textBox()}
+		<label>
+			Text
+			<textarea name="text" rows="16" bind:value={text}></textarea>
+		</label>
+	{/snippet}
 	<div class="read">
 		<span>Or read the text from photos, a PDF or a text file</span>
-		{#if languageId}<RecogniseFiles {languageId} onread={read} />{/if}
+		<small>Each is read into the text below as it comes, to check against the photo before you create the Book.</small>
+		{#if languageId}
+			<RecogniseFiles {languageId} onread={read}>{@render textBox()}</RecogniseFiles>
+		{:else}
+			{@render textBox()}
+		{/if}
 	</div>
-	<small>Each is read into the text below as it comes, to check against the photo before you create the Book.</small>
-
-	<label>
-		Text
-		<textarea name="text" rows="16" bind:value={text}></textarea>
-	</label>
 	<small
 		>A line containing only <code>---</code> starts a new Page, and one starting <code># </code> starts a Chapter. Headings like “Chapter 3” are found by themselves.</small
 	>
@@ -113,6 +118,18 @@
 	.read {
 		display: grid;
 		gap: 0.4rem;
+	}
+	.read > small {
+		margin-top: -0.2rem;
+	}
+	/* A photo opened to check the text against takes the screen's width, beside the text. */
+	@media (min-width: 60rem) {
+		.new-book:has(:global(.comparing)) {
+			max-width: none;
+		}
+		.new-book:has(:global(.comparing)) > :not(.read) {
+			max-width: 46rem;
+		}
 	}
 	.fetched {
 		color: var(--ok);

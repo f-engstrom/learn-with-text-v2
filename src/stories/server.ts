@@ -10,7 +10,7 @@ import type { WiktionaryResult } from '#lib/server/domain/wiktionary.ts';
 export interface Call {
 	method: string;
 	url: URL;
-	/** The JSON body, if it had one. */
+	/** The JSON body, or the form a file was sent in, if it had one. */
 	body: unknown;
 }
 
@@ -67,7 +67,7 @@ export const defaults: Server = {
 	'PUT /languages/*/fit-range': {},
 	// Each photo reads as the next stretch of the same text.
 	'POST /languages/*/recognise': { body: { text: 'Старый мост через реку снова открыт. Его ремонтировали почти два года, и жители города очень ждали этого дня.' }, delay: 300 },
-	// A photo the browser can't show is never asked for here: the stories' photos are PNGs.
+	// A photo the browser can't show is never asked for here: the stories' photos are PNGs and a JPEG.
 	'POST /recognise/preview': { status: 404 }
 };
 
@@ -87,13 +87,14 @@ export function installServer(table: Server = {}): () => void {
 	globalThis.fetch = async (input, init) => {
 		const request = new Request(input, init);
 		const url = new URL(request.url, location.href);
-		// Storybook's own requests (its modules, hot reload) go through.
-		if (url.origin !== location.origin || /^\/(@|node_modules|src|\.storybook|sb-|index\.json|iframe)/.test(url.pathname)) {
+		// Storybook's own requests (its modules, hot reload, a built Storybook's assets) go through.
+		if (url.origin !== location.origin || /^\/(@|node_modules|src|assets|\.storybook|sb-|index\.json|iframe)/.test(url.pathname)) {
 			return real(input, init);
 		}
 		const body = await request
 			.clone()
 			.json()
+			.catch(() => request.clone().formData())
 			.catch(() => undefined);
 		const call: Call = { method: request.method, url, body };
 		log(`${call.method} ${url.pathname}${url.search}`, body);

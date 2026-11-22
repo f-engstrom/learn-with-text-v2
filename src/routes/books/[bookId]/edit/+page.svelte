@@ -241,6 +241,12 @@
 		border-top: 1px solid var(--border);
 		background: var(--bg);
 	}
+	/* A photo opened to check new Pages against takes the screen's width, beside their text. */
+	@media (min-width: 60rem) {
+		.edit:has(:global(.comparing)) {
+			max-width: none;
+		}
+	}
 	@media (max-width: 40rem) {
 		.fields {
 			grid-template-columns: 1fr;
