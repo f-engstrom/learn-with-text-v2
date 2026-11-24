@@ -302,6 +302,16 @@ describe('Reader MCP server', () => {
 		expect(await call('wait_for_answer', { book_id: bookId, wait_seconds: 1 })).toEqual({ status: 'none' });
 	});
 
+	it('asks questions with a kind, and says what a kind needs', async () => {
+		const { db, call, bookId } = await connect();
+		const match = { prompt: 'Match them.', kind: 'match', left: ['мышь', 'бежит'], right: ['mouse', 'runs'] };
+		expect(await call('ask_learner', { book_id: bookId, questions: [match], wait_seconds: 0 })).toEqual({ status: 'waiting' });
+		expect((await getTutorQuestion(db, bookId))?.questions).toEqual([match]);
+		expect(await call('ask_learner', { book_id: bookId, questions: [{ prompt: 'Fill it.', kind: 'gaps', text: 'Мышь бежит.' }] })).toEqual({
+			error: 'A gaps question has a text of at most 300 characters with one to four gaps, each written ___.'
+		});
+	});
+
 	it('highlights Sentences for the reading screen, and shows the Highlight back', async () => {
 		const { call, bookId } = await connect();
 		const set = await call('set_highlight', { book_id: bookId, page: 1, first: 2, last: 3, note: 'Who chases whom?' });

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '#lib/components/Button.svelte';
+	import QuestionKind from './QuestionKind.svelte';
 	import { tick, untrack, type Snippet } from 'svelte';
 	import { cardCommandFor } from '#lib/reading/keys.ts';
 	import type { Answer, TutorQuestion } from '#lib/server/domain/from-tutor.ts';
@@ -26,13 +27,16 @@
 
 	const last = $derived(question.questions.length - 1);
 	const current = $derived(question.questions[step]);
+	/** The current question's options, when it is picked. */
+	const options = $derived('kind' in current ? undefined : current.options);
 	const done = (i: number) => drafts[i]?.trim() !== '';
 	const answered = $derived(drafts.every((_, i) => done(i)));
 
 	/** Puts the keyboard on the current question: its text box, or the question itself for options. */
 	export async function focus() {
 		await tick();
-		const box = stepElement?.querySelector('textarea');
+		// A typed answer's box, a gap to fill, or the question with a kind (which takes its own keys).
+		const box = stepElement?.querySelector<HTMLElement>(`textarea, [data-step="${step}"] input:not([readonly]), [data-step="${step}"] .kind`);
 		(box ?? stepElement)?.focus();
 	}
 
@@ -73,7 +77,7 @@
 		e.preventDefault();
 		if (command.kind === 'leave') onleave();
 		else if (command.kind === 'pick') {
-			const option = current.options?.[command.option];
+			const option = options?.[command.option];
 			if (option) pick(option);
 		} else if (command.by === -1) goTo(step - 1);
 		else if (done(step)) goTo(step + 1);
@@ -139,9 +143,18 @@
 				{/if}
 				<fieldset bind:this={stepElement} tabindex="-1">
 					<legend>{current.prompt}</legend>
-					{#if current.options}
+					{#each question.questions as q, i (i)}
+						{#if 'kind' in q}
+							<div data-step={i} hidden={i !== step}>
+								<QuestionKind question={q} seed="{question.askedAt} {i}" {lang} bind:value={drafts[i]} />
+							</div>
+						{/if}
+					{/each}
+					{#if 'kind' in current}
+						<!-- Drawn above, one for each question with a kind, so each keeps what the learner did there. -->
+					{:else if options}
 						<div class="options">
-							{#each current.options as option, o (option)}
+							{#each options as option, o (option)}
 								<Button type="button" pressed={drafts[step] === option} onclick={() => pick(option)}
 									><kbd class="hint">{o + 1}</kbd>{option}</Button
 								>
@@ -156,14 +169,14 @@
 				<div class="actions">
 					{#if step === last}
 						<Button type="submit" variant="primary" disabled={!answered}>{last > 0 ? 'Send answers' : 'Send answer'}</Button>
-					{:else if !current.options}
+					{:else if !options}
 						<Button type="submit" disabled={!done(step)}>Next</Button>
 					{/if}
 					<Button type="button" variant="link" onclick={() => (asking = true)}>Ask the Tutor instead</Button>
 				</div>
 				<p class="hint keys">
-					{#if current.options}<kbd>1</kbd>–<kbd>{current.options.length}</kbd> pick ·{/if}
-					{#if last > 0}<kbd>{current.options ? '←' : 'Alt ←'}</kbd> <kbd>{current.options ? '→' : 'Alt →'}</kbd> questions ·{/if}
+					{#if options}<kbd>1</kbd>–<kbd>{options.length}</kbd> pick ·{/if}
+					{#if last > 0}<kbd>{options ? '←' : 'Alt ←'}</kbd> <kbd>{options ? '→' : 'Alt →'}</kbd> questions ·{/if}
 					<kbd>Esc</kbd> back to the text
 				</p>
 			</form>
@@ -288,16 +301,14 @@
 		color: var(--muted);
 		font-size: 0.8rem;
 	}
-	/* The keys show while the keyboard is in the card. */
+	/* The keys show while the keyboard is in use in the card (not after a click or a tap). They keep their
+	   room while hidden, so showing them moves nothing: a click that shows them would otherwise miss. */
 	.hint {
-		display: none;
+		visibility: hidden;
 	}
-	.tutor-questions:focus-within .hint {
-		display: revert;
-	}
-	@media (hover: none) and (pointer: coarse) {
-		.tutor-questions:focus-within .hint {
-			display: none;
+	@media (hover: hover) {
+		.tutor-questions:has(:focus-visible) .hint {
+			visibility: visible;
 		}
 	}
 </style>

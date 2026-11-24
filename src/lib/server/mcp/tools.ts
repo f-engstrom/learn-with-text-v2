@@ -24,7 +24,7 @@ import { findSuggestions, getFitRange, type SuggestionSources } from '../domain/
 import { findTerms, listTerms, type TermView } from '../domain/terms';
 import { assessTerm, linkParent, saveGloss, setOrigin, setTransfer } from '../domain/tutoring';
 import { getProgress } from '../domain/progress';
-import { askLearner, awaitAnswer, feedbackLength, withdrawQuestion } from '../domain/from-tutor';
+import { askLearner, awaitAnswer, feedbackLength, questionKinds, withdrawQuestion } from '../domain/from-tutor';
 import { listYourLanguages, removeYourLanguage, setYourLanguage, YOUR_LANGUAGE_LEVELS } from '../domain/your-languages';
 import { byPriority } from '../../practice';
 import { fetchArticle, type WebArticle } from '../domain/webpages';
@@ -484,7 +484,8 @@ export function createReaderServer(
 			description:
 				'Puts your question in the learner’s reading screen, beside the Highlight, and waits for their answer. ' +
 				'Give feedback on their last answer with it, and the chunk’s Glosses as a list. The Highlight’s passage shows in the card, so a prompt need not repeat it ("Translate the highlighted clause."). One to four questions: one without options is typed (a translation, an open question), ' +
-				'one with two to four options is picked (they may type their own instead). They answer one question at a time and send at the end, which is their go-ahead, so don’t add a "ready to move on?" question. It replaces the Book’s previous question. ' +
+				'one with two to four options is picked (they may type their own instead); one with a kind is an order, gaps or match exercise. ' +
+				'Each answer is one line of text: an order answer is the words as they put them; gaps, the text with what they put in each gap in [brackets]; match, a "left = right" line per pair. They answer one question at a time and send at the end, which is their go-ahead, so don’t add a "ready to move on?" question. It replaces the Book’s previous question. ' +
 				'Returns status "answered" with answers (one per question, in order) or ask (their own question for you, instead of answering), ' +
 				'"dismissed" (they put the Tutor aside: stop and wait for them in chat), or "waiting" (still thinking: call wait_for_answer).',
 			inputSchema: {
@@ -500,7 +501,25 @@ export function createReaderServer(
 					.optional()
 					.describe('The Glosses for this chunk, shown as a list; save each with save_gloss too.'),
 				questions: z
-					.array(z.object({ prompt: z.string().min(1).max(300), options: z.array(z.string().min(1).max(120)).optional() }))
+					.array(
+						z.object({
+							prompt: z.string().min(1).max(300),
+							options: z.array(z.string().min(1).max(120)).optional().describe('Two to four to pick from; leave out for a typed answer. Not with a kind.'),
+							kind: z
+								.enum(questionKinds)
+								.optional()
+								.describe(
+									'order: they put words in order (words, in the order that is right). ' +
+										'gaps: they fill the gaps in a sentence (text with ___ for each gap, one to four; bank: words to fill them from, with distractors such as other cases, or leave out to have them typed). ' +
+										'match: they pair words with meanings (left and right, right[i] matching left[i]). The screen shuffles words, bank and right.'
+								),
+							words: z.array(z.string().min(1).max(60)).optional(),
+							text: z.string().max(300).optional(),
+							bank: z.array(z.string().min(1).max(60)).optional(),
+							left: z.array(z.string().min(1).max(60)).optional(),
+							right: z.array(z.string().min(1).max(60)).optional()
+						})
+					)
 					.min(1)
 					.max(4),
 				wait_seconds: waitSeconds

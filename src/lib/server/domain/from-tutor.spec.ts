@@ -54,6 +54,32 @@ describe('Tutor’s question', () => {
 		await expect(askLearner(db, bookId, { questions: [{ prompt: 'Pick', options: ['Only'] }] })).rejects.toThrow(InvalidTutorQuestion);
 	});
 
+	it('takes questions with a kind: words to order, gaps to fill, words to match', async () => {
+		const { db, bookId } = await setup();
+		const order = { prompt: 'Put them in order.', kind: 'order' as const, words: ['Кот', 'спит', 'дома'] };
+		const gaps = { prompt: 'Fill the gap.', kind: 'gaps' as const, text: ' Кот ___ . ', bank: ['спит', 'спят'] };
+		const typedGap = { prompt: 'Fill the gap.', kind: 'gaps' as const, text: 'Мышь ___.' };
+		const match = { prompt: 'Match them.', kind: 'match' as const, left: ['кот', 'мышь'], right: ['cat', 'mouse'] };
+		const asked = await askLearner(db, bookId, { questions: [order, gaps, typedGap, match] });
+		expect(asked.questions).toEqual([order, { ...gaps, text: 'Кот ___ .' }, typedGap, match]);
+		expect((await getTutorQuestion(db, bookId))?.questions).toEqual(asked.questions);
+	});
+
+	it('refuses a kind without what it needs, or with what it doesn’t take', async () => {
+		const { db, bookId } = await setup();
+		const refused = (question: Parameters<typeof askLearner>[2]['questions'][number]) =>
+			expect(askLearner(db, bookId, { questions: [question] })).rejects.toThrow(InvalidTutorQuestion);
+		await refused({ prompt: 'Order', kind: 'order', words: ['Кот', 'спит'] });
+		await refused({ prompt: 'Order', kind: 'order', words: ['Кот', 'спит', 'дома'], options: ['a', 'b'] });
+		await refused({ prompt: 'Gaps', kind: 'gaps', text: 'No gap here.' });
+		await refused({ prompt: 'Gaps', kind: 'gaps', text: '___ ___ ___', bank: ['спит', 'спят'] });
+		await refused({ prompt: 'Gaps', kind: 'gaps', text: 'Кот ___.', bank: ['спит', 'спит'] });
+		await refused({ prompt: 'Match', kind: 'match', left: ['кот', 'мышь'], right: ['cat'] });
+		await refused({ prompt: 'Match', kind: 'match', left: ['кот'], right: ['cat'] });
+		await refused({ prompt: 'Pick', words: ['a', 'b', 'c'] });
+		await refused({ prompt: 'What', kind: 'essay' as never });
+	});
+
 	it('takes an answer to every question, or the learner’s own question instead', async () => {
 		const { db, bookId } = await setup();
 		const asked = await askLearner(db, bookId, { questions: [which, translate] });
