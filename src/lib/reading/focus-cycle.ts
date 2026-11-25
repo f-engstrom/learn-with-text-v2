@@ -20,7 +20,7 @@ export function guardSends(guard: Guard, from: 'inside' | 'outside'): 'first' | 
 const stops = 'a[href], button, input, select, textarea, iframe, summary, [tabindex]';
 
 /** The elements in `panel` Tab stops at, in order, but for its guards. */
-export function tabStops(panel: HTMLElement): HTMLElement[] {
+function tabStops(panel: HTMLElement): HTMLElement[] {
 	return [...panel.querySelectorAll<HTMLElement>(stops)].filter(
 		(el) =>
 			el.tabIndex >= 0 &&

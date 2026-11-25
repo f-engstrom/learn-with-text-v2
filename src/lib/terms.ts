@@ -22,7 +22,7 @@ export const statusLabels: Record<Status, string> = {
 	ignored: 'Ignored'
 };
 
-export const SOURCES: readonly Source[] = ['you', 'wiktionary', 'tutor', 'azure'];
+const SOURCES: readonly Source[] = ['you', 'wiktionary', 'tutor', 'azure'];
 
 export const isSource = (value: string | undefined): value is Source => value !== undefined && (SOURCES as readonly string[]).includes(value);
 

@@ -31,7 +31,7 @@ export function holdsLabel(recall: RecallStrength): string {
 const transferPoints = { easy: 0, medium: 1, hard: 2 } as const;
 
 /** How hard a Term is to carry over: 0 (form and concept easy) to 4 (both hard); -1 when not judged. */
-export function transferScore(transfer: Transfer | undefined): number {
+function transferScore(transfer: Transfer | undefined): number {
 	return transfer ? transferPoints[transfer.form] + transferPoints[transfer.concept] : -1;
 }
 

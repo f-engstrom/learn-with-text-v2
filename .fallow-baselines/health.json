@@ -1,0 +1,558 @@
+{
+  "kind": "health",
+  "finding_counts": {
+    "serve.js": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/components/RecogniseFiles.svelte": {
+      "complexity_moderate": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 2
+      }
+    },
+    "src/lib/components/TermForm.svelte": {
+      "complexity_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/reading/from-tutor.svelte.ts": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/reading/keys.ts": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/reading/practice.svelte.ts": {
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/reading/screen.svelte.ts": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/azure.ts": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/book-editing.ts": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/classics.ts": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/etymology.ts": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/feeds.ts": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/from-tutor.ts": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/reading.ts": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/suggestions.ts": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/terms.ts": {
+      "complexity_high": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "src/lib/server/domain/webpages.ts": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/api/azure/+server.ts": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "src/routes/api/wiktionary/+server.ts": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/edit/PageCard.svelte": {
+      "complexity_critical": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/+page.svelte": {
+      "complexity_moderate": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 3
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/Contents.svelte": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/DictionaryPanel.svelte": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/PageText.svelte": {
+      "complexity_high": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/PracticePanel.svelte": {
+      "complexity_critical": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/QuestionKind.svelte": {
+      "complexity_high": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/Suggestions.svelte": {
+      "complexity_high": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/TermPanel.svelte": {
+      "complexity_high": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/TutorQuestions.svelte": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/TutorTurn.svelte": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/new/+page.server.ts": {
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "src/routes/languages/[languageId]/suggestions/+page.server.ts": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "src/routes/languages/[languageId]/suggestions/+page.svelte": {
+      "complexity_critical": {
+        "count": 1
+      }
+    },
+    "src/routes/terms/+page.server.ts": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "src/routes/terms/+page.svelte": {
+      "complexity_critical": {
+        "count": 1
+      }
+    },
+    "src/routes/terms/review/+page.server.ts": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/terms/review/+page.svelte": {
+      "complexity_high": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "src/stories/server.ts": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "src/stories/snapshot.ts": {
+      "crap_high": {
+        "count": 1
+      }
+    }
+  },
+  "identity_finding_counts": {
+    "serve.js\u0000<arrow>": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/components/RecogniseFiles.svelte\u0000<template>": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/components/RecogniseFiles.svelte\u0000unshowable": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "src/lib/components/RecogniseFiles.svelte\u0000work": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "src/lib/components/TermForm.svelte\u0000<template>": {
+      "complexity_high": {
+        "count": 1
+      }
+    },
+    "src/lib/components/TermForm.svelte\u0000saved": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/reading/from-tutor.svelte.ts\u0000#poll": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/reading/keys.ts\u0000commandFor": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/reading/practice.svelte.ts\u0000grade": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/reading/practice.svelte.ts\u0000key": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "src/lib/reading/screen.svelte.ts\u0000run": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/azure.ts\u0000lookUp": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/book-editing.ts\u0000<arrow>": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/classics.ts\u0000wrapLooseText": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/etymology.ts\u0000renderTemplate": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/feeds.ts\u0000items": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/from-tutor.ts\u0000toQuestion": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/reading.ts\u0000setHighlight": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/suggestions.ts\u0000cutArticle": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/terms.ts\u0000<arrow>": {
+      "complexity_high": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/terms.ts\u0000matching": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/lib/server/domain/webpages.ts\u0000extractArticle": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/api/azure/+server.ts\u0000GET": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "src/routes/api/wiktionary/+server.ts\u0000GET": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/edit/PageCard.svelte\u0000<template>": {
+      "complexity_critical": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/+page.svelte\u0000<template>": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/+page.svelte\u0000daySoFarParts": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/+page.svelte\u0000onclick": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/+page.svelte\u0000revealRail": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/Contents.svelte\u0000close": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/DictionaryPanel.svelte\u0000focusInside": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/PageText.svelte\u0000<template>": {
+      "complexity_high": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/PracticePanel.svelte\u0000<template>": {
+      "complexity_critical": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/QuestionKind.svelte\u0000<arrow>": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/QuestionKind.svelte\u0000<template>": {
+      "complexity_high": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/QuestionKind.svelte\u0000onkeydown": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/Suggestions.svelte\u0000<template>": {
+      "complexity_high": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/TermPanel.svelte\u0000<template>": {
+      "complexity_high": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/TutorQuestions.svelte\u0000<template>": {
+      "complexity_critical": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/TutorQuestions.svelte\u0000onEnter": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/TutorQuestions.svelte\u0000onkeydown": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "src/routes/books/[bookId]/pages/[position]/TutorTurn.svelte\u0000<template>": {
+      "complexity_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/new/+page.server.ts\u0000create": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/books/new/+page.server.ts\u0000fetch": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/languages/[languageId]/suggestions/+page.server.ts\u0000pick": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "src/routes/languages/[languageId]/suggestions/+page.svelte\u0000<template>": {
+      "complexity_critical": {
+        "count": 1
+      }
+    },
+    "src/routes/terms/+page.server.ts\u0000load": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "src/routes/terms/+page.svelte\u0000<template>": {
+      "complexity_critical": {
+        "count": 1
+      }
+    },
+    "src/routes/terms/review/+page.server.ts\u0000load": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "src/routes/terms/review/+page.svelte\u0000<template>": {
+      "complexity_high": {
+        "count": 1
+      }
+    },
+    "src/routes/terms/review/+page.svelte\u0000onkeydown": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "src/stories/server.ts\u0000<arrow>": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "src/stories/snapshot.ts\u0000snapshot": {
+      "crap_high": {
+        "count": 1
+      }
+    }
+  },
+  "runtime_coverage_findings": [],
+  "target_keys": [
+    "src/routes/terms/+page.server.ts:hidden coupling",
+    "src/routes/books/[bookId]/pages/[position]/+page.server.ts:hidden coupling",
+    "src/lib/server/domain/suggestions.ts:high impact",
+    "src/lib/server/domain/from-tutor.ts:high impact",
+    "src/lib/practice.ts:high impact",
+    "src/lib/server/domain/webpages.ts:high impact",
+    "src/lib/server/domain/tutoring.ts:high impact",
+    "src/lib/reading/practice.svelte.ts:high impact",
+    "src/lib/reading/selection.svelte.ts:high impact",
+    "src/lib/server/domain/frequency.ts:high impact",
+    "src/lib/server/db/migrate.ts:hidden coupling",
+    "src/lib/server/domain/feeds.ts:high impact",
+    "src/routes/terms/review/+page.svelte:complexity",
+    "src/lib/server/domain/recognise.ts:high impact",
+    "src/fixtures/world.ts:hidden coupling",
+    "src/routes/terms/+page.svelte:complexity",
+    "src/fixtures/index.ts:hidden coupling",
+    "src/lib/server/domain/chapters.ts:high impact",
+    "src/routes/books/[bookId]/pages/[position]/Suggestions.svelte:complexity",
+    "src/lib/server/domain/wiktionary.ts:high impact",
+    "src/lib/reading/open-dictionary.svelte.ts:high impact",
+    "src/routes/books/[bookId]/pages/[position]/+page.svelte:hidden coupling",
+    "src/lib/server/domain/etymology.ts:high impact",
+    "src/routes/books/[bookId]/pages/[position]/PracticePanel.svelte:complexity",
+    "src/lib/server/domain/terms.spec.ts:hidden coupling",
+    "src/lib/question-kinds.ts:high impact",
+    "src/routes/books/[bookId]/pages/[position]/TutorQuestions.svelte:complexity",
+    "src/routes/books/[bookId]/pages/[position]/QuestionKind.svelte:complexity",
+    "src/routes/books/[bookId]/edit/PageCard.svelte:complexity",
+    "src/routes/languages/[languageId]/suggestions/+page.svelte:complexity"
+  ],
+  "file_lines_categories": true
+}

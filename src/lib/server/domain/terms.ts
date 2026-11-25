@@ -217,7 +217,7 @@ function sameOrigin(a: Omit<Origin, 'source'>, b: Omit<Origin, 'source'> | null)
 }
 
 /** A Term's own Origin, if it has one. */
-export async function readOrigin(db: Kysely<Database>, termId: number): Promise<Origin | undefined> {
+async function readOrigin(db: Kysely<Database>, termId: number): Promise<Origin | undefined> {
 	const term = await db.selectFrom('term').select(['origin_note', 'origin_source']).where('id', '=', termId).executeTakeFirst();
 	if (!term?.origin_source) return undefined;
 	const links = await db.selectFrom('origin_link').select(['kind', 'language', 'word']).where('term_id', '=', termId).orderBy('position').execute();

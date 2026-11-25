@@ -12,7 +12,7 @@ export interface WebArticle {
 
 export class InvalidAddress extends Refused {}
 
-export const MAX_PAGE_BYTES = 5 * 1024 * 1024;
+const MAX_PAGE_BYTES = 5 * 1024 * 1024;
 /** Less text than this is a menu or a notice, not an article. */
 const MIN_ARTICLE_CHARS = 100;
 const TIMEOUT_MS = 15_000;

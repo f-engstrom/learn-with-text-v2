@@ -11,8 +11,8 @@ export { wordAt };
 export type Grade = GradeValue;
 export type ReviewSource = ReviewSourceValue;
 
-export const GRADES: readonly Grade[] = ['missed', 'hard', 'got'];
-export const REVIEW_SOURCES: readonly ReviewSource[] = ['page', 'list', 'tutor'];
+const GRADES: readonly Grade[] = ['missed', 'hard', 'got'];
+const REVIEW_SOURCES: readonly ReviewSource[] = ['page', 'list', 'tutor'];
 
 export class InvalidReview extends Refused {}
 
@@ -96,7 +96,7 @@ export function practiceView(schedule: ScheduleTable | undefined, savedAt: strin
 }
 
 /** The Term whose schedule this one uses: up the Follows Parent chain to the first that doesn't follow. */
-export async function scheduleOwner(db: Kysely<Database> | Transaction<Database>, termId: number): Promise<number> {
+async function scheduleOwner(db: Kysely<Database> | Transaction<Database>, termId: number): Promise<number> {
 	const seen = new Set<number>();
 	let current = termId;
 	while (!seen.has(current)) {

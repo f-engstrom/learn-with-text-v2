@@ -1,7 +1,7 @@
 import type { Language } from './languages';
 
 /** One part of speech of Azure's answer, its translations most likely first. */
-export interface AzureEntry {
+interface AzureEntry {
 	/** Empty for a plain machine translation. */
 	partOfSpeech: string;
 	translations: string[];
@@ -14,7 +14,7 @@ export interface AzureResult {
 }
 
 /** The dictionary lookup API's shape, for one text. */
-export type RawLookup = { translations: { displayTarget: string; posTag: string }[] };
+type RawLookup = { translations: { displayTarget: string; posTag: string }[] };
 
 /** The Azure Translator seam: the real one calls the API, tests use a fake. */
 export interface AzureSource {

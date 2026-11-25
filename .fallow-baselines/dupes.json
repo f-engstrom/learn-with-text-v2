@@ -1,0 +1,51 @@
+{
+  "kind": "dupes",
+  "clone_groups": [
+    "src/lib/server/db/migrations/0003-terms.ts:18-22|src/lib/server/db/migrations/0021-azure-source.ts:12-16|src/lib/server/db/migrations/0024-origin.ts:12-16",
+    "src/lib/server/db/migrations/0003-terms.ts:18-23|src/lib/server/db/migrations/0021-azure-source.ts:12-17",
+    "src/lib/server/db/migrations/0019-terms-version.ts:16-28|src/lib/server/db/migrations/0024-origin.ts:26-40",
+    "src/routes/books/[bookId]/edit/page.stories.svelte:66-71|src/routes/books/new/page.stories.svelte:48-53",
+    "src/lib/server/domain/reading.ts:104-111|src/lib/server/domain/reading.ts:53-60",
+    "src/routes/api/azure/+server.ts:13-18|src/routes/api/wiktionary/+server.ts:11-16",
+    "src/lib/reading/from-tutor.svelte.ts:22-26|src/lib/reviews.ts:9-13|src/lib/term-writes.ts:65-69",
+    "src/lib/server/db/migrations/0019-terms-version.ts:16-26|src/lib/server/db/migrations/0021-azure-source.ts:24-34|src/lib/server/db/migrations/0024-origin.ts:26-38",
+    "src/routes/books/[bookId]/edit/page.stories.svelte:62-66|src/routes/books/new/page.stories.svelte:44-48",
+    "src/lib/server/db/migrations/0008-book-words.ts:14-21|src/lib/server/db/migrations/0025-hyphenated-words.ts:9-16",
+    "src/lib/components/RecogniseFiles.stories.svelte:27-31|src/lib/components/RecogniseFiles.stories.svelte:37-41",
+    "src/lib/server/db/migrations/0008-book-words.ts:28-38|src/lib/server/db/migrations/0025-hyphenated-words.ts:26-37",
+    "src/lib/server/domain/tutoring.ts:110-114|src/lib/server/domain/tutoring.ts:64-68",
+    "src/lib/server/db/migrations/0009-suggestions.ts:17-22|src/lib/server/db/migrations/0022-one-book-per-address.ts:7-12"
+  ],
+  "clone_fingerprints": [
+    "dup:54b04083:3",
+    "dup:b9a0874f:2",
+    "dup:b006ffe4:2",
+    "dup:e5f39d7b:2",
+    "dup:2e01ddf6:2",
+    "dup:02d96936:2",
+    "dup:0e6d3241:3",
+    "dup:0bf8d504:3",
+    "dup:50829e37:2",
+    "dup:dc9be29a:2",
+    "dup:93f82ca1:2",
+    "dup:4581eb33:2",
+    "dup:3ec93e52:2",
+    "dup:c7e330e3:2"
+  ],
+  "normalized_clone_fingerprints": [
+    "dup:4b094053:3",
+    "dup:7279c6b0:2",
+    "dup:facadfcf:2",
+    "dup:3fd7ad2f:2",
+    "dup:bde17a51:2",
+    "dup:351cd53a:2",
+    "dup:3ec16e22:3",
+    "dup:ce6a6220:3",
+    "dup:b5eaac76:2",
+    "dup:539002c0:2",
+    "dup:6ca68493:2",
+    "dup:24a936ef:2",
+    "dup:86943351:2",
+    "dup:ecddd0b2:2"
+  ]
+}

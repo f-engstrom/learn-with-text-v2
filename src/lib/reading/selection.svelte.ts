@@ -17,7 +17,7 @@ export interface Options {
 	onMoved?: (index: number, how: 'move' | 'resume') => void;
 }
 
-export function saveBookmarkOverHttp(bookId: number, bookmark: Bookmark) {
+function saveBookmarkOverHttp(bookId: number, bookmark: Bookmark) {
 	fetch(`/books/${bookId}/bookmark`, {
 		method: 'PUT',
 		headers: { 'content-type': 'application/json' },

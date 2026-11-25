@@ -14,7 +14,7 @@ import { textFromFile } from './books';
 export class CannotRecognise extends Refused {}
 
 /** A line Vision read: its box from 0 to 1, origin top-left, and the height of its two ends. */
-export interface RecognisedLine {
+interface RecognisedLine {
 	text: string;
 	confidence: number;
 	x: number;
@@ -35,7 +35,7 @@ export interface RecognisedPage {
 /** Reads files on this computer in a Language. */
 export type ReadFiles = (paths: string[], language: Pick<Language, 'code' | 'name'>) => Promise<RecognisedPage[]>;
 
-export const MAX_RECOGNISE_BYTES = 100 * 1024 * 1024;
+const MAX_RECOGNISE_BYTES = 100 * 1024 * 1024;
 
 const PHOTO = /^\.(heic|heif|jpe?g|png|tiff?|gif|bmp|webp)$/i;
 
@@ -166,7 +166,7 @@ const right = (l: RecognisedLine) => l.x + l.width;
  * The lines of the Page's text: a facing page's edge, a bookmark or a hand at the side are outside
  * the column the full lines make, and a page number stands alone above or below it.
  */
-export function textLines(lines: RecognisedLine[]): RecognisedLine[] {
+function textLines(lines: RecognisedLine[]): RecognisedLine[] {
 	const full = lines.filter((l) => l.width >= 0.5 * Math.max(...lines.map((m) => m.width)));
 	const left = median(full.map((l) => l.x));
 	const end = median(full.map(right));
@@ -183,7 +183,7 @@ export function textLines(lines: RecognisedLine[]): RecognisedLine[] {
  * The lines in reading order, a line Vision read as two pieces joined again. A tilted photo's lines
  * slope, so they are ordered by their left ends, and two pieces meet where one ends and the next starts.
  */
-export function rows(lines: RecognisedLine[]): RecognisedLine[] {
+function rows(lines: RecognisedLine[]): RecognisedLine[] {
 	const gap = median(lines.slice(1).map((l, i) => l.leftY - lines[i].leftY)) || 0.02;
 	const result: RecognisedLine[][] = [];
 	for (const line of lines) {
@@ -219,7 +219,7 @@ export function rows(lines: RecognisedLine[]): RecognisedLine[] {
  * one that carries on a Word broken by a hyphen. The margin it is indented from is fitted along the
  * column, since a photo is rarely square to the page.
  */
-export function paragraphsOf(lines: RecognisedLine[]): RecognisedLine[][] {
+function paragraphsOf(lines: RecognisedLine[]): RecognisedLine[][] {
 	const ordered = rows(textLines(lines));
 	if (ordered.length === 0) return [];
 	const margin = fitMargin(ordered);

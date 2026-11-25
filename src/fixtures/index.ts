@@ -92,6 +92,3 @@ for (const page of Object.values(loaded.reading)) {
 }
 
 export const fixtures = loaded;
-
-/** A copy to change in one story without touching the others'. */
-export const copy = <T>(value: T): T => structuredClone(value);

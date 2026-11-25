@@ -1,0 +1,9 @@
+{
+	"$schema": "https://unpkg.com/knip@6/schema.json",
+	"entry": ["src/env.ts"],
+	"project": ["src/**/*.{ts,js,svelte}", "*.{ts,js}"],
+	"ignoreBinaries": ["swiftc", "sqlite3", "sips"],
+	"ignoreIssues": {
+		"src/lib/server/db/migrations/*.ts": ["exports"]
+	}
+}

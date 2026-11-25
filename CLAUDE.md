@@ -49,6 +49,7 @@ The reading screen is `routes/books/[bookId]/pages/[position]/+page.svelte`, and
 - The browser reaches the server with plain JSON endpoints (`/books/[id]/tutor`, `/books/[id]/bookmark`, `/terms/[id]/reviews`, `/terms/status`, `/languages/[id]/fit-range`); form actions are for real `<form>`s with `use:enhance`.
 - Status history and the Terms version are written by SQLite triggers (ADR 0005), not by domain code.
 - The Tutor's assessment is stored as `term.tutor_level` and is `tutorAssessment` everywhere above the database.
+- `pnpm check:static` runs knip (`knip.json`) and fallow (`.fallowrc.json`) and must pass. Unused code and import cycles: export only what another file imports, and delete code nothing uses rather than ignoring it; a new entry point the tools can't see (a script run by `tsx`, say) goes in their config. Complexity and duplication are held to the baselines in `.fallow-baselines`, which record what was already there, per file: a new complex function or copied block fails, and the check also fails if a baseline gains an entry the committed one lacks, so don't re-save one to let new findings in. After making one of them simpler, `pnpm check:static:baseline` shrinks the baselines; commit them with the change. `npx fallow health` lists what's in them, worst first.
 
 ## Checking how something looks
 

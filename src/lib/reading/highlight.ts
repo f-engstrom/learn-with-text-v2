@@ -4,7 +4,7 @@
 import type { Highlight } from '#lib/server/domain/reading.ts';
 
 /** A passage as it is matched: NFC, lowercased, whitespace runs as one space, trimmed. */
-export function foldPassage(text: string): string {
+function foldPassage(text: string): string {
 	return text.normalize('NFC').toLocaleLowerCase().trim().replace(/\s+/gu, ' ');
 }
 

@@ -2,7 +2,7 @@ import { languageName, readEtymologies, type OriginSuggestion } from './etymolog
 import type { Language } from './languages';
 
 /** One part of speech of a Wiktionary entry, with its definitions as plain text. */
-export interface WiktionaryEntry {
+interface WiktionaryEntry {
 	partOfSpeech: string;
 	definitions: string[];
 }

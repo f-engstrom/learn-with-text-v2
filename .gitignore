@@ -38,3 +38,6 @@ debug-storybook.log
 /ocr-samples
 # The Mac helper for text recognition, built by `pnpm build:native`.
 /bin
+
+# fallow's analysis cache
+/.fallow

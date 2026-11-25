@@ -5,7 +5,7 @@ import { wordSegmenter, wordTokens, type Token } from '../../words';
 export { characterParts, normalise, partKeys, termKey } from '../../normalise';
 export type { Token } from '../../words';
 
-export interface ParsedSentence {
+interface ParsedSentence {
 	tokens: Token[];
 }
 
@@ -19,7 +19,7 @@ export interface Parser {
 }
 
 /** Splits text with ICU's word and sentence segmentation. Numbers are not Words; hyphenated Words are one. */
-export class SegmenterParser implements Parser {
+class SegmenterParser implements Parser {
 	private readonly sentences: Intl.Segmenter;
 	private readonly words: Intl.Segmenter;
 

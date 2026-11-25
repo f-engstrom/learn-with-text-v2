@@ -6,17 +6,17 @@ import { isLearning } from '../../terms';
 import type { Status } from './terms';
 
 /** Words read totals worth marking (see CONTEXT.md). */
-export const MILESTONES = [10_000, 25_000, 50_000, 100_000, 250_000, 500_000, 1_000_000, 2_000_000, 3_000_000] as const;
+const MILESTONES = [10_000, 25_000, 50_000, 100_000, 250_000, 500_000, 1_000_000, 2_000_000, 3_000_000] as const;
 
 /** How far back the Progress page looks. */
-export const WEEKS_SHOWN = 12;
-export const FORECAST_DAYS = 14;
+const WEEKS_SHOWN = 12;
+const FORECAST_DAYS = 14;
 const KNOWN_DAYS_SHOWN = 90;
 
 /** A local calendar day as YYYY-MM-DD: days follow the clock of the computer the Reader runs on. */
 export type Day = string;
 
-export interface ReadingDay {
+interface ReadingDay {
 	day: Day;
 	words: number;
 	/** You marked a Page Read, made a Review or saved a Term. */

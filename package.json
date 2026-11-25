@@ -15,6 +15,8 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"check:static": "knip && fallow dead-code && fallow architecture && fallow health --complexity --baseline .fallow-baselines/health.json --fail-on-baseline-growth --baseline-base HEAD && fallow dupes --baseline .fallow-baselines/dupes.json --fail-on-baseline-growth --baseline-base HEAD",
+		"check:static:baseline": "fallow health --save-baseline .fallow-baselines/health.json; fallow dupes --save-baseline .fallow-baselines/dupes.json",
 		"test:unit": "vitest",
 		"test": "pnpm test:unit --run --project server",
 		"mcp": "tsx src/lib/server/mcp/main.ts",
@@ -37,6 +39,8 @@
 		"@types/node": "^22",
 		"@vitest/browser": "4.1.12",
 		"@vitest/browser-playwright": "4.1.12",
+		"fallow": "^3.48.0",
+		"knip": "^6.48.0",
 		"playwright": "1.65.0",
 		"storybook": "11.0.0-beta.1",
 		"svelte": "^5.57.1",
@@ -46,7 +50,6 @@
 		"vitest": "^4.1.8"
 	},
 	"imports": {
-		"#lib": "./src/lib/index.js",
 		"#lib/*": "./src/lib/*",
 		"#fixtures": "./src/fixtures/index.ts",
 		"#stories/*": "./src/stories/*"

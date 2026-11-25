@@ -7,14 +7,14 @@ import { action } from 'storybook/actions';
 import type { AzureResult } from '#lib/server/domain/azure.ts';
 import type { WiktionaryResult } from '#lib/server/domain/wiktionary.ts';
 
-export interface Call {
+interface Call {
 	method: string;
 	url: URL;
 	/** The JSON body, or the form a file was sent in, if it had one. */
 	body: unknown;
 }
 
-export interface Reply {
+interface Reply {
 	/** 200 with a body, 204 without, unless given. */
 	status?: number;
 	body?: unknown;
@@ -25,7 +25,7 @@ export interface Reply {
 /** By `METHOD /path`, where `*` in the path stands for one segment. The first match answers. */
 export type Server = Record<string, Reply | ((call: Call) => Reply)>;
 
-export const wiktionary: WiktionaryResult = {
+const wiktionary: WiktionaryResult = {
 	title: 'привыкший',
 	entries: [
 		{ partOfSpeech: 'Participle', definitions: ['past active perfective participle of привыкнуть', 'accustomed, used to'] },
@@ -44,7 +44,7 @@ export const wiktionary: WiktionaryResult = {
 	]
 };
 
-export const azure: AzureResult = {
+const azure: AzureResult = {
 	kind: 'dictionary',
 	entries: [
 		{ partOfSpeech: 'Adjective', translations: ['accustomed', 'used'] },
@@ -53,7 +53,7 @@ export const azure: AzureResult = {
 };
 
 /** What the Reader's endpoints answer when all goes well. */
-export const defaults: Server = {
+const defaults: Server = {
 	// The entry is always the same; its title is the Word that was looked up.
 	'GET /api/wiktionary': ({ url }) => ({ body: { ...wiktionary, title: url.searchParams.get('text') ?? wiktionary.title } }),
 	'GET /api/azure': { body: azure },

@@ -9,7 +9,7 @@ import { CLASSICS, classicUrl, findClassic, isTitleLine, type Classic, type Wiki
 import { listTopics } from './topics';
 import type { WebArticle } from './webpages';
 
-export type { FitRange, Suggestion } from '../../suggestions';
+export type { FitRange } from '../../suggestions';
 
 /** An article, as plain text with `== Heading ==` lines between sections. */
 export interface Article {
@@ -28,7 +28,7 @@ export interface WikipediaSource {
 }
 
 /** How many Suggestions to look for at once. */
-export const SUGGESTION_COUNT = 12;
+const SUGGESTION_COUNT = 12;
 /** Articles shorter than this (after cutting) are stubs, not reading material. */
 export const MIN_WORDS = 80;
 
@@ -111,9 +111,9 @@ export interface SuggestionSources {
 
 /** How many recent items to try from each Feed, and from all Feeds together. */
 export const ITEMS_PER_FEED = 3;
-export const FEED_SUGGESTION_COUNT = 8;
+const FEED_SUGGESTION_COUNT = 8;
 /** How many Classics to try each time; Find others picks others. */
-export const CLASSIC_SUGGESTION_COUNT = 6;
+const CLASSIC_SUGGESTION_COUNT = 6;
 
 /**
  * Looks for things to read in a Language: Wikipedia articles for your Topics (or random ones if

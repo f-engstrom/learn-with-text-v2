@@ -10,7 +10,7 @@ export interface Transport {
 	dismiss(bookId: number): Promise<void>;
 }
 
-export const httpTransport: Transport = {
+const httpTransport: Transport = {
 	get: (bookId) =>
 		fetch(`/books/${bookId}/tutor`)
 			.then((r) => (r.ok ? r.json() : undefined))

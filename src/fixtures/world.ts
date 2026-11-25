@@ -26,7 +26,7 @@ import { releaseClock, setClock } from './clock';
 import { analects, bridge, feedXml, lady, saadi, vanka } from './texts';
 
 /** The moment every fixture is read at: the stories' "now". */
-export const NOW = '2026-11-10T12:00:00.000Z';
+const NOW = '2026-11-10T12:00:00.000Z';
 
 const daysAgo = (days: number) => new Date(Date.parse(NOW) - days * 86_400_000).toISOString();
 
@@ -376,4 +376,4 @@ export async function buildFixtures() {
 	}
 }
 
-export type Fixtures = Awaited<ReturnType<typeof buildFixtures>>;
+type Fixtures = Awaited<ReturnType<typeof buildFixtures>>;
